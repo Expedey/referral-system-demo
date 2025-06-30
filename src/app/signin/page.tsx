@@ -59,8 +59,10 @@ export default function SigninPage() {
       } else {
         setErrors({ submit: result.error || "Failed to sign in" });
       }
-    } catch (error: any) {
-      setErrors({ submit: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      setErrors({
+        submit: (error as Error).message || "An unexpected error occurred",
+      });
     } finally {
       setLoading(false);
     }
@@ -137,7 +139,7 @@ export default function SigninPage() {
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link
                 href="/signup"
                 className="font-medium text-blue-600 hover:text-blue-500"

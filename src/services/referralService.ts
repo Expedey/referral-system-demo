@@ -254,20 +254,25 @@ export class ReferralService {
     }>
   > {
     try {
+      console.log("[ReferralService] getLeaderboard called with limit:", limit);
       const { data, error } = await supabase
         .from("leaderboard")
         .select("*")
         .order("rank", { ascending: true })
         .limit(limit);
-
+      console.log(
+        "[ReferralService] Supabase leaderboard data:",
+        data,
+        "error:",
+        error
+      );
       if (error) {
-        console.error("Error fetching leaderboard:", error);
+        console.error("[ReferralService] Error fetching leaderboard:", error);
         return [];
       }
-
       return data || [];
     } catch (error) {
-      console.error("Error in getLeaderboard:", error);
+      console.error("[ReferralService] Error in getLeaderboard:", error);
       return [];
     }
   }
@@ -275,15 +280,9 @@ export class ReferralService {
   /**
    * Tracks a referral visit (for analytics)
    * @param referralCode - The referral code that was visited
-   * @param userIp - The visitor's IP address
-   * @param userAgent - The visitor's user agent
    * @returns Success status
    */
-  static async trackReferralVisit(
-    referralCode: string,
-    userIp?: string,
-    userAgent?: string
-  ): Promise<boolean> {
+  static async trackReferralVisit(referralCode: string): Promise<boolean> {
     try {
       // Check if this referral has already been tracked for this visitor
       if (hasReferralBeenTracked(referralCode)) {
@@ -315,13 +314,11 @@ export class ReferralService {
   }> {
     try {
       const referrals = await this.getUserReferrals(userId);
-
       const totalReferrals = referrals.length;
       const validReferrals = referrals.filter((r) => r.is_valid).length;
       const pendingReferrals = totalReferrals - validReferrals;
       const conversionRate =
         totalReferrals > 0 ? (validReferrals / totalReferrals) * 100 : 0;
-
       return {
         totalReferrals,
         validReferrals,

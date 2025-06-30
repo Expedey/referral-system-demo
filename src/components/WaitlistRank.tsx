@@ -116,17 +116,17 @@ const WaitlistRank: React.FC<WaitlistRankProps> = ({
         <div className="text-sm text-gray-600 space-y-1">
           {position <= 10 && (
             <p className="text-purple-600 font-medium">
-              🎉 You're in the top 10! Early access guaranteed.
+              🎉 You&apos;re in the top 10! Early access guaranteed.
             </p>
           )}
           {position > 10 && position <= 50 && (
             <p className="text-blue-600 font-medium">
-              🚀 VIP status! You'll get access in the first wave.
+              🚀 VIP status! You&apos;ll get access in the first wave.
             </p>
           )}
           {position > 50 && position <= 100 && (
             <p className="text-green-600 font-medium">
-              ⚡ Early access! You're in the priority queue.
+              ⚡ Early access! You&apos;re in the priority queue.
             </p>
           )}
           {position > 100 && position <= 500 && (

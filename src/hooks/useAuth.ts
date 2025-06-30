@@ -120,8 +120,8 @@ export const useAuth = () => {
       }
 
       return { success: true };
-    } catch (error: any) {
-      const errorMessage = error.message || "Failed to sign up";
+    } catch (error: unknown) {
+      const errorMessage = (error as Error).message || "Failed to sign up";
       setAuthState((prev) => ({
         ...prev,
         loading: false,
@@ -155,8 +155,8 @@ export const useAuth = () => {
       }
 
       return { success: true };
-    } catch (error: any) {
-      const errorMessage = error.message || "Failed to sign in";
+    } catch (error: unknown) {
+      const errorMessage = (error as Error).message || "Failed to sign in";
       setAuthState((prev) => ({
         ...prev,
         loading: false,
@@ -182,8 +182,8 @@ export const useAuth = () => {
       }
 
       return { success };
-    } catch (error: any) {
-      const errorMessage = error.message || "Failed to sign out";
+    } catch (error: unknown) {
+      const errorMessage = (error as Error).message || "Failed to sign out";
       setAuthState((prev) => ({
         ...prev,
         loading: false,

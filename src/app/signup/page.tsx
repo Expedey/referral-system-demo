@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { UserService } from "@/services/userService";
 import { ReferralService } from "@/services/referralService";
 import {
-  parseReferralFromUrl,
   storeReferralCode,
   clearStoredReferralCode,
 } from "@/utils/parseReferral";
@@ -20,31 +19,33 @@ export default function SignupPage() {
   const searchParams = useSearchParams();
   const { signUp, user, loading: authLoading } = useAuth();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = React.useState({
     email: "",
     password: "",
     confirmPassword: "",
     username: "",
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
-  const [referralCode, setReferralCode] = useState<string | null>(null);
-  const [referrerInfo, setReferrerInfo] = useState<{
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const [loading, setLoading] = React.useState(false);
+  const [referralCode, setReferralCode] = React.useState<string | null>(null);
+  const [referrerInfo, setReferrerInfo] = React.useState<{
     username?: string;
     referralCode: string;
   } | null>(null);
 
   // Check for referral code on page load
-  useEffect(() => {
+  React.useEffect(() => {
+    console.log("[Signup] useEffect: Checking referral code...");
     const checkReferralCode = async () => {
       // Check URL parameters first
       const refParam = searchParams.get("ref");
+      console.log("[Signup] searchParams ref:", refParam);
       if (refParam && isValidReferralCode(refParam)) {
         setReferralCode(refParam.toUpperCase());
         storeReferralCode(refParam.toUpperCase());
-
         // Get referrer info
         const referrer = await UserService.getUserByReferralCode(refParam);
+        console.log("[Signup] Referrer from code:", referrer);
         if (referrer) {
           setReferrerInfo({
             username: referrer.username,
@@ -53,14 +54,14 @@ export default function SignupPage() {
         }
         return;
       }
-
       // Check stored referral code
       const storedCode = localStorage.getItem("referral_code");
+      console.log("[Signup] storedCode:", storedCode);
       if (storedCode && isValidReferralCode(storedCode)) {
         setReferralCode(storedCode.toUpperCase());
-
         // Get referrer info
         const referrer = await UserService.getUserByReferralCode(storedCode);
+        console.log("[Signup] Referrer from storedCode:", referrer);
         if (referrer) {
           setReferrerInfo({
             username: referrer.username,
@@ -69,12 +70,12 @@ export default function SignupPage() {
         }
       }
     };
-
     checkReferralCode();
   }, [searchParams]);
 
   // Redirect if already authenticated
-  useEffect(() => {
+  React.useEffect(() => {
+    console.log("[Signup] useEffect: user, authLoading", user, authLoading);
     if (user && !authLoading) {
       router.push("/dashboard");
     }
@@ -109,39 +110,38 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) {
       return;
     }
-
     setLoading(true);
-
     try {
       const result = await signUp(
         formData.email,
         formData.password,
         formData.username
       );
-
+      console.log("[Signup] signUp result:", result);
       if (result.success) {
-        // If there's a referral code, validate it
         if (referralCode && user) {
-          await ReferralService.validateReferralOnSignup(
+          const referralRes = await ReferralService.validateReferralOnSignup(
             formData.email,
             user.id
           );
+          console.log(
+            "[Signup] ReferralService.validateReferralOnSignup:",
+            referralRes
+          );
         }
-
-        // Clear stored referral code after successful signup
         clearStoredReferralCode();
-
-        // Redirect to dashboard
         router.push("/dashboard");
       } else {
         setErrors({ submit: result.error || "Failed to sign up" });
       }
-    } catch (error: any) {
-      setErrors({ submit: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      setErrors({
+        submit: (error as Error).message || "An unexpected error occurred",
+      });
+      console.error("[Signup] Error in handleSubmit:", error);
     } finally {
       setLoading(false);
     }

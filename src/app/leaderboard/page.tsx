@@ -19,6 +19,7 @@ export default function LeaderboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("[Leaderboard] useEffect: loading leaderboard...");
     loadLeaderboard();
   }, []);
 
@@ -26,9 +27,10 @@ export default function LeaderboardPage() {
     try {
       setLoading(true);
       const data = await ReferralService.getLeaderboard(50); // Get top 50
+      console.log("[Leaderboard] ReferralService.getLeaderboard data:", data);
       setLeaderboard(data);
     } catch (error) {
-      console.error("Error loading leaderboard:", error);
+      console.error("[Leaderboard] Error loading leaderboard:", error);
       setError("Failed to load leaderboard");
     } finally {
       setLoading(false);
@@ -109,7 +111,8 @@ export default function LeaderboardPage() {
           <div className="text-center">
             <h2 className="text-3xl font-bold mb-2">🏆 Top Referrers</h2>
             <p className="text-blue-100">
-              See who's leading the pack and get inspired to climb the ranks!
+              See who&apos;s leading the pack and get inspired to climb the
+              ranks!
             </p>
           </div>
         </div>
@@ -205,7 +208,7 @@ export default function LeaderboardPage() {
                     </p>
                   </div>
                 ) : (
-                  leaderboard.map((entry, index) => (
+                  leaderboard.map((entry) => (
                     <div
                       key={entry.id}
                       className={`p-6 hover:bg-gray-50 transition-colors duration-200 ${getRankColor(

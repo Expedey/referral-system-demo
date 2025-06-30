@@ -106,7 +106,7 @@ export default function ReferralPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            You've Been Invited! 🎉
+            You&apos;ve Been Invited! 🎉
           </h1>
           <p className="text-xl text-gray-600">
             Join the exclusive waitlist and get early access
@@ -125,7 +125,7 @@ export default function ReferralPage() {
             </h2>
 
             <p className="text-gray-600 mb-6">
-              They're already on the waitlist and want you to join them.
+              They&apos;re already on the waitlist and want you to join them.
             </p>
 
             <div className="bg-gray-50 rounded-lg p-4 mb-6">

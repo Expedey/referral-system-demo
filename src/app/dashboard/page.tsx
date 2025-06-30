@@ -34,29 +34,25 @@ export default function DashboardPage() {
     }
 
     if (user && profile) {
+      const loadUserData = async () => {
+        if (!user) return;
+        try {
+          setLoading(true);
+          // Load user stats
+          const stats = await UserService.getUserStats(user.id);
+          setUserStats(stats);
+          // Load referral stats
+          const refStats = await ReferralService.getReferralStats(user.id);
+          setReferralStats(refStats);
+        } catch (error) {
+          console.error("Error loading user data:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
       loadUserData();
     }
   }, [user, profile, authLoading, router]);
-
-  const loadUserData = async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-
-      // Load user stats
-      const stats = await UserService.getUserStats(user.id);
-      setUserStats(stats);
-
-      // Load referral stats
-      const refStats = await ReferralService.getReferralStats(user.id);
-      setReferralStats(refStats);
-    } catch (error) {
-      console.error("Error loading user data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSignOut = async () => {
     await signOut();

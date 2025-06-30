@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/Button";
 
 export default function HomePage() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
