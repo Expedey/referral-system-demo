@@ -131,7 +131,7 @@ export const useAuth = () => {
         });
       }
 
-      return { success: true };
+      return { success: true, user: data.user };
     } catch (error: unknown) {
       const errorMessage = (error as Error).message || "Failed to sign up";
       setAuthState((prev) => ({

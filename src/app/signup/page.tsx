@@ -115,6 +115,22 @@ function SignupForm() {
     }
     setLoading(true);
     try {
+      // --- CREATE REFERRAL RECORD IF REFERRAL CODE PRESENT ---
+      const referrerId = localStorage.getItem("referrer_id");
+      if (referralCode && referrerId) {
+        try {
+          await ReferralService.createReferral({
+            referrerId: referrerId,
+            referredEmail: formData.email,
+            userAgent: navigator.userAgent,
+          });
+          console.log("[Signup] Created referral record for:", formData.email);
+        } catch (error) {
+          console.error("[Signup] Error creating referral record:", error);
+        }
+      }
+
+      // --- CONTINUE WITH SIGNUP ---
       const result = await signUp(
         formData.email,
         formData.password,
@@ -122,10 +138,10 @@ function SignupForm() {
       );
       console.log("[Signup] signUp result:", result);
       if (result.success) {
-        if (referralCode && user) {
+        if (referralCode && result?.user?.id) {
           const referralRes = await ReferralService.validateReferralOnSignup(
             formData.email,
-            user.id
+            result?.user?.id || ""
           );
           console.log(
             "[Signup] ReferralService.validateReferralOnSignup:",
@@ -279,14 +295,16 @@ function SignupForm() {
 
 export default function SignupPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <SignupForm />
     </Suspense>
   );
