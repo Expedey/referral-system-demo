@@ -140,7 +140,7 @@ export class ReferralService {
         .select("*")
         .eq("referred_email", referredEmail.toLowerCase())
         .eq("is_valid", false);
-
+      console.log("[ReferralService] referrals:", referrals);
       if (error) {
         console.error("Error fetching referrals for validation:", error);
         return { success: false };

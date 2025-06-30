@@ -40,6 +40,9 @@ export default function ReferralPage() {
           return;
         }
 
+        // Store referrer_id in localStorage for use during signup
+        localStorage.setItem("referrer_id", referrer.id);
+
         // Get referrer stats
         const stats = await UserService.getUserStats(referrer.id);
 
