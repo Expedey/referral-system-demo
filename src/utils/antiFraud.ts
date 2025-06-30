@@ -92,7 +92,7 @@ export function markReferralAsTracked(
  */
 export class ReferralRateLimiter {
   private static submissions = new Map<string, number[]>();
-  private static readonly MAX_SUBMISSIONS = 5; // Max submissions per window
+  private static readonly MAX_SUBMISSIONS = 15; // Max submissions per window
   private static readonly WINDOW_MS = 60 * 60 * 1000; // 1 hour window
 
   /**
