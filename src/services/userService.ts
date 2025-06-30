@@ -41,7 +41,7 @@ export class UserService {
           id: userData.id,
           email: userData.email,
           username: userData.username,
-          referral_code: referralCode,
+          referral_code: referralCode.toUpperCase(),
         })
         .select()
         .single();
