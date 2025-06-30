@@ -27,7 +27,13 @@ export const useAuth = () => {
         } = await supabase.auth.getSession();
 
         if (session?.user) {
-          const profile = await UserService.getCurrentUserProfile();
+          let profile = await UserService.getCurrentUserProfile();
+          // Email verification sync
+          const isEmailVerified = !!session.user.email_confirmed_at;
+          if (isEmailVerified && profile && !profile.is_verified) {
+            await UserService.updateVerificationStatus(session.user.id, true);
+            profile = await UserService.getCurrentUserProfile();
+          }
           setAuthState({
             user: session.user,
             profile,
@@ -61,7 +67,13 @@ export const useAuth = () => {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
         if (session?.user) {
-          const profile = await UserService.getCurrentUserProfile();
+          let profile = await UserService.getCurrentUserProfile();
+          // Email verification sync
+          const isEmailVerified = !!session.user.email_confirmed_at;
+          if (isEmailVerified && profile && !profile.is_verified) {
+            await UserService.updateVerificationStatus(session.user.id, true);
+            profile = await UserService.getCurrentUserProfile();
+          }
           setAuthState({
             user: session.user,
             profile,
