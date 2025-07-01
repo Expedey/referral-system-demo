@@ -136,7 +136,7 @@ export default function LeaderboardPage() {
                 <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">
                   🏅 Top 3 Champions
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
                   {/* 2nd Place */}
                   <div className="order-2 md:order-1">
                     <div className="bg-gradient-to-r from-gray-300 to-gray-400 rounded-2xl p-6 text-center transform -translate-y-4">
