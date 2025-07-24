@@ -50,11 +50,11 @@ export default function Navbar({
   const getBackground = () => {
     switch (variant) {
       case "landing":
-        return "bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50";
+        return "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50";
       case "dashboard":
       case "leaderboard":
       default:
-        return "bg-white shadow-sm border-b";
+        return "bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700";
     }
   };
 
@@ -75,9 +75,9 @@ export default function Navbar({
               />
               {title && (
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">{title}</h1>
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h1>
                   {subtitle && (
-                    <p className="text-sm text-gray-600">{subtitle}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{subtitle}</p>
                   )}
                 </div>
               )}

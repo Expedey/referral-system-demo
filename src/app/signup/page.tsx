@@ -188,10 +188,10 @@ function SignupForm() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading...</p>
         </div>
       </div>
     );
@@ -236,7 +236,7 @@ function SignupForm() {
       </div>
 
       {/* Right Side - Form Section (40%) */}
-      <div className="w-full lg:w-2/5 flex items-center justify-center px-8 py-12 bg-white">
+      <div className="w-full lg:w-2/5 flex items-center justify-center px-8 py-12 bg-white dark:bg-gray-900">
         <div className="w-full max-w-md space-y-8">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
@@ -250,17 +250,17 @@ function SignupForm() {
           </div>
 
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               Create Account
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Join our community and start earning rewards
             </p>
           </div>
 
           {/* Referral Banner */}
           {referrerInfo && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
@@ -268,10 +268,10 @@ function SignupForm() {
                   </div>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-green-900">
+                  <p className="text-sm font-medium text-green-900 dark:text-green-100">
                     You were invited by {referrerInfo.username || "a friend"}!
                   </p>
-                  <p className="text-sm text-green-700">
+                  <p className="text-sm text-green-700 dark:text-green-300">
                     Referral code:{" "}
                     <span className="font-mono">{referrerInfo.referralCode}</span>
                   </p>
@@ -280,8 +280,8 @@ function SignupForm() {
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
+          <form className="space-y-8" onSubmit={handleSubmit}>
+            <div className="space-y-6">
               <Input
                 label="Email"
                 type="email"
@@ -326,8 +326,8 @@ function SignupForm() {
             </div>
 
             {errors.submit && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-sm text-red-600">{errors.submit}</p>
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
+                <p className="text-sm text-red-600 dark:text-red-400">{errors.submit}</p>
               </div>
             )}
 
@@ -341,11 +341,11 @@ function SignupForm() {
             </Button>
 
             <div className="text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Already have an account?{" "}
                 <Link
                   href="/signin"
-                  className="font-medium text-green-600 hover:text-green-500 transition-colors"
+                  className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300 transition-colors"
                 >
                   Sign in
                 </Link>
