@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/Button";
+import { useRouter } from "next/navigation";
 
 interface NavbarProps {
   variant?: "landing" | "dashboard" | "leaderboard";
@@ -23,7 +24,8 @@ export default function Navbar({
   backUrl = "/dashboard",
   backButtonText = "Back to Dashboard",
 }: NavbarProps) {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const router = useRouter();
 
   const getLogo = () => {
     switch (variant) {
@@ -108,11 +110,25 @@ export default function Navbar({
                 )}
               </>
             ) : (
-              <Link href="/leaderboard">
-                <Button variant="outline" size="sm">
-                  View Leaderboard
-                </Button>
-              </Link>
+              <>
+                <Link href="/leaderboard">
+                  <Button variant="outline" size="sm">
+                    View Leaderboard
+                  </Button>
+                </Link>
+                {user && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={async () => {
+                      await signOut();
+                      router.push('/');
+                    }}
+                  >
+                    Sign Out
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>
