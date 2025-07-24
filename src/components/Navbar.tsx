@@ -32,7 +32,7 @@ export default function Navbar({
         return "/PurpleLogo.svg";
       case "landing":
       default:
-        return "/PurpleLogo.svg";
+        return "/Sh.svg";
     }
   };
 

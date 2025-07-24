@@ -93,7 +93,7 @@ export default function SigninPage() {
       {/* Left Side - Image Section (60%) */}
       <div className="hidden lg:flex lg:w-3/5 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 relative overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-20"></div>
-        <div className="relative z-10 flex flex-col justify-center items-center text-white px-12">
+        <div className="relative z-10 flex flex-col justify-center items-center text-white px-12 w-full h-full">
           <div className="mb-8">
             <Image
               src="/Logo.svg"
