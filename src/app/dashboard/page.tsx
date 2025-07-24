@@ -25,6 +25,7 @@ export default function DashboardPage() {
     conversionRate: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Redirect if not authenticated
@@ -36,32 +37,85 @@ export default function DashboardPage() {
     if (user && profile) {
       const loadUserData = async () => {
         if (!user) return;
+        
         try {
           setLoading(true);
-          // Load user stats
-          const stats = await UserService.getUserStats(user.id);
-          setUserStats(stats);
-          // Load referral stats
-          const refStats = await ReferralService.getReferralStats(user.id);
-          setReferralStats(refStats);
+          setError(null);
+          
+          // Load user stats and referral stats in parallel with timeout
+          const [stats, refStats] = await Promise.allSettled([
+            Promise.race([
+              UserService.getUserStats(user.id),
+              new Promise<never>((_, reject) => 
+                setTimeout(() => reject(new Error("User stats timeout")), 8000)
+              )
+            ]),
+            Promise.race([
+              ReferralService.getReferralStats(user.id),
+              new Promise<never>((_, reject) => 
+                setTimeout(() => reject(new Error("Referral stats timeout")), 8000)
+              )
+            ])
+          ]);
+
+          // Handle user stats
+          if (stats.status === 'fulfilled') {
+            setUserStats(stats.value);
+          } else {
+            console.error("Error loading user stats:", stats.reason);
+            setError("Failed to load user statistics");
+          }
+
+          // Handle referral stats
+          if (refStats.status === 'fulfilled') {
+            setReferralStats(refStats.value);
+          } else {
+            console.error("Error loading referral stats:", refStats.reason);
+            setError("Failed to load referral statistics");
+          }
         } catch (error) {
           console.error("Error loading user data:", error);
+          setError("Failed to load dashboard data");
         } finally {
           setLoading(false);
         }
       };
+      
       loadUserData();
+    } else if (!authLoading && !user) {
+      // If auth is done loading and no user, redirect
+      router.push("/signup");
     }
   }, [user, profile, authLoading, router]);
 
-
-
+  // Show loading state
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar variant="dashboard" title="Dashboard" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Dashboard</h3>
+            <p className="text-red-600 mb-4">{error}</p>
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Retry
+            </Button>
+          </div>
         </div>
       </div>
     );

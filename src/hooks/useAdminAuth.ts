@@ -137,7 +137,8 @@ export const useAdminAuth = () => {
 
   const adminLogin = async (email: string, password: string) => {
     try {
-      setAuthState((prev) => ({ ...prev, loading: true, error: null }));
+      // Don't set global loading state during admin login
+      // Let the component handle its own loading state
 
       const result = await AdminService.adminLogin(email, password);
 

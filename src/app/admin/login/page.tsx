@@ -24,6 +24,7 @@ export default function AdminLoginPage() {
       const result = await adminLogin(email, password);
       
       if (result.success) {
+        // Admin login successful, redirect to admin dashboard
         router.push('/admin/dashboard');
       } else {
         setError(result.error || 'Login failed');
@@ -100,10 +101,9 @@ export default function AdminLoginPage() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                placeholder="admin@example.com"
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full !bg-white !text-gray-900 !border-gray-300"
+                placeholder="admin@example.com"
               />
             </div>
 
@@ -115,53 +115,21 @@ export default function AdminLoginPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full !bg-white !text-gray-900 !border-gray-300"
+                placeholder="Enter your password"
               />
             </div>
 
             <Button
               type="submit"
+              loading={isLoading}
+              className="w-full"
               disabled={isLoading}
-              className="w-full bg-purple-600 hover:bg-purple-700 focus:ring-purple-500"
             >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <svg 
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" 
-                    fill="none" 
-                    viewBox="0 0 24 24"
-                  >
-                    <circle 
-                      className="opacity-25" 
-                      cx="12" 
-                      cy="12" 
-                      r="10" 
-                      stroke="currentColor" 
-                      strokeWidth="4"
-                    />
-                    <path 
-                      className="opacity-75" 
-                      fill="currentColor" 
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Signing in...
-                </div>
-              ) : (
-                'Sign In'
-              )}
+              Sign In to Admin Portal
             </Button>
           </form>
-
-          {/* Footer */}
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-500">
-              Need access? Contact your system administrator
-            </p>
-          </div>
         </div>
       </div>
     </div>

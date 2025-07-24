@@ -90,11 +90,17 @@ export class UserService {
         return null;
       }
 
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+      // Add timeout to prevent hanging
+      const { data, error } = await Promise.race([
+        supabase
+          .from("users")
+          .select("*")
+          .eq("id", user.id)
+          .single(),
+        new Promise<{ data: null; error: any }>((_, reject) => 
+          setTimeout(() => reject(new Error("Database timeout")), 5000)
+        )
+      ]);
 
       if (error) {
         console.error("Error fetching user profile:", error);
@@ -174,33 +180,57 @@ export class UserService {
     isVerified: boolean;
   }> {
     try {
-      // Get user's referral count from users table
-      const { data: userData, error: userError } = await supabase
-        .from("users")
-        .select("referral_count, is_verified")
-        .eq("id", userId)
-        .single();
+      // Get user's referral count and waitlist position in parallel with timeout
+      const [userResult, leaderboardResult] = await Promise.allSettled([
+        Promise.race([
+          supabase
+            .from("users")
+            .select("referral_count, is_verified")
+            .eq("id", userId)
+            .single(),
+          new Promise<{ data: null; error: any }>((_, reject) => 
+            setTimeout(() => reject(new Error("User data timeout")), 5000)
+          )
+        ]),
+        Promise.race([
+          supabase
+            .from("leaderboard")
+            .select("rank")
+            .eq("id", userId)
+            .single(),
+          new Promise<{ data: null; error: any }>((_, reject) => 
+            setTimeout(() => reject(new Error("Leaderboard timeout")), 5000)
+          )
+        ])
+      ]);
 
+      // Handle user data result
+      if (userResult.status === 'rejected') {
+        console.error("Error fetching user data:", userResult.reason);
+        throw new Error("Failed to fetch user data");
+      }
+
+      const { data: userData, error: userError } = userResult.value;
       if (userError) {
         console.error("Error fetching user data:", userError);
         throw new Error("Failed to fetch user data");
       }
 
-      // Get user's waitlist position from leaderboard view
-      const { data: leaderboardData, error: leaderboardError } = await supabase
-        .from("leaderboard")
-        .select("rank")
-        .eq("id", userId)
-        .single();
-
-      if (leaderboardError) {
-        console.error("Error fetching leaderboard data:", leaderboardError);
-        throw new Error("Failed to fetch leaderboard data");
+      // Handle leaderboard result
+      let waitlistPosition = 0;
+      if (leaderboardResult.status === 'fulfilled') {
+        const { data: leaderboardData, error: leaderboardError } = leaderboardResult.value;
+        if (!leaderboardError && leaderboardData) {
+          waitlistPosition = leaderboardData.rank || 0;
+        }
+      } else {
+        console.warn("Failed to fetch leaderboard data:", leaderboardResult.reason);
+        // Don't throw error for leaderboard, just use default value
       }
 
       return {
         totalReferrals: userData?.referral_count || 0,
-        waitlistPosition: leaderboardData?.rank || 0,
+        waitlistPosition,
         isVerified: userData?.is_verified || false,
       };
     } catch (error) {

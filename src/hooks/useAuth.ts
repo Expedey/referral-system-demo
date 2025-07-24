@@ -2,14 +2,13 @@ import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { UserService, UserProfile } from "@/services/userService";
-import { AdminService } from "@/services/adminService";
 
 export interface AuthState {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
   error: string | null;
-  isAdmin: boolean; // Add admin detection
+  isAdmin: boolean; // Keep for compatibility but don't check here
 }
 
 export const useAuth = () => {
@@ -18,65 +17,107 @@ export const useAuth = () => {
     profile: null,
     loading: true,
     error: null,
-    isAdmin: false, // Initialize admin status
+    isAdmin: false, // Default to false, will be checked separately if needed
   });
 
-  // Function to check if user is admin
-  const checkAdminStatus = async (): Promise<boolean> => {
-    try {
-      const admin = await AdminService.getCurrentAdmin();
-      return !!admin;
-    } catch {
-      return false;
-    }
-  };
-
   useEffect(() => {
-    // Get initial session
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
+    let hasInitialized = false;
+
+    // Get initial session with timeout
     const getInitialSession = async () => {
+      if (hasInitialized) return; // Prevent multiple initializations
+      
       try {
+        // Set a timeout to prevent infinite loading
+        timeoutId = setTimeout(() => {
+          if (isMounted && !hasInitialized) {
+            console.warn("Auth initialization timed out, setting loading to false");
+            setAuthState({
+              user: null,
+              profile: null,
+              loading: false,
+              error: "Authentication timeout",
+              isAdmin: false,
+            });
+            hasInitialized = true;
+          }
+        }, 10000); // 10 second timeout
+
         const {
           data: { session },
         } = await supabase.auth.getSession();
 
+        if (!isMounted || hasInitialized) return;
+
         if (session?.user) {
-          let profile = await UserService.getCurrentUserProfile();
-          const isAdmin = await checkAdminStatus();
-          
-          // Email verification sync
-          const isEmailVerified = !!session.user.email_confirmed_at;
-          if (isEmailVerified && profile && !profile.is_verified) {
-            await UserService.updateVerificationStatus(session.user.id, true);
-            profile = await UserService.getCurrentUserProfile();
+          try {
+            // Get user profile with timeout
+            const profile = await Promise.race([
+              UserService.getCurrentUserProfile(),
+              new Promise<null>((_, reject) => 
+                setTimeout(() => reject(new Error("Profile fetch timeout")), 5000)
+              )
+            ]);
             
-            // Check for pending referrals and verify them
-            await handleEmailVerification(session.user.id);
+            // Email verification sync (non-blocking)
+            const isEmailVerified = !!session.user.email_confirmed_at;
+            if (isEmailVerified && profile && !profile.is_verified) {
+              // Fire and forget - don't wait for this
+              UserService.updateVerificationStatus(session.user.id, true).catch(console.error);
+              handleEmailVerification(session.user.id).catch(console.error);
+            }
+
+            if (isMounted && !hasInitialized) {
+              setAuthState({
+                user: session.user,
+                profile,
+                loading: false,
+                error: null,
+                isAdmin: false, // Will be checked separately if needed
+              });
+              hasInitialized = true;
+            }
+          } catch (profileError) {
+            console.error("Error fetching user profile:", profileError);
+            if (isMounted && !hasInitialized) {
+              setAuthState({
+                user: session.user,
+                profile: null,
+                loading: false,
+                error: "Failed to load user profile",
+                isAdmin: false,
+              });
+              hasInitialized = true;
+            }
           }
-          setAuthState({
-            user: session.user,
-            profile,
-            loading: false,
-            error: null,
-            isAdmin,
-          });
         } else {
+          if (isMounted && !hasInitialized) {
+            setAuthState({
+              user: null,
+              profile: null,
+              loading: false,
+              error: null,
+              isAdmin: false,
+            });
+            hasInitialized = true;
+          }
+        }
+      } catch (error) {
+        console.error("Error getting initial session:", error);
+        if (isMounted && !hasInitialized) {
           setAuthState({
             user: null,
             profile: null,
             loading: false,
-            error: null,
+            error: "Failed to load session",
             isAdmin: false,
           });
+          hasInitialized = true;
         }
-      } catch (error) {
-        console.error("Error getting initial session:", error);
-        setAuthState({
-          user: null,
-          profile: null,
-          loading: false,
-          error: "Failed to load session",
-          isAdmin: false,
-        });
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
       }
     };
 
@@ -86,54 +127,81 @@ export const useAuth = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+
+      // Only handle auth changes after initial load
+      if (!hasInitialized) return;
+
       try {
         if (session?.user) {
-          let profile = await UserService.getCurrentUserProfile();
-          const isAdmin = await checkAdminStatus();
-          
-          // Email verification sync
-          const isEmailVerified = !!session.user.email_confirmed_at;
-          if (isEmailVerified && profile && !profile.is_verified) {
-            await UserService.updateVerificationStatus(session.user.id, true);
-            profile = await UserService.getCurrentUserProfile();
+          try {
+            const profile = await UserService.getCurrentUserProfile();
             
-            // Check for pending referrals and verify them
-            await handleEmailVerification(session.user.id);
+            // Email verification sync (non-blocking)
+            const isEmailVerified = !!session.user.email_confirmed_at;
+            if (isEmailVerified && profile && !profile.is_verified) {
+              UserService.updateVerificationStatus(session.user.id, true).catch(console.error);
+              handleEmailVerification(session.user.id).catch(console.error);
+            }
+
+            if (isMounted) {
+              setAuthState({
+                user: session.user,
+                profile,
+                loading: false,
+                error: null,
+                isAdmin: false,
+              });
+            }
+          } catch (profileError) {
+            console.error("Error fetching user profile on auth change:", profileError);
+            if (isMounted) {
+              setAuthState({
+                user: session.user,
+                profile: null,
+                loading: false,
+                error: "Failed to load user profile",
+                isAdmin: false,
+              });
+            }
           }
-          setAuthState({
-            user: session.user,
-            profile,
-            loading: false,
-            error: null,
-            isAdmin,
-          });
         } else {
-          setAuthState({
-            user: null,
-            profile: null,
-            loading: false,
-            error: null,
-            isAdmin: false,
-          });
+          if (isMounted) {
+            setAuthState({
+              user: null,
+              profile: null,
+              loading: false,
+              error: null,
+              isAdmin: false,
+            });
+          }
         }
       } catch (error) {
         console.error("Error handling auth state change:", error);
-        setAuthState({
-          user: session?.user || null,
-          profile: null,
-          loading: false,
-          error: "Failed to load session",
-          isAdmin: false,
-        });
+        if (isMounted) {
+          setAuthState({
+            user: session?.user || null,
+            profile: null,
+            loading: false,
+            error: "Failed to load session",
+            isAdmin: false,
+          });
+        }
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      hasInitialized = true; // Prevent further initializations
+      if (timeoutId) clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, username?: string) => {
     try {
-      setAuthState((prev) => ({ ...prev, loading: true, error: null }));
+      // Don't set global loading state during signup
+      // The component should handle its own loading state
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -175,7 +243,8 @@ export const useAuth = () => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      setAuthState((prev) => ({ ...prev, loading: true, error: null }));
+      // Don't set global loading state during signin
+      // The component should handle its own loading state
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,

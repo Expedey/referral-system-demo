@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import UserRouteGuard from "@/components/UserRouteGuard";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,9 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <UserRouteGuard>
-          {children}
-        </UserRouteGuard>
+        <ErrorBoundary>
+          <UserRouteGuard>
+            {children}
+          </UserRouteGuard>
+        </ErrorBoundary>
       </body>
     </html>
   );

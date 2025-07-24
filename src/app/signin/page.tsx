@@ -77,7 +77,8 @@ export default function SigninPage() {
     }
   };
 
-  if (authLoading) {
+  // Only show loading if auth is still initializing, not during signin
+  if (authLoading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">

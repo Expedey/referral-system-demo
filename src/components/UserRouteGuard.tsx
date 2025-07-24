@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 interface UserRouteGuardProps {
   children: React.ReactNode;
@@ -13,30 +13,36 @@ export default function UserRouteGuard({
   children, 
   fallback 
 }: UserRouteGuardProps) {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
-  // Pages that should redirect admins to admin dashboard
-  const userOnlyPages = [
+  // Pages that require authentication (not public pages)
+  const protectedPages = [
     '/',
     '/dashboard',
-    '/leaderboard',
+    '/leaderboard'
+  ];
+
+  // Public pages that don't require authentication
+  const publicPages = [
     '/signup',
     '/signin'
   ];
 
-  const isUserOnlyPage = userOnlyPages.includes(pathname);
+  const isProtectedPage = protectedPages.includes(pathname);
+  const isPublicPage = publicPages.includes(pathname);
 
+  // Only handle auth redirects for protected pages
   useEffect(() => {
-    if (!loading && user && isAdmin && isUserOnlyPage) {
-      // Admin user trying to access regular user page - redirect to admin dashboard
-      router.push('/admin/dashboard');
+    if (!loading && !user && isProtectedPage) {
+      // User not authenticated, redirect to signup
+      router.push('/signup');
     }
-  }, [user, loading, isAdmin, isUserOnlyPage, router]);
+  }, [user, loading, isProtectedPage, router]);
 
-  // Show loading state
-  if (loading) {
+  // Show loading state only for protected pages when auth is loading
+  if (loading && isProtectedPage) {
     return fallback || (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -47,11 +53,6 @@ export default function UserRouteGuard({
     );
   }
 
-  // If admin user on user-only page, don't render children (will redirect)
-  if (user && isAdmin && isUserOnlyPage) {
-    return null;
-  }
-
-  // Render children for all other cases
+  // Render children for all cases
   return <>{children}</>;
 } 

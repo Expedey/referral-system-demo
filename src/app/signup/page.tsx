@@ -186,7 +186,8 @@ function SignupForm() {
     }
   };
 
-  if (authLoading) {
+  // Only show loading if auth is still initializing and user is not authenticated
+  if (authLoading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
