@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ReferralService } from "@/services/referralService";
 import Button from "@/components/Button";
+import Navbar from "@/components/Navbar";
 
 interface LeaderboardEntry {
   id: string;
@@ -88,22 +89,14 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Leaderboard</h1>
-              <p className="text-gray-600">Top referrers on the waitlist</p>
-            </div>
-
-            <Link href="/dashboard">
-              <Button variant="outline" size="sm">
-                Back to Dashboard
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navbar 
+        variant="leaderboard" 
+        title="Leaderboard" 
+        subtitle="Top referrers on the waitlist"
+        showBackButton={true}
+        backUrl="/dashboard"
+        backButtonText="Back to Dashboard"
+      />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Banner */}

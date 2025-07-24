@@ -9,6 +9,7 @@ import { ReferralService } from "@/services/referralService";
 import ReferralCard from "@/components/ReferralCard";
 import WaitlistRank from "@/components/WaitlistRank";
 import Button from "@/components/Button";
+import Navbar from "@/components/Navbar";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -77,29 +78,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-              <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                {profile.username || "User"}
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <Link href="/leaderboard">
-                <Button variant="outline" size="sm">
-                  View Leaderboard
-                </Button>
-              </Link>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar variant="dashboard" title="Dashboard" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}

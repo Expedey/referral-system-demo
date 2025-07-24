@@ -1,0 +1,126 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useAuth } from "@/hooks/useAuth";
+import Button from "@/components/Button";
+
+interface NavbarProps {
+  variant?: "landing" | "dashboard" | "leaderboard";
+  title?: string;
+  subtitle?: string;
+  showBackButton?: boolean;
+  backUrl?: string;
+  backButtonText?: string;
+}
+
+export default function Navbar({
+  variant = "landing",
+  title,
+  subtitle,
+  showBackButton = false,
+  backUrl = "/dashboard",
+  backButtonText = "Back to Dashboard",
+}: NavbarProps) {
+  const { user } = useAuth();
+
+  const getLogo = () => {
+    switch (variant) {
+      case "dashboard":
+      case "leaderboard":
+        return "/PurpleLogo.svg";
+      case "landing":
+      default:
+        return "/Logo.svg";
+    }
+  };
+
+  const getLogoSize = () => {
+    switch (variant) {
+      case "dashboard":
+      case "leaderboard":
+        return { width: 48, height: 48, className: "h-12 w-auto" };
+      case "landing":
+      default:
+        return { width: 40, height: 40, className: "h-10 w-auto" };
+    }
+  };
+
+  const getBackground = () => {
+    switch (variant) {
+      case "landing":
+        return "bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50";
+      case "dashboard":
+      case "leaderboard":
+      default:
+        return "bg-white shadow-sm border-b";
+    }
+  };
+
+  const logoSize = getLogoSize();
+
+  return (
+    <header className={getBackground()}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center py-4">
+          <div className="flex items-center space-x-6">
+            <Link href="/dashboard" className="flex items-center space-x-3">
+              <Image
+                src={getLogo()}
+                alt="Logo"
+                width={logoSize.width}
+                height={logoSize.height}
+                className={logoSize.className}
+              />
+              {title ? (
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">{title}</h1>
+                  {subtitle && (
+                    <p className="text-sm text-gray-600">{subtitle}</p>
+                  )}
+                </div>
+              ) : (
+                <span className="text-xl font-bold text-gray-900">
+                  WaitlistPro
+                </span>
+              )}
+            </Link>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {showBackButton ? (
+              <Link href={backUrl}>
+                <Button variant="outline" size="sm">
+                  {backButtonText}
+                </Button>
+              </Link>
+            ) : variant === "landing" ? (
+              <>
+                {user ? (
+                  <Link href="/dashboard">
+                    <Button variant="primary" size="sm">
+                      Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link href="/signup">
+                    <Button variant="primary" size="sm">
+                      Join Waitlist
+                    </Button>
+                  </Link>
+                )}
+              </>
+            ) : (
+              <Link href="/leaderboard">
+                <Button variant="outline" size="sm">
+                  View Leaderboard
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+} 

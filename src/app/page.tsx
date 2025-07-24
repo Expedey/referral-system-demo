@@ -2,8 +2,10 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/Button";
+import Navbar from "@/components/Navbar";
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -11,38 +13,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">🎯</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">
-                WaitlistPro
-              </span>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              {user ? (
-                <Link href="/dashboard">
-                  <Button variant="primary" size="sm">
-                    Dashboard
-                  </Button>
-                </Link>
-              ) : (
-                <>
-                  <Link href="/signup">
-                    <Button variant="primary" size="sm">
-                      Join Waitlist
-                    </Button>
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar variant="landing" />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
@@ -288,10 +259,14 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">🎯</span>
-                </div>
+              <div className="flex items-center space-x-3 mb-4">
+                <Image
+                  src="/Logo.svg"
+                  alt="Logo"
+                  width={40}
+                  height={40}
+                  className="h-10 w-auto"
+                />
                 <span className="text-xl font-bold">WaitlistPro</span>
               </div>
               <p className="text-gray-400">
