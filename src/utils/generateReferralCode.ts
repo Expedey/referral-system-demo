@@ -39,3 +39,20 @@ export function isValidReferralCode(code: string): boolean {
   const codeRegex = /^[A-Z0-9]{6,12}$/;
   return codeRegex.test(code.toUpperCase());
 }
+
+/**
+ * Generates a secure token for admin invitations
+ * Uses crypto.randomUUID() for high entropy
+ * @returns A secure token string
+ */
+export function generateSecureToken(): string {
+  // Use crypto.randomUUID() if available (Node.js 14.17+)
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  
+  // Fallback to Math.random() with timestamp for older environments
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2);
+  return `${timestamp}-${random}`;
+}

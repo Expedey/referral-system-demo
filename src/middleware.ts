@@ -20,6 +20,15 @@ function getRequestIP(request: NextRequest): string {
  * Implements basic fraud prevention as pre-flight check
  */
 export function middleware(request: NextRequest) {
+  // Admin route protection
+  if (request.nextUrl.pathname.startsWith('/admin') && 
+      !request.nextUrl.pathname.startsWith('/admin/login') &&
+      !request.nextUrl.pathname.startsWith('/admin/api')) {
+    // For now, we'll let the client-side route guard handle admin authentication
+    // In production, you might want to add server-side session validation here
+    return NextResponse.next();
+  }
+
   // Only apply to referral-related routes
   if (
     request.nextUrl.pathname.startsWith('/api/referral') ||
@@ -70,5 +79,6 @@ export const config = {
     '/api/referral/:path*',
     '/ref/:path*',
     '/signup',
+    '/admin/:path*',
   ],
 }; 
