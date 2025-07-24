@@ -21,6 +21,7 @@ export interface ReferralData {
 export interface CreateReferralData {
   referrerId: string;
   referredEmail: string;
+  referredUserId?: string;
   userIp?: string;
   userAgent?: string;
 }
@@ -66,6 +67,7 @@ export class ReferralService {
         .from("referrals")
         .insert({
           referrer_id: referralData.referrerId,
+          referred_user_id: referralData.referredUserId,
           referred_email: referralData.referredEmail.toLowerCase(),
           referred_ip: referralData.userIp,
           status: 'pending',

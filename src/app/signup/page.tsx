@@ -115,21 +115,6 @@ function SignupForm() {
     }
     setLoading(true);
     try {
-      // --- CREATE REFERRAL RECORD IF REFERRAL CODE PRESENT ---
-      const referrerId = localStorage.getItem("referrer_id");
-      if (referralCode && referrerId) {
-        try {
-          await ReferralService.createReferral({
-            referrerId: referrerId,
-            referredEmail: formData.email,
-            userAgent: navigator.userAgent,
-          });
-          console.log("[Signup] Created referral record for:", formData.email);
-        } catch (error) {
-          console.error("[Signup] Error creating referral record:", error);
-        }
-      }
-
       // --- CONTINUE WITH SIGNUP ---
       const result = await signUp(
         formData.email,
@@ -138,16 +123,32 @@ function SignupForm() {
       );
       console.log("[Signup] signUp result:", result);
       if (result.success) {
-        if (referralCode && result?.user?.id) {
-          const referralRes = await ReferralService.validateReferralOnSignup(
-            formData.email,
-            result?.user?.id || "",
-            !!result?.user?.email_confirmed_at
-          );
-          console.log(
-            "[Signup] ReferralService.validateReferralOnSignup:",
-            referralRes
-          );
+        // --- CREATE REFERRAL RECORD IF REFERRAL CODE PRESENT ---
+        const referrerId = localStorage.getItem("referrer_id");
+        if (referralCode && referrerId && result?.user?.id) {
+          try {
+            // Create referral record with the correct user ID
+            await ReferralService.createReferral({
+              referrerId: referrerId,
+              referredEmail: formData.email,
+              referredUserId: result.user.id,
+              userAgent: navigator.userAgent,
+            });
+            console.log("[Signup] Created referral record for:", formData.email);
+            
+            // Validate the referral
+            const referralRes = await ReferralService.validateReferralOnSignup(
+              formData.email,
+              result.user.id,
+              !!result.user.email_confirmed_at
+            );
+            console.log(
+              "[Signup] ReferralService.validateReferralOnSignup:",
+              referralRes
+            );
+          } catch (error) {
+            console.error("[Signup] Error creating referral record:", error);
+          }
         }
         clearStoredReferralCode();
         router.push("/dashboard");
