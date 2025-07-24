@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { HubSpotService } from '@/services/hubspotService';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Get all users from Supabase
     const { data: users, error } = await supabase

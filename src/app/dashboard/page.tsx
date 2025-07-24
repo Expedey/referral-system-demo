@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { UserService } from "@/services/userService";
 import { ReferralService } from "@/services/referralService";
@@ -13,7 +12,7 @@ import Navbar from "@/components/Navbar";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, profile, loading: authLoading, signOut } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [userStats, setUserStats] = useState<{
     totalReferrals: number;
     waitlistPosition: number;
@@ -55,10 +54,7 @@ export default function DashboardPage() {
     }
   }, [user, profile, authLoading, router]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.push("/");
-  };
+
 
   if (authLoading || loading) {
     return (

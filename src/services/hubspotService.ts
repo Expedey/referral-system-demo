@@ -87,7 +87,7 @@ export class HubSpotService {
       };
 
       const response = await this.client.crm.contacts.basicApi.create({
-        properties: properties as any,
+        properties: properties as unknown as Record<string, string>,
       });
 
       console.log('[HubSpotService] Contact created successfully:', response.id);
@@ -136,7 +136,7 @@ export class HubSpotService {
 
       const response = await this.client.crm.contacts.basicApi.update(
         existingContact.id,
-        { properties: updateProperties as any }
+        { properties: updateProperties as unknown as Record<string, string> }
       );
 
       console.log('[HubSpotService] Contact updated successfully:', response.id);
@@ -167,7 +167,7 @@ export class HubSpotService {
             filters: [
               {
                 propertyName: 'email',
-                operator: 'EQ' as any,
+                operator: 'EQ' as any, // eslint-disable-line @typescript-eslint/no-explicit-any
                 value: email,
               },
             ],
@@ -259,7 +259,7 @@ export class HubSpotService {
             },
                            types: [
                  {
-                   associationCategory: 'HUBSPOT_DEFINED' as any,
+                   associationCategory: 'HUBSPOT_DEFINED' as any, // eslint-disable-line @typescript-eslint/no-explicit-any
                    associationTypeId: 1, // Contact to Note association
                  },
                ],
@@ -290,7 +290,7 @@ export class HubSpotService {
             filters: [
               {
                 propertyName: 'referral_count',
-                operator: 'GT' as any,
+                operator: 'GT' as any, // eslint-disable-line @typescript-eslint/no-explicit-any
                 value: '0',
               },
             ],
