@@ -55,10 +55,17 @@ export class UserService {
 
       // Sync user to HubSpot
       try {
+        console.log("[UserService] Attempting to sync user to HubSpot:", data.email);
+        console.log("[UserService] HUBSPOT_API_KEY exists:", !!process.env.HUBSPOT_API_KEY);
+        
         await HubSpotService.syncUserToHubSpot(data);
         console.log("[UserService] User synced to HubSpot successfully");
       } catch (hubspotError) {
         console.error("[UserService] Error syncing to HubSpot:", hubspotError);
+        console.error("[UserService] Error details:", {
+          message: hubspotError instanceof Error ? hubspotError.message : 'Unknown error',
+          stack: hubspotError instanceof Error ? hubspotError.stack : undefined
+        });
         // Don't throw error - HubSpot sync failure shouldn't break user creation
       }
 
