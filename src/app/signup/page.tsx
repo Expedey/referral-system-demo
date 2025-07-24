@@ -28,6 +28,7 @@ function SignupForm() {
   });
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [loading, setLoading] = React.useState(false);
+  const [showVerificationAlert, setShowVerificationAlert] = React.useState(false);
   const [referralCode, setReferralCode] = React.useState<string | null>(null);
   const [referrerInfo, setReferrerInfo] = React.useState<{
     username?: string;
@@ -164,7 +165,10 @@ function SignupForm() {
           }
         }
         clearStoredReferralCode();
-        router.push("/dashboard");
+        // Show verification alert instead of redirecting immediately
+        setShowVerificationAlert(true);
+        // Clear any previous errors
+        setErrors({});
       } else {
         setErrors({ submit: result.error || "Failed to sign up" });
       }
@@ -259,6 +263,27 @@ function SignupForm() {
             </p>
           </div>
 
+          {/* Email Verification Alert */}
+          {showVerificationAlert && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">✓</span>
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                    Account created successfully!
+                  </p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    A verification email has been sent to <strong>{formData.email}</strong>. Please check your inbox and click the verification link to complete your registration.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Referral Banner */}
           {referrerInfo && (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
@@ -281,78 +306,93 @@ function SignupForm() {
             </div>
           )}
 
-          <form className="space-y-8" onSubmit={handleSubmit}>
-            <div className="space-y-6">
-              <Input
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                error={errors.email}
-                required
-                autoComplete="email"
-              />
+          {!showVerificationAlert ? (
+            <form className="space-y-8" onSubmit={handleSubmit}>
+              <div className="space-y-6">
+                <Input
+                  label="Email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  error={errors.email}
+                  required
+                  autoComplete="email"
+                />
 
-              <Input
-                label="Username (optional)"
-                type="text"
-                value={formData.username}
-                onChange={(e) => handleInputChange("username", e.target.value)}
-                error={errors.username}
-                helperText="Choose a unique username for your profile"
-                autoComplete="username"
-              />
+                <Input
+                  label="Username (optional)"
+                  type="text"
+                  value={formData.username}
+                  onChange={(e) => handleInputChange("username", e.target.value)}
+                  error={errors.username}
+                  helperText="Choose a unique username for your profile"
+                  autoComplete="username"
+                />
 
-              <Input
-                label="Password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => handleInputChange("password", e.target.value)}
-                error={errors.password}
-                required
-                autoComplete="new-password"
-              />
+                <Input
+                  label="Password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  error={errors.password}
+                  required
+                  autoComplete="new-password"
+                />
 
-              <Input
-                label="Confirm Password"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) =>
-                  handleInputChange("confirmPassword", e.target.value)
-                }
-                error={errors.confirmPassword}
-                required
-                autoComplete="new-password"
-              />
-            </div>
-
-            {errors.submit && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.submit}</p>
+                <Input
+                  label="Confirm Password"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e) =>
+                    handleInputChange("confirmPassword", e.target.value)
+                  }
+                  error={errors.confirmPassword}
+                  required
+                  autoComplete="new-password"
+                />
               </div>
-            )}
 
-            <Button
-              type="submit"
-              loading={loading}
-              className="w-full"
-              disabled={loading}
-            >
-              Create Account
-            </Button>
+              {errors.submit && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
+                  <p className="text-sm text-red-600 dark:text-red-400">{errors.submit}</p>
+                </div>
+              )}
 
-            <div className="text-center">
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Already have an account?{" "}
-                <Link
-                  href="/signin"
-                  className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300 transition-colors"
-                >
-                  Sign in
+              <Button
+                type="submit"
+                loading={loading}
+                className="w-full"
+                disabled={loading}
+              >
+                Create Account
+              </Button>
+
+              <div className="text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Already have an account?{" "}
+                  <Link
+                    href="/signin"
+                    className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300 transition-colors"
+                  >
+                    Sign in
+                  </Link>
+                </p>
+              </div>
+            </form>
+          ) : (
+            <div className="space-y-6">
+              <div className="text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  Once you've verified your email, you can sign in to access your dashboard.
+                </p>
+                <Link href="/signin">
+                  <Button variant="primary" className="w-full">
+                    Go to Sign In
+                  </Button>
                 </Link>
-              </p>
+              </div>
             </div>
-          </form>
+          )}
         </div>
       </div>
     </div>

@@ -19,6 +19,7 @@ export const useAuth = () => {
     error: null,
     isAdmin: false, // Default to false, will be checked separately if needed
   });
+  const [emailVerified, setEmailVerified] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -142,6 +143,7 @@ export const useAuth = () => {
             if (isEmailVerified && profile && !profile.is_verified) {
               UserService.updateVerificationStatus(session.user.id, true).catch(console.error);
               handleEmailVerification(session.user.id).catch(console.error);
+              setEmailVerified(true);
             }
 
             if (isMounted) {
@@ -206,6 +208,9 @@ export const useAuth = () => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
       });
 
       if (error) {
@@ -352,6 +357,7 @@ export const useAuth = () => {
 
   return {
     ...authState,
+    emailVerified,
     signUp,
     signIn,
     signOut,
