@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import Input from '@/components/Input';
 import Button from '@/components/Button';
@@ -55,43 +55,7 @@ export default function AdminReferralsPage() {
   const [sortBy, setSortBy] = useState<'created_at' | 'status' | 'updated_at'>('created_at');
   const [sortOrder] = useState<'asc' | 'desc'>('desc');
 
-  useEffect(() => {
-    fetchReferrals();
-  }, []);
-
-  useEffect(() => {
-    filterAndSortReferrals();
-  }, [referrals, searchTerm, statusFilter, sortBy, sortOrder]);
-
-  const fetchReferrals = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch referrals with referrer and referred user data
-      const { data, error } = await supabase
-        .from('referrals')
-        .select(`
-          *,
-          referrer:users!referrals_referrer_id_fkey(email, username, referral_code),
-          referred_user:users!referrals_referred_user_id_fkey(email, username)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching referrals:', error);
-        return;
-      }
-
-      setReferrals(data || []);
-      calculateStats(data || []);
-    } catch (error) {
-      console.error('Error fetching referrals:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculateStats = (referralData: Referral[]) => {
+  const calculateStats = useCallback((referralData: Referral[]) => {
     const total = referralData.length;
     const pending = referralData.filter(r => r.status === 'pending').length;
     const verified = referralData.filter(r => r.status === 'verified').length;
@@ -126,9 +90,37 @@ export default function AdminReferralsPage() {
       conversionRate: Math.round(conversionRate * 100) / 100,
       topReferrers,
     });
-  };
+  }, []);
 
-  const filterAndSortReferrals = () => {
+  const fetchReferrals = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch referrals with referrer and referred user data
+      const { data, error } = await supabase
+        .from('referrals')
+        .select(`
+          *,
+          referrer:users!referrals_referrer_id_fkey(email, username, referral_code),
+          referred_user:users!referrals_referred_user_id_fkey(email, username)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching referrals:', error);
+        return;
+      }
+
+      setReferrals(data || []);
+      calculateStats(data || []);
+    } catch (error) {
+      console.error('Error fetching referrals:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [calculateStats]);
+
+  const filterAndSortReferrals = useCallback(() => {
     let filtered = referrals;
 
     // Apply status filter
@@ -164,7 +156,15 @@ export default function AdminReferralsPage() {
     });
 
     setFilteredReferrals(filtered);
-  };
+  }, [referrals, searchTerm, statusFilter, sortBy, sortOrder]);
+
+  useEffect(() => {
+    fetchReferrals();
+  }, [fetchReferrals]);
+
+  useEffect(() => {
+    filterAndSortReferrals();
+  }, [filterAndSortReferrals]);
 
   const exportReferrals = () => {
     const csvContent = [

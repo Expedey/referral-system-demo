@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import Input from '@/components/Input';
 import Button from '@/components/Button';
@@ -24,15 +24,7 @@ export default function AdminUsersPage() {
   const [sortBy, setSortBy] = useState<'created_at' | 'referral_count' | 'email' | 'last_referral_at'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  useEffect(() => {
-    filterAndSortUsers();
-  }, [users, searchTerm, sortBy, sortOrder]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -51,9 +43,9 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const filterAndSortUsers = () => {
+  const filterAndSortUsers = useCallback(() => {
     let filtered = users;
 
     // Apply search filter
@@ -83,7 +75,15 @@ export default function AdminUsersPage() {
     });
 
     setFilteredUsers(filtered);
-  };
+  }, [users, searchTerm, sortBy, sortOrder]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  useEffect(() => {
+    filterAndSortUsers();
+  }, [filterAndSortUsers]);
 
   const handleSort = (field: 'created_at' | 'referral_count' | 'email' | 'last_referral_at') => {
     if (sortBy === field) {

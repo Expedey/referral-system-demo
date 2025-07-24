@@ -253,7 +253,7 @@ export class ReferralService {
           .select("*")
           .eq("referrer_id", userId)
           .order("created_at", { ascending: false }),
-        new Promise<{ data: null; error: any }>((_, reject) => 
+        new Promise<{ data: null; error: Error }>((_, reject) => 
           setTimeout(() => reject(new Error("User referrals timeout")), 5000)
         )
       ]);

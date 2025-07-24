@@ -97,7 +97,7 @@ export class UserService {
           .select("*")
           .eq("id", user.id)
           .single(),
-        new Promise<{ data: null; error: any }>((_, reject) => 
+        new Promise<{ data: null; error: Error }>((_, reject) => 
           setTimeout(() => reject(new Error("Database timeout")), 5000)
         )
       ]);
@@ -188,7 +188,7 @@ export class UserService {
             .select("referral_count, is_verified")
             .eq("id", userId)
             .single(),
-          new Promise<{ data: null; error: any }>((_, reject) => 
+          new Promise<{ data: null; error: Error }>((_, reject) => 
             setTimeout(() => reject(new Error("User data timeout")), 5000)
           )
         ]),
@@ -198,7 +198,7 @@ export class UserService {
             .select("rank")
             .eq("id", userId)
             .single(),
-          new Promise<{ data: null; error: any }>((_, reject) => 
+          new Promise<{ data: null; error: Error }>((_, reject) => 
             setTimeout(() => reject(new Error("Leaderboard timeout")), 5000)
           )
         ])

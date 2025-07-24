@@ -24,14 +24,7 @@ export default function UserRouteGuard({
     '/leaderboard'
   ];
 
-  // Public pages that don't require authentication
-  const publicPages = [
-    '/signup',
-    '/signin'
-  ];
-
   const isProtectedPage = protectedPages.includes(pathname);
-  const isPublicPage = publicPages.includes(pathname);
 
   // Only handle auth redirects for protected pages
   useEffect(() => {
