@@ -383,7 +383,7 @@ function SignupForm() {
             <div className="space-y-6">
               <div className="text-center">
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  Once you've verified your email, you can sign in to access your dashboard.
+                  Once you&apos;ve verified your email, you can sign in to access your dashboard.
                 </p>
                 <Link href="/signin">
                   <Button variant="primary" className="w-full">
