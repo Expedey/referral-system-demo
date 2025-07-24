@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { generateReferralCode } from "@/utils/generateReferralCode";
+import { HubSpotService } from "./hubspotService";
 
 export interface UserProfile {
   id: string;
@@ -50,6 +51,15 @@ export class UserService {
       if (error) {
         console.error("Error creating user profile:", error);
         throw new Error("Failed to create user profile");
+      }
+
+      // Sync user to HubSpot
+      try {
+        await HubSpotService.syncUserToHubSpot(data);
+        console.log("[UserService] User synced to HubSpot successfully");
+      } catch (hubspotError) {
+        console.error("[UserService] Error syncing to HubSpot:", hubspotError);
+        // Don't throw error - HubSpot sync failure shouldn't break user creation
       }
 
       return data;

@@ -27,6 +27,7 @@ A full-stack demo project showcasing a referral-based waitlist system built with
 - **Environment Variables**: Secure configuration management
 - **Error Handling**: Comprehensive error states and feedback
 - **Performance**: Optimized loading and caching
+- **HubSpot CRM Integration**: Automatic user and referral tracking
 
 ## 🛠 Tech Stack
 
@@ -36,6 +37,7 @@ A full-stack demo project showcasing a referral-based waitlist system built with
 - **Language**: TypeScript
 - **UI Components**: HeadlessUI + Heroicons
 - **State Management**: React Hooks + Custom Hooks
+- **CRM Integration**: HubSpot API for contact management
 
 ## 📁 Project Structure
 
@@ -60,6 +62,7 @@ src/
 ├── services/             # Business logic services
 │   ├── userService.ts    # User management
 │   ├── referralService.ts # Referral logic
+│   ├── hubspotService.ts # HubSpot CRM integration
 │   └── supabaseClient.ts # Database operations
 └── utils/                # Utility functions
     ├── generateReferralCode.ts # Code generation
@@ -185,15 +188,29 @@ Create a `.env.local` file:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+HUBSPOT_API_KEY=your_hubspot_api_token
 ```
 
-### 5. Run the Development Server
+### 5. Set Up HubSpot Integration (Optional)
+
+1. Create a HubSpot private app and get your API token
+2. Create custom contact properties: `referral_count`, `last_referral_at`, `is_verified`, `referral_code`
+3. Add your HubSpot API token to `.env.local`
+4. See `HUBSPOT_SETUP.md` for detailed instructions
+
+### 6. Run the Development Server
 
 ```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+### 7. Test HubSpot Integration
+
+```bash
+npm run test:hubspot
+```
 
 ## 🔧 Configuration
 
@@ -326,6 +343,43 @@ For support and questions:
 - Check the documentation
 - Review the code comments
 
+## 🔗 HubSpot CRM Integration
+
+### Features
+
+- **Automatic User Sync**: New users are automatically created as HubSpot contacts
+- **Referral Tracking**: Referral activities are logged as notes in HubSpot
+- **Real-time Updates**: Referral counts and stats sync in real-time
+- **Activity History**: Complete referral history tracked in HubSpot
+- **Bulk Sync**: Sync existing users with one-click operation
+
+### Setup
+
+1. **Create HubSpot Private App**:
+   - Go to HubSpot Settings → Integrations → Private Apps
+   - Create app with required scopes: `crm.objects.contacts.read/write`, `crm.objects.notes.read/write`
+
+2. **Create Custom Properties**:
+   - `referral_count` (Number)
+   - `last_referral_at` (Date/Time)
+   - `referral_code` (Single-line text)
+
+3. **Configure Environment**:
+   - Add `HUBSPOT_API_KEY` to your `.env.local` file
+
+4. **Test Integration**:
+   - Run `npm run test:hubspot` to verify setup
+   - Use the dashboard sync tools to sync existing users
+
+### Data Flow
+
+1. **User Registration** → HubSpot contact created
+2. **Referral Creation** → Activity note logged
+3. **Referral Verification** → Contact stats updated
+4. **Real-time Sync** → All changes reflected in HubSpot
+
+See `HUBSPOT_SETUP.md` for detailed configuration instructions.
+
 ## 🔮 Future Enhancements
 
 - [ ] Real-time notifications
@@ -336,6 +390,8 @@ For support and questions:
 - [ ] API rate limiting
 - [ ] Webhook support
 - [ ] Mobile app version
+- [ ] Advanced HubSpot workflows
+- [ ] Email automation integration
 
 ---
 

@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { UserService } from "./userService";
+import { HubSpotService } from "./hubspotService";
 import {
   hasReferralBeenTracked,
   markReferralAsTracked,
@@ -202,6 +203,30 @@ export class ReferralService {
       const referrer = await UserService.getUserByReferralCode(
         referral.referrer_id
       );
+
+      // Sync referral update to HubSpot if verification is successful
+      if (isEmailVerified && referrer) {
+        try {
+          // Update referrer's stats in HubSpot
+          await HubSpotService.updateReferralStats(
+            referrer.email,
+            (referrer.referral_count || 0) + 1,
+            new Date().toISOString()
+          );
+
+          // Create referral activity note
+          await HubSpotService.createReferralActivity(
+            referrer.email,
+            referredEmail,
+            referrer.referral_code
+          );
+
+          console.log("[ReferralService] Referral synced to HubSpot successfully");
+        } catch (hubspotError) {
+          console.error("[ReferralService] Error syncing referral to HubSpot:", hubspotError);
+          // Don't throw error - HubSpot sync failure shouldn't break referral validation
+        }
+      }
 
       return {
         success: true,
