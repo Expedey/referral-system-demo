@@ -32,7 +32,7 @@ export default function Navbar({
         return "/PurpleLogo.svg";
       case "landing":
       default:
-        return "/Logo.svg";
+        return "/PurpleLogo.svg";
     }
   };
 
@@ -43,7 +43,7 @@ export default function Navbar({
         return { width: 48, height: 48, className: "h-12 w-auto" };
       case "landing":
       default:
-        return { width: 40, height: 40, className: "h-10 w-auto" };
+        return { width: 56, height: 56, className: "h-14 w-auto" };
     }
   };
 
@@ -73,17 +73,13 @@ export default function Navbar({
                 height={logoSize.height}
                 className={logoSize.className}
               />
-              {title ? (
+              {title && (
                 <div>
                   <h1 className="text-xl font-bold text-gray-900">{title}</h1>
                   {subtitle && (
                     <p className="text-sm text-gray-600">{subtitle}</p>
                   )}
                 </div>
-              ) : (
-                <span className="text-xl font-bold text-gray-900">
-                  WaitlistPro
-                </span>
               )}
             </Link>
           </div>
