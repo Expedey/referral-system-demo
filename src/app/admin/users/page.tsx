@@ -67,18 +67,18 @@ export default function AdminUsersPage() {
 
     // Apply sorting
     filtered.sort((a, b) => {
-      let aValue: any = a[sortBy];
-      let bValue: any = b[sortBy];
+      let aValue: string | number | null = a[sortBy];
+      let bValue: string | number | null = b[sortBy];
 
       if (sortBy === 'created_at' || sortBy === 'last_referral_at') {
-        aValue = new Date(aValue || 0).getTime();
-        bValue = new Date(bValue || 0).getTime();
+        aValue = new Date(aValue as string || '0').getTime();
+        bValue = new Date(bValue as string || '0').getTime();
       }
 
       if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
+        return (aValue || 0) > (bValue || 0) ? 1 : -1;
       } else {
-        return aValue < bValue ? 1 : -1;
+        return (aValue || 0) < (bValue || 0) ? 1 : -1;
       }
     });
 
@@ -188,7 +188,7 @@ export default function AdminUsersPage() {
               <select
                 id="sort-by"
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as 'created_at' | 'referral_count' | 'email' | 'last_referral_at')}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
               >
                 <option value="created_at">Join Date</option>
@@ -203,7 +203,7 @@ export default function AdminUsersPage() {
               <select
                 id="sort-order"
                 value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value as any)}
+                onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
               >
                 <option value="desc">Descending</option>

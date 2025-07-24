@@ -53,7 +53,7 @@ export default function AdminReferralsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'verified' | 'cancelled'>('all');
   const [sortBy, setSortBy] = useState<'created_at' | 'status' | 'updated_at'>('created_at');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortOrder] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
     fetchReferrals();
@@ -148,12 +148,12 @@ export default function AdminReferralsPage() {
 
     // Apply sorting
     filtered.sort((a, b) => {
-      let aValue: any = a[sortBy];
-      let bValue: any = b[sortBy];
+      let aValue: string | number = a[sortBy];
+      let bValue: string | number = b[sortBy];
 
       if (sortBy === 'created_at' || sortBy === 'updated_at') {
-        aValue = new Date(aValue).getTime();
-        bValue = new Date(bValue).getTime();
+        aValue = new Date(aValue as string).getTime();
+        bValue = new Date(bValue as string).getTime();
       }
 
       if (sortOrder === 'asc') {
@@ -324,7 +324,7 @@ export default function AdminReferralsPage() {
               <select
                 id="status-filter"
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
+                onChange={(e) => setStatusFilter(e.target.value as 'all' | 'pending' | 'verified' | 'cancelled')}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
               >
                 <option value="all">All Statuses</option>
@@ -340,7 +340,7 @@ export default function AdminReferralsPage() {
               <select
                 id="sort-by"
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as 'created_at' | 'status' | 'updated_at')}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
               >
                 <option value="created_at">Created Date</option>

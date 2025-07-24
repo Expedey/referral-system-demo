@@ -201,7 +201,7 @@ export class AdminService {
       }
 
       // Create Supabase auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { error: authError } = await supabase.auth.signUp({
         email: invitation.email,
         password,
       });
