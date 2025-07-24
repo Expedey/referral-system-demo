@@ -75,13 +75,14 @@ function SignupForm() {
     checkReferralCode();
   }, [searchParams]);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (but not when showing verification alert)
   React.useEffect(() => {
-    console.log("[Signup] useEffect: user, authLoading", user, authLoading);
-    if (user && !authLoading) {
+    if (user && !authLoading && !showVerificationAlert) {
       router.push("/dashboard");
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, showVerificationAlert, router]);
+
+
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};

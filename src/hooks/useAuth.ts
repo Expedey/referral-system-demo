@@ -225,13 +225,18 @@ export const useAuth = () => {
           username,
         });
 
-        setAuthState({
-          user: data.user,
-          profile,
-          loading: false,
-          error: null,
-          isAdmin: false, // Check admin status after sign in
-        });
+        // Don't set user state immediately for new signups
+        // Let the component handle the flow (show alert, then redirect after email verification)
+        // Only set user state if email is already confirmed
+        if (data.user.email_confirmed_at) {
+          setAuthState({
+            user: data.user,
+            profile,
+            loading: false,
+            error: null,
+            isAdmin: false,
+          });
+        }
       }
 
       return { success: true, user: data.user };
