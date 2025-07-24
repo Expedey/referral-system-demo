@@ -50,7 +50,10 @@ export class ReferralService {
 
       // Basic IP throttling check
       if (referralData.userIp) {
+        console.log(`[ReferralService] IP tracking: ${referralData.userIp}`);
+        
         const throttleCheck = checkIPThrottle(referralData.userIp);
+        console.log(`[ReferralService] Throttle check:`, throttleCheck);
         
         if (throttleCheck.throttled) {
           throw new Error(throttleCheck.reason || 'Rate limit exceeded');
@@ -58,6 +61,9 @@ export class ReferralService {
         
         // Record the attempt
         recordIPAttempt(referralData.userIp, false);
+        console.log(`[ReferralService] IP attempt recorded for: ${referralData.userIp}`);
+      } else {
+        console.log(`[ReferralService] No IP provided for referral`);
       }
 
       // Check rate limiting

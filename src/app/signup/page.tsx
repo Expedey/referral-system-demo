@@ -127,11 +127,23 @@ function SignupForm() {
         const referrerId = localStorage.getItem("referrer_id");
         if (referralCode && referrerId && result?.user?.id) {
           try {
-                    // Create referral record with the correct user ID
+                    // Get client IP (simple method)
+        let clientIP = 'unknown';
+        try {
+          const response = await fetch('/api/referral');
+          const data = await response.json();
+          clientIP = data.ip;
+          console.log(`[Signup] Detected IP: ${clientIP}`);
+        } catch (error) {
+          console.log(`[Signup] Could not detect IP:`, error);
+        }
+
+        // Create referral record with the correct user ID and IP
         await ReferralService.createReferral({
           referrerId: referrerId,
           referredEmail: formData.email,
           referredUserId: result.user.id,
+          userIp: clientIP,
           userAgent: navigator.userAgent,
         });
             console.log("[Signup] Created referral record for:", formData.email);

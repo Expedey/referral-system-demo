@@ -12,11 +12,6 @@ function getRequestIP(request: NextRequest): string {
   // Use the first available IP
   const ip = forwardedFor?.split(',')[0] || realIP || cfConnectingIP || 'unknown';
   
-  // Handle localhost for development
-  if (ip === '::1' || ip === '127.0.0.1' || ip === '::ffff:127.0.0.1') {
-    return '8.8.8.8'; // Placeholder for development
-  }
-  
   return ip;
 }
 
