@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-4" data-theme="light">
       <div className="max-w-md w-full space-y-8">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Header */}
@@ -103,7 +103,7 @@ export default function AdminLoginPage() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                 placeholder="admin@example.com"
                 required
-                className="w-full"
+                className="w-full !bg-white !text-gray-900 !border-gray-300"
               />
             </div>
 
@@ -118,7 +118,7 @@ export default function AdminLoginPage() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
-                className="w-full"
+                className="w-full !bg-white !text-gray-900 !border-gray-300"
               />
             </div>
 
