@@ -86,6 +86,8 @@ export class HubSpotService {
         created_at: new Date().toISOString(),
       };
 
+      console.log('[HubSpotService] Creating contact with properties:', properties);
+      
       const response = await this.client.crm.contacts.basicApi.create({
         properties: properties as unknown as Record<string, string>,
       });

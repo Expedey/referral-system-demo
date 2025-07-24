@@ -15,25 +15,37 @@ export async function GET() {
     }
 
     // Test 2: Try to create a test contact
-    const testContact = await HubSpotService.createOrUpdateContact({
-      email: `test-${Date.now()}@example.com`,
-      username: 'testuser',
-      referralCode: 'TEST123',
-    });
-
-    if (testContact) {
-      return NextResponse.json({
-        success: true,
-        hasApiKey: true,
-        message: 'HubSpot integration is working!',
-        testContactId: testContact.id,
-        testContactEmail: testContact.properties.email
+    try {
+      console.log('[Test] Attempting to create test contact...');
+      const testContact = await HubSpotService.createOrUpdateContact({
+        email: `test-${Date.now()}@example.com`,
+        username: 'testuser',
+        referralCode: 'TEST123',
       });
-    } else {
+
+      if (testContact) {
+        return NextResponse.json({
+          success: true,
+          hasApiKey: true,
+          message: 'HubSpot integration is working!',
+          testContactId: testContact.id,
+          testContactEmail: testContact.properties.email
+        });
+      } else {
+        return NextResponse.json({
+          error: 'Failed to create test contact',
+          hasApiKey: true,
+          message: 'API key is set but contact creation failed - returned null'
+        }, { status: 500 });
+      }
+    } catch (contactError) {
+      console.error('[Test] Contact creation error:', contactError);
       return NextResponse.json({
         error: 'Failed to create test contact',
         hasApiKey: true,
-        message: 'API key is set but contact creation failed'
+        message: 'API key is set but contact creation failed',
+        details: contactError instanceof Error ? contactError.message : 'Unknown error',
+        stack: contactError instanceof Error ? contactError.stack : undefined
       }, { status: 500 });
     }
 
