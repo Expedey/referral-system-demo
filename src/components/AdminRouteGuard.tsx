@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { supabase } from '@/lib/supabase';
 
 interface AdminRouteGuardProps {
   children: React.ReactNode;
@@ -25,6 +26,25 @@ export default function AdminRouteGuard({
       router.push('/admin/login');
     }
   }, [admin, loading, router, isLoginPage]);
+
+  // Additional check: if user is logged in but not an admin, redirect to regular dashboard
+  useEffect(() => {
+    if (!loading && !admin && !isLoginPage) {
+      // Check if user is logged in but not an admin
+      const checkRegularUser = async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            // User is logged in but not an admin, redirect to regular dashboard
+            router.push('/dashboard');
+          }
+        } catch (error) {
+          console.error('Error checking user session:', error);
+        }
+      };
+      checkRegularUser();
+    }
+  }, [admin, loading, isLoginPage, router]);
 
   // Show loading state
   if (loading) {

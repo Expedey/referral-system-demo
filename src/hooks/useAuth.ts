@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { UserService, UserProfile } from "@/services/userService";
+import { AdminService } from "@/services/adminService";
 
 export interface AuthState {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
   error: string | null;
+  isAdmin: boolean; // Add admin detection
 }
 
 export const useAuth = () => {
@@ -16,7 +18,18 @@ export const useAuth = () => {
     profile: null,
     loading: true,
     error: null,
+    isAdmin: false, // Initialize admin status
   });
+
+  // Function to check if user is admin
+  const checkAdminStatus = async (): Promise<boolean> => {
+    try {
+      const admin = await AdminService.getCurrentAdmin();
+      return !!admin;
+    } catch {
+      return false;
+    }
+  };
 
   useEffect(() => {
     // Get initial session
@@ -28,6 +41,8 @@ export const useAuth = () => {
 
         if (session?.user) {
           let profile = await UserService.getCurrentUserProfile();
+          const isAdmin = await checkAdminStatus();
+          
           // Email verification sync
           const isEmailVerified = !!session.user.email_confirmed_at;
           if (isEmailVerified && profile && !profile.is_verified) {
@@ -42,6 +57,7 @@ export const useAuth = () => {
             profile,
             loading: false,
             error: null,
+            isAdmin,
           });
         } else {
           setAuthState({
@@ -49,6 +65,7 @@ export const useAuth = () => {
             profile: null,
             loading: false,
             error: null,
+            isAdmin: false,
           });
         }
       } catch (error) {
@@ -58,6 +75,7 @@ export const useAuth = () => {
           profile: null,
           loading: false,
           error: "Failed to load session",
+          isAdmin: false,
         });
       }
     };
@@ -71,6 +89,8 @@ export const useAuth = () => {
       try {
         if (session?.user) {
           let profile = await UserService.getCurrentUserProfile();
+          const isAdmin = await checkAdminStatus();
+          
           // Email verification sync
           const isEmailVerified = !!session.user.email_confirmed_at;
           if (isEmailVerified && profile && !profile.is_verified) {
@@ -85,6 +105,7 @@ export const useAuth = () => {
             profile,
             loading: false,
             error: null,
+            isAdmin,
           });
         } else {
           setAuthState({
@@ -92,6 +113,7 @@ export const useAuth = () => {
             profile: null,
             loading: false,
             error: null,
+            isAdmin: false,
           });
         }
       } catch (error) {
@@ -100,7 +122,8 @@ export const useAuth = () => {
           user: session?.user || null,
           profile: null,
           loading: false,
-          error: "Failed to load user profile",
+          error: "Failed to load session",
+          isAdmin: false,
         });
       }
     });
@@ -134,6 +157,7 @@ export const useAuth = () => {
           profile,
           loading: false,
           error: null,
+          isAdmin: false, // Check admin status after sign in
         });
       }
 
@@ -169,6 +193,7 @@ export const useAuth = () => {
           profile,
           loading: false,
           error: null,
+          isAdmin: false, // New users are not admins
         });
       }
 
@@ -196,6 +221,7 @@ export const useAuth = () => {
           profile: null,
           loading: false,
           error: null,
+          isAdmin: false,
         });
       }
 
