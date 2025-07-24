@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { UserService, UserProfile } from "@/services/userService";
+import { ReferralService } from "@/services/referralService";
 
 export interface AuthState {
   user: User | null;
@@ -33,6 +34,9 @@ export const useAuth = () => {
           if (isEmailVerified && profile && !profile.is_verified) {
             await UserService.updateVerificationStatus(session.user.id, true);
             profile = await UserService.getCurrentUserProfile();
+            
+            // Check for pending referrals and verify them
+            await handleEmailVerification(session.user.id, session.user.email!);
           }
           setAuthState({
             user: session.user,
@@ -73,6 +77,9 @@ export const useAuth = () => {
           if (isEmailVerified && profile && !profile.is_verified) {
             await UserService.updateVerificationStatus(session.user.id, true);
             profile = await UserService.getCurrentUserProfile();
+            
+            // Check for pending referrals and verify them
+            await handleEmailVerification(session.user.id, session.user.email!);
           }
           setAuthState({
             user: session.user,
@@ -216,11 +223,45 @@ export const useAuth = () => {
     }
   };
 
+  const handleEmailVerification = async (userId: string, email: string) => {
+    try {
+      // Find and verify any pending referrals for this user
+      const { data: referrals, error } = await supabase
+        .from("referrals")
+        .select("*")
+        .eq("referred_user_id", userId)
+        .eq("status", 'pending');
+
+      if (error) {
+        console.error("Error fetching pending referrals:", error);
+        return;
+      }
+
+      if (referrals && referrals.length > 0) {
+        // Update all pending referrals to verified
+        const { error: updateError } = await supabase
+          .from("referrals")
+          .update({ status: 'verified' })
+          .eq("referred_user_id", userId)
+          .eq("status", 'pending');
+
+        if (updateError) {
+          console.error("Error updating referrals to verified:", updateError);
+        } else {
+          console.log(`Updated ${referrals.length} referrals to verified status`);
+        }
+      }
+    } catch (error) {
+      console.error("Error handling email verification:", error);
+    }
+  };
+
   return {
     ...authState,
     signUp,
     signIn,
     signOut,
     refreshProfile,
+    handleEmailVerification,
   };
 };

@@ -6,8 +6,9 @@ export interface UserProfile {
   email: string;
   username?: string;
   referral_code: string;
-  referred_by?: string;
   is_verified: boolean;
+  referral_count: number;
+  last_referral_at?: string;
   created_at: string;
 }
 
@@ -146,34 +147,6 @@ export class UserService {
   }
 
   /**
-   * Associates a user with a referrer
-   * @param userId - The user ID to associate
-   * @param referrerCode - The referrer's referral code
-   * @returns Success status
-   */
-  static async associateWithReferrer(
-    userId: string,
-    referrerCode: string
-  ): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from("users")
-        .update({ referred_by: referrerCode.toUpperCase() })
-        .eq("id", userId);
-
-      if (error) {
-        console.error("Error associating with referrer:", error);
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error("Error in associateWithReferrer:", error);
-      return false;
-    }
-  }
-
-  /**
    * Gets user statistics including referral count and waitlist position
    * @param userId - The user ID to get stats for
    * @returns User statistics
@@ -184,16 +157,16 @@ export class UserService {
     isVerified: boolean;
   }> {
     try {
-      // Get user's referral count
-      const { data: referrals, error: referralsError } = await supabase
-        .from("referrals")
-        .select("id")
-        .eq("referrer_id", userId)
-        .eq("is_valid", true);
+      // Get user's referral count from users table
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("referral_count, is_verified")
+        .eq("id", userId)
+        .single();
 
-      if (referralsError) {
-        console.error("Error fetching referrals:", referralsError);
-        throw new Error("Failed to fetch referral data");
+      if (userError) {
+        console.error("Error fetching user data:", userError);
+        throw new Error("Failed to fetch user data");
       }
 
       // Get user's waitlist position from leaderboard view
@@ -208,20 +181,8 @@ export class UserService {
         throw new Error("Failed to fetch leaderboard data");
       }
 
-      // Get user verification status
-      const { data: userData, error: userError } = await supabase
-        .from("users")
-        .select("is_verified")
-        .eq("id", userId)
-        .single();
-
-      if (userError) {
-        console.error("Error fetching user data:", userError);
-        throw new Error("Failed to fetch user data");
-      }
-
       return {
-        totalReferrals: referrals?.length || 0,
+        totalReferrals: userData?.referral_count || 0,
         waitlistPosition: leaderboardData?.rank || 0,
         isVerified: userData?.is_verified || false,
       };

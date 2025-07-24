@@ -141,7 +141,8 @@ function SignupForm() {
         if (referralCode && result?.user?.id) {
           const referralRes = await ReferralService.validateReferralOnSignup(
             formData.email,
-            result?.user?.id || ""
+            result?.user?.id || "",
+            !!result?.user?.email_confirmed_at
           );
           console.log(
             "[Signup] ReferralService.validateReferralOnSignup:",

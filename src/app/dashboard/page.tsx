@@ -20,7 +20,7 @@ export default function DashboardPage() {
   } | null>(null);
   const [referralStats, setReferralStats] = useState<{
     totalReferrals: number;
-    validReferrals: number;
+    verifiedReferrals: number;
     pendingReferrals: number;
     conversionRate: number;
   } | null>(null);
@@ -141,10 +141,10 @@ export default function DashboardPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">
-                  Valid Referrals
+                  Verified Referrals
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {referralStats?.validReferrals || 0}
+                  {referralStats?.verifiedReferrals || 0}
                 </p>
               </div>
             </div>
@@ -243,7 +243,7 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">
-                          {referralStats?.validReferrals || 0} successful
+                          {referralStats?.verifiedReferrals || 0} successful
                           referrals
                         </p>
                         <p className="text-sm text-gray-600">

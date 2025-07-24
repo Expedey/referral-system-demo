@@ -10,12 +10,12 @@ import {
 export interface ReferralData {
   id: string;
   referrer_id: string;
-  referred_id?: string;
+  referred_user_id?: string;
   referred_email: string;
   referred_ip?: string;
-  referred_cookie?: string;
-  is_valid: boolean;
+  status: 'pending' | 'verified' | 'cancelled';
   created_at: string;
+  updated_at: string;
 }
 
 export interface CreateReferralData {
@@ -68,8 +68,7 @@ export class ReferralService {
           referrer_id: referralData.referrerId,
           referred_email: referralData.referredEmail.toLowerCase(),
           referred_ip: referralData.userIp,
-          referred_cookie: referralData.userAgent, // Using userAgent as cookie for demo
-          is_valid: false, // Will be validated when user signs up
+          status: 'pending',
         })
         .select()
         .single();
@@ -127,11 +126,13 @@ export class ReferralService {
    * Validates a referral when a user signs up
    * @param referredEmail - The email of the user who signed up
    * @param referredUserId - The user ID of the person who signed up
+   * @param isEmailVerified - Whether the user's email is verified
    * @returns Success status and referrer info
    */
   static async validateReferralOnSignup(
     referredEmail: string,
-    referredUserId: string
+    referredUserId: string,
+    isEmailVerified: boolean = false
   ): Promise<{ success: boolean; referrerId?: string; referrerCode?: string }> {
     try {
       // Find pending referral for this email
@@ -139,8 +140,10 @@ export class ReferralService {
         .from("referrals")
         .select("*")
         .eq("referred_email", referredEmail.toLowerCase())
-        .eq("is_valid", false);
+        .eq("status", 'pending');
+      
       console.log("[ReferralService] referrals:", referrals);
+      
       if (error) {
         console.error("Error fetching referrals for validation:", error);
         return { success: false };
@@ -153,30 +156,31 @@ export class ReferralService {
       // Get the most recent referral
       const referral = referrals[0];
 
-      // Validate the referral
+      // Only verify the referral if the user's email is confirmed
+      const newStatus = isEmailVerified ? 'verified' : 'pending';
+      
+      // Update the referral with referred_user_id and status
       const { error: updateError } = await supabase
         .from("referrals")
         .update({
-          is_valid: true,
-          referred_id: referredUserId,
+          status: newStatus,
+          referred_user_id: referredUserId,
+          updated_at: new Date().toISOString(),
         })
         .eq("id", referral.id);
 
       if (updateError) {
-        console.error("Error validating referral:", updateError);
+        console.error("Error updating referral:", updateError);
         return { success: false };
       }
 
-      // Associate the user with the referrer
+      // Note: The trigger will automatically update referrer's referral_count and last_referral_at
+      // when the status changes from 'pending' to 'verified'
+
+      // Get referrer info for return
       const referrer = await UserService.getUserByReferralCode(
         referral.referrer_id
       );
-      if (referrer) {
-        await UserService.associateWithReferrer(
-          referredUserId,
-          referrer.referral_code
-        );
-      }
 
       return {
         success: true,
@@ -215,26 +219,26 @@ export class ReferralService {
   }
 
   /**
-   * Gets valid referrals count for a user
+   * Gets verified referrals count for a user
    * @param userId - The user ID to get count for
-   * @returns Number of valid referrals
+   * @returns Number of verified referrals
    */
-  static async getValidReferralsCount(userId: string): Promise<number> {
+  static async getVerifiedReferralsCount(userId: string): Promise<number> {
     try {
       const { count, error } = await supabase
         .from("referrals")
         .select("*", { count: "exact", head: true })
         .eq("referrer_id", userId)
-        .eq("is_valid", true);
+        .eq("status", 'verified');
 
       if (error) {
-        console.error("Error fetching valid referrals count:", error);
+        console.error("Error fetching verified referrals count:", error);
         return 0;
       }
 
       return count || 0;
     } catch (error) {
-      console.error("Error in getValidReferralsCount:", error);
+      console.error("Error in getVerifiedReferralsCount:", error);
       return 0;
     }
   }
@@ -308,20 +312,20 @@ export class ReferralService {
    */
   static async getReferralStats(userId: string): Promise<{
     totalReferrals: number;
-    validReferrals: number;
+    verifiedReferrals: number;
     pendingReferrals: number;
     conversionRate: number;
   }> {
     try {
       const referrals = await this.getUserReferrals(userId);
       const totalReferrals = referrals.length;
-      const validReferrals = referrals.filter((r) => r.is_valid).length;
-      const pendingReferrals = totalReferrals - validReferrals;
+      const verifiedReferrals = referrals.filter((r) => r.status === 'verified').length;
+      const pendingReferrals = referrals.filter((r) => r.status === 'pending').length;
       const conversionRate =
-        totalReferrals > 0 ? (validReferrals / totalReferrals) * 100 : 0;
+        totalReferrals > 0 ? (verifiedReferrals / totalReferrals) * 100 : 0;
       return {
         totalReferrals,
-        validReferrals,
+        verifiedReferrals,
         pendingReferrals,
         conversionRate: Math.round(conversionRate * 100) / 100, // Round to 2 decimal places
       };
@@ -329,7 +333,7 @@ export class ReferralService {
       console.error("Error in getReferralStats:", error);
       return {
         totalReferrals: 0,
-        validReferrals: 0,
+        verifiedReferrals: 0,
         pendingReferrals: 0,
         conversionRate: 0,
       };

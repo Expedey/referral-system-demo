@@ -72,46 +72,83 @@ src/
 ### Users Table
 
 ```sql
-CREATE TABLE users (
-  id UUID PRIMARY KEY REFERENCES auth.users(id),
-  email TEXT NOT NULL,
-  username TEXT,
-  referral_code TEXT UNIQUE NOT NULL,
-  referred_by TEXT REFERENCES users(referral_code),
-  is_verified BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT NOW()
+CREATE TABLE public.users (
+    id uuid PRIMARY KEY REFERENCES auth.users(id),
+    email text NOT NULL UNIQUE,
+    username text,
+    referral_code text NOT NULL UNIQUE,
+    is_verified boolean NOT NULL DEFAULT FALSE,
+    referral_count integer NOT NULL DEFAULT 0,
+    last_referral_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now()
 );
 ```
 
 ### Referrals Table
 
 ```sql
-CREATE TABLE referrals (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  referrer_id UUID REFERENCES users(id),
-  referred_id UUID REFERENCES users(id),
-  referred_email TEXT NOT NULL,
-  referred_ip TEXT,
-  referred_cookie TEXT,
-  is_valid BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT NOW()
+CREATE TABLE public.referrals (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    referrer_id uuid NOT NULL REFERENCES public.users(id),
+    referred_user_id uuid REFERENCES public.users(id),
+    referred_email text NOT NULL,
+    referred_ip inet,
+    status public.referral_status NOT NULL DEFAULT 'pending',
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
 );
+```
+
+### Referral Status Enum
+
+```sql
+CREATE TYPE public.referral_status AS ENUM ('pending', 'verified', 'cancelled');
 ```
 
 ### Leaderboard View
 
 ```sql
-CREATE VIEW leaderboard AS
+CREATE VIEW public.leaderboard AS
 SELECT
-  u.id,
-  u.username,
-  u.referral_code,
-  COUNT(r.id) as total_referrals,
-  ROW_NUMBER() OVER (ORDER BY COUNT(r.id) DESC) as rank
-FROM users u
-LEFT JOIN referrals r ON u.id = r.referrer_id AND r.is_valid = true
-GROUP BY u.id, u.username, u.referral_code
-ORDER BY total_referrals DESC;
+    u.id,
+    u.username,
+    u.referral_code,
+    u.referral_count as total_referrals,
+    ROW_NUMBER() OVER (ORDER BY u.referral_count DESC, u.created_at ASC) as rank
+FROM public.users u
+ORDER BY u.referral_count DESC, u.created_at ASC;
+```
+
+### Trigger System
+
+The system includes a trigger that automatically handles referral verification:
+
+```sql
+-- Trigger function to handle pending -> verified transition
+CREATE OR REPLACE FUNCTION public.handle_referral_verified()
+RETURNS trigger AS $$
+BEGIN
+    -- Check if status is changing from pending to verified
+    IF OLD.status = 'pending' AND NEW.status = 'verified' THEN
+        -- Update the referrer's stats
+        UPDATE public.users 
+        SET 
+            referral_count = referral_count + 1,
+            last_referral_at = now()
+        WHERE id = NEW.referrer_id;
+    END IF;
+    
+    -- Always update the updated_at timestamp
+    NEW.updated_at := now();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Attach the trigger to referrals.status updates
+CREATE TRIGGER trg_referral_status_change
+    AFTER UPDATE OF status ON public.referrals
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_referral_verified();
 ```
 
 ## 🚀 Getting Started
@@ -138,7 +175,7 @@ npm install
 ### 3. Set Up Supabase
 
 1. Create a new Supabase project
-2. Run the SQL schema provided above
+2. Run the SQL schema from `database-schema.sql` file
 3. Get your project URL and anon key
 
 ### 4. Environment Variables
@@ -163,9 +200,10 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 ### Supabase Setup
 
 1. **Authentication**: Enable email/password auth in Supabase dashboard
-2. **Row Level Security**: Configure RLS policies for data protection
-3. **Email Templates**: Customize email confirmation templates
-4. **Real-time**: Enable real-time subscriptions for live updates
+2. **Database Schema**: Run the `database-schema.sql` file in the SQL editor
+3. **Row Level Security**: RLS policies are included in the schema
+4. **Email Templates**: Customize email confirmation templates
+5. **Real-time**: Enable real-time subscriptions for live updates
 
 ### Environment Variables
 
