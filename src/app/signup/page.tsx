@@ -127,13 +127,13 @@ function SignupForm() {
         const referrerId = localStorage.getItem("referrer_id");
         if (referralCode && referrerId && result?.user?.id) {
           try {
-            // Create referral record with the correct user ID
-            await ReferralService.createReferral({
-              referrerId: referrerId,
-              referredEmail: formData.email,
-              referredUserId: result.user.id,
-              userAgent: navigator.userAgent,
-            });
+                    // Create referral record with the correct user ID
+        await ReferralService.createReferral({
+          referrerId: referrerId,
+          referredEmail: formData.email,
+          referredUserId: result.user.id,
+          userAgent: navigator.userAgent,
+        });
             console.log("[Signup] Created referral record for:", formData.email);
             
             // Validate the referral

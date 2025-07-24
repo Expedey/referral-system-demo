@@ -6,6 +6,7 @@ import {
   ReferralRateLimiter,
   validateReferralData,
 } from "@/utils/antiFraud";
+import { checkIPThrottle, recordIPAttempt } from "@/utils/ipThrottling";
 
 export interface ReferralData {
   id: string;
@@ -45,6 +46,18 @@ export class ReferralService {
         throw new Error(
           `Invalid referral data: ${validation.reasons.join(", ")}`
         );
+      }
+
+      // Basic IP throttling check
+      if (referralData.userIp) {
+        const throttleCheck = checkIPThrottle(referralData.userIp);
+        
+        if (throttleCheck.throttled) {
+          throw new Error(throttleCheck.reason || 'Rate limit exceeded');
+        }
+        
+        // Record the attempt
+        recordIPAttempt(referralData.userIp, false);
       }
 
       // Check rate limiting
