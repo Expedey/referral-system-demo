@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
@@ -88,67 +89,117 @@ export default function SigninPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Welcome Back
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your account to continue
-          </p>
-        </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <Input
-              label="Email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => handleInputChange("email", e.target.value)}
-              error={errors.email}
-              required
-              autoComplete="email"
-            />
-
-            <Input
-              label="Password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => handleInputChange("password", e.target.value)}
-              error={errors.password}
-              required
-              autoComplete="current-password"
+    <div className="min-h-screen flex">
+      {/* Left Side - Image Section (60%) */}
+      <div className="hidden lg:flex lg:w-3/5 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="relative z-10 flex flex-col justify-center items-center text-white px-12">
+          <div className="mb-8">
+            <Image
+              src="/Logo.svg"
+              alt="Logo"
+              width={120}
+              height={120}
+              className="mb-6"
             />
           </div>
-
-          {errors.submit && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-sm text-red-600">{errors.submit}</p>
+          <h1 className="text-4xl font-bold mb-4 text-center">
+            Welcome Back
+          </h1>
+          <p className="text-xl text-center mb-8 opacity-90 max-w-md">
+            Sign in to your account and continue building your referral network
+          </p>
+          <div className="flex items-center space-x-4 text-sm opacity-75">
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+              <span>Secure Authentication</span>
             </div>
-          )}
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
+              <span>Fast & Reliable</span>
+            </div>
+          </div>
+        </div>
+        {/* Decorative elements */}
+        <div className="absolute top-20 left-20 w-32 h-32 bg-white opacity-10 rounded-full"></div>
+        <div className="absolute bottom-20 right-20 w-24 h-24 bg-white opacity-10 rounded-full"></div>
+        <div className="absolute top-1/2 left-10 w-16 h-16 bg-white opacity-10 rounded-full"></div>
+      </div>
 
-          <Button
-            type="submit"
-            loading={loading}
-            className="w-full"
-            disabled={loading}
-          >
-            Sign In
-          </Button>
+      {/* Right Side - Form Section (40%) */}
+      <div className="w-full lg:w-2/5 flex items-center justify-center px-8 py-12 bg-white">
+        <div className="w-full max-w-md space-y-8">
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center mb-8">
+            <Image
+              src="/Logo.svg"
+              alt="Logo"
+              width={80}
+              height={80}
+              className="mx-auto mb-4"
+            />
+          </div>
 
           <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/signup"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                Sign up
-              </Link>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Sign In
+            </h2>
+            <p className="text-gray-600">
+              Welcome back! Please enter your details
             </p>
           </div>
-        </form>
+
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <Input
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                error={errors.email}
+                required
+                autoComplete="email"
+              />
+
+              <Input
+                label="Password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => handleInputChange("password", e.target.value)}
+                error={errors.password}
+                required
+                autoComplete="current-password"
+              />
+            </div>
+
+            {errors.submit && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-600">{errors.submit}</p>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              loading={loading}
+              className="w-full"
+              disabled={loading}
+            >
+              Sign In
+            </Button>
+
+            <div className="text-center">
+              <p className="text-sm text-gray-600">
+                Don&apos;t have an account?{" "}
+                <Link
+                  href="/signup"
+                  className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

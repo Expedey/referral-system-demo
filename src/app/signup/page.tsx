@@ -3,6 +3,7 @@
 import React, { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import { UserService } from "@/services/userService";
 import { ReferralService } from "@/services/referralService";
@@ -197,111 +198,161 @@ function SignupForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+    <div className="min-h-screen flex">
+      {/* Left Side - Image Section (60%) */}
+      <div className="hidden lg:flex lg:w-3/5 bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="relative z-10 flex flex-col justify-center items-center text-white px-12">
+          <div className="mb-8">
+            <Image
+              src="/GreenLogo.svg"
+              alt="Logo"
+              width={120}
+              height={120}
+              className="mb-6"
+            />
+          </div>
+          <h1 className="text-4xl font-bold mb-4 text-center">
             Join the Waitlist
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Create your account to get started
+          </h1>
+          <p className="text-xl text-center mb-8 opacity-90 max-w-md">
+            Create your account and start building your referral network today
           </p>
-        </div>
-
-        {/* Referral Banner */}
-        {referrerInfo && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center space-x-4 text-sm opacity-75">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">👋</span>
-                </div>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-blue-900">
-                  You were invited by {referrerInfo.username || "a friend"}!
-                </p>
-                <p className="text-sm text-blue-700">
-                  Referral code:{" "}
-                  <span className="font-mono">{referrerInfo.referralCode}</span>
-                </p>
-              </div>
+              <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+              <span>Earn Rewards</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
+              <span>Grow Together</span>
             </div>
           </div>
-        )}
+        </div>
+        {/* Decorative elements */}
+        <div className="absolute top-20 left-20 w-32 h-32 bg-white opacity-10 rounded-full"></div>
+        <div className="absolute bottom-20 right-20 w-24 h-24 bg-white opacity-10 rounded-full"></div>
+        <div className="absolute top-1/2 left-10 w-16 h-16 bg-white opacity-10 rounded-full"></div>
+      </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <Input
-              label="Email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => handleInputChange("email", e.target.value)}
-              error={errors.email}
-              required
-              autoComplete="email"
-            />
-
-            <Input
-              label="Username (optional)"
-              type="text"
-              value={formData.username}
-              onChange={(e) => handleInputChange("username", e.target.value)}
-              error={errors.username}
-              helperText="Choose a unique username for your profile"
-              autoComplete="username"
-            />
-
-            <Input
-              label="Password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => handleInputChange("password", e.target.value)}
-              error={errors.password}
-              required
-              autoComplete="new-password"
-            />
-
-            <Input
-              label="Confirm Password"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={(e) =>
-                handleInputChange("confirmPassword", e.target.value)
-              }
-              error={errors.confirmPassword}
-              required
-              autoComplete="new-password"
+      {/* Right Side - Form Section (40%) */}
+      <div className="w-full lg:w-2/5 flex items-center justify-center px-8 py-12 bg-white">
+        <div className="w-full max-w-md space-y-8">
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center mb-8">
+            <Image
+              src="/GreenLogo.svg"
+              alt="Logo"
+              width={80}
+              height={80}
+              className="mx-auto mb-4"
             />
           </div>
 
-          {errors.submit && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-sm text-red-600">{errors.submit}</p>
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Create Account
+            </h2>
+            <p className="text-gray-600">
+              Join our community and start earning rewards
+            </p>
+          </div>
+
+          {/* Referral Banner */}
+          {referrerInfo && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">👋</span>
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-green-900">
+                    You were invited by {referrerInfo.username || "a friend"}!
+                  </p>
+                  <p className="text-sm text-green-700">
+                    Referral code:{" "}
+                    <span className="font-mono">{referrerInfo.referralCode}</span>
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
-          <Button
-            type="submit"
-            loading={loading}
-            className="w-full"
-            disabled={loading}
-          >
-            Create Account
-          </Button>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <Input
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                error={errors.email}
+                required
+                autoComplete="email"
+              />
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{" "}
-              <Link
-                href="/signin"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                Sign in
-              </Link>
-            </p>
-          </div>
-        </form>
+              <Input
+                label="Username (optional)"
+                type="text"
+                value={formData.username}
+                onChange={(e) => handleInputChange("username", e.target.value)}
+                error={errors.username}
+                helperText="Choose a unique username for your profile"
+                autoComplete="username"
+              />
+
+              <Input
+                label="Password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => handleInputChange("password", e.target.value)}
+                error={errors.password}
+                required
+                autoComplete="new-password"
+              />
+
+              <Input
+                label="Confirm Password"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={(e) =>
+                  handleInputChange("confirmPassword", e.target.value)
+                }
+                error={errors.confirmPassword}
+                required
+                autoComplete="new-password"
+              />
+            </div>
+
+            {errors.submit && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-600">{errors.submit}</p>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              loading={loading}
+              className="w-full"
+              disabled={loading}
+            >
+              Create Account
+            </Button>
+
+            <div className="text-center">
+              <p className="text-sm text-gray-600">
+                Already have an account?{" "}
+                <Link
+                  href="/signin"
+                  className="font-medium text-green-600 hover:text-green-500 transition-colors"
+                >
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
