@@ -44,13 +44,10 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { referralCode, email, action } = body;
+    const { action } = body;
 
     // Process the referral request
-    let isVerification = false;
-    
     if (action === 'verify') {
-      isVerification = true;
       // Record verification attempt
       recordIPAttempt(clientIP, true);
     }

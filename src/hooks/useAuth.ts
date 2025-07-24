@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { UserService, UserProfile } from "@/services/userService";
-import { ReferralService } from "@/services/referralService";
 
 export interface AuthState {
   user: User | null;
@@ -36,7 +35,7 @@ export const useAuth = () => {
             profile = await UserService.getCurrentUserProfile();
             
             // Check for pending referrals and verify them
-            await handleEmailVerification(session.user.id, session.user.email!);
+            await handleEmailVerification(session.user.id);
           }
           setAuthState({
             user: session.user,
@@ -79,7 +78,7 @@ export const useAuth = () => {
             profile = await UserService.getCurrentUserProfile();
             
             // Check for pending referrals and verify them
-            await handleEmailVerification(session.user.id, session.user.email!);
+            await handleEmailVerification(session.user.id);
           }
           setAuthState({
             user: session.user,
@@ -223,7 +222,7 @@ export const useAuth = () => {
     }
   };
 
-  const handleEmailVerification = async (userId: string, email: string) => {
+  const handleEmailVerification = async (userId: string) => {
     try {
       // Find and verify any pending referrals for this user
       const { data: referrals, error } = await supabase
