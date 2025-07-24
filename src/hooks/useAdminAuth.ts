@@ -143,7 +143,7 @@ export const useAdminAuth = () => {
 
       if (result.success && result.admin) {
         setAuthState({
-          user: result.admin as any, // Type assertion for compatibility
+          user: result.admin as unknown as User, // Type assertion for compatibility
           admin: result.admin,
           loading: false,
           error: null,
