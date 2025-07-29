@@ -1,6 +1,5 @@
 import { supabase } from "@/lib/supabase";
 import { generateReferralCode } from "@/utils/generateReferralCode";
-import { HubSpotService } from "./hubspotService";
 
 export interface UserProfile {
   id: string;
@@ -53,21 +52,8 @@ export class UserService {
         throw new Error("Failed to create user profile");
       }
 
-      // Sync user to HubSpot
-      try {
-        console.log("[UserService] Attempting to sync user to HubSpot:", data.email);
-        console.log("[UserService] HUBSPOT_API_KEY exists:", !!process.env.HUBSPOT_API_KEY);
-        
-        await HubSpotService.syncUserToHubSpot(data);
-        console.log("[UserService] User synced to HubSpot successfully");
-      } catch (hubspotError) {
-        console.error("[UserService] Error syncing to HubSpot:", hubspotError);
-        console.error("[UserService] Error details:", {
-          message: hubspotError instanceof Error ? hubspotError.message : 'Unknown error',
-          stack: hubspotError instanceof Error ? hubspotError.stack : undefined
-        });
-        // Don't throw error - HubSpot sync failure shouldn't break user creation
-      }
+      // Note: HubSpot sync will be handled after email confirmation
+      // to ensure only verified users are synced to HubSpot
 
       return data;
     } catch (error) {

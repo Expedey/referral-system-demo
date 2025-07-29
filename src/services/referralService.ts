@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { UserService } from "./userService";
-import { HubSpotService } from "./hubspotService";
+import { HubSpotDirectService } from "./hubspotDirectService";
 import {
   hasReferralBeenTracked,
   markReferralAsTracked,
@@ -207,25 +207,33 @@ export class ReferralService {
       // Sync referral update to HubSpot if verification is successful
       if (isEmailVerified && referrer) {
         try {
-          // Update referrer's stats in HubSpot
-          await HubSpotService.updateReferralStats(
+          console.log("[ReferralService] Email verified, updating referrer's HubSpot contact:", referrer.email);
+          
+          // Update referrer's stats in HubSpot using direct API
+          const hubspotSuccess = await HubSpotDirectService.updateReferrerStats(
             referrer.email,
             (referrer.referral_count || 0) + 1,
             new Date().toISOString()
           );
 
-          // Create referral activity note
-          await HubSpotService.createReferralActivity(
-            referrer.email,
-            referredEmail,
-            referrer.referral_code
-          );
+          if (hubspotSuccess) {
+            // Create referral activity note
+            await HubSpotDirectService.createReferralActivity(
+              referrer.email,
+              referredEmail,
+              referrer.referral_code
+            );
 
-          console.log("[ReferralService] Referral synced to HubSpot successfully");
+            console.log("[ReferralService] Referrer's HubSpot contact updated successfully");
+          } else {
+            console.error("[ReferralService] Failed to update referrer's HubSpot contact");
+          }
         } catch (hubspotError) {
           console.error("[ReferralService] Error syncing referral to HubSpot:", hubspotError);
           // Don't throw error - HubSpot sync failure shouldn't break referral validation
         }
+      } else {
+        console.log("[ReferralService] Email not verified or referrer not found, skipping HubSpot update");
       }
 
       return {

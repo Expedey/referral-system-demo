@@ -329,6 +329,43 @@ export const useAuth = () => {
 
   const handleEmailVerification = async (userId: string) => {
     try {
+      // Update user verification status in Supabase
+      await UserService.updateVerificationStatus(userId, true);
+      
+      // Get user profile for HubSpot sync
+      const userProfile = await UserService.getCurrentUserProfile();
+      
+      if (userProfile) {
+        // Sync user to HubSpot after email confirmation
+        try {
+          console.log("[useAuth] Syncing verified user to HubSpot:", userProfile.email);
+          
+          const hubspotData = {
+            email: userProfile.email,
+            referral_code: userProfile.referral_code,
+            referral_count: userProfile.referral_count,
+            last_referral_at: userProfile.last_referral_at,
+          };
+          
+          const response = await fetch('/api/hubspot/sync-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(hubspotData),
+          });
+
+          if (response.ok) {
+            console.log("[useAuth] User synced to HubSpot successfully after email confirmation");
+          } else {
+            console.error("[useAuth] HubSpot sync failed after email confirmation:", response.status);
+          }
+        } catch (hubspotError) {
+          console.error("[useAuth] Error syncing to HubSpot after email confirmation:", hubspotError);
+          // Don't throw error - HubSpot sync failure shouldn't break email verification
+        }
+      }
+
       // Find and verify any pending referrals for this user
       const { data: referrals, error } = await supabase
         .from("referrals")
@@ -342,6 +379,8 @@ export const useAuth = () => {
       }
 
       if (referrals && referrals.length > 0) {
+        console.log(`[useAuth] Found ${referrals.length} pending referrals to verify`);
+        
         // Update all pending referrals to verified
         const { error: updateError } = await supabase
           .from("referrals")
@@ -353,7 +392,56 @@ export const useAuth = () => {
           console.error("Error updating referrals to verified:", updateError);
         } else {
           console.log(`Updated ${referrals.length} referrals to verified status`);
+          
+          // After referrals are verified, sync referrer's updated stats to HubSpot
+          for (const referral of referrals) {
+            try {
+              // Get referrer's updated profile (with new referral count)
+              const { data: referrerProfile, error: profileError } = await supabase
+                .from("users")
+                .select("*")
+                .eq("id", referral.referrer_id)
+                .single();
+                console.log("[useAuth] Referrer profile:", referrerProfile);
+
+              if (profileError) {
+                console.error("[useAuth] Error fetching referrer profile:", profileError);
+                continue;
+              }
+              
+              if (referrerProfile) {
+                console.log("[useAuth] Syncing referrer's updated stats to HubSpot:", referrerProfile.email);
+                
+                // Update referrer's stats in HubSpot via server-side API
+                const response = await fetch('/api/hubspot/update-referrer-stats', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    email: referrerProfile.email,
+                    referralCount: referrerProfile.referral_count,
+                    lastReferralAt: new Date().toISOString(),
+                  }),
+                });
+
+                if (response.ok) {
+                  const result = await response.json();
+                  console.log("[useAuth] Referrer's updated stats synced to HubSpot successfully:", result);
+                } else {
+                  console.error("[useAuth] Failed to sync referrer's stats to HubSpot:", response.status);
+                  const errorData = await response.json();
+                  console.error("[useAuth] HubSpot sync error:", errorData);
+                }
+              }
+            } catch (referrerError) {
+              console.error("[useAuth] Error syncing referrer's stats to HubSpot:", referrerError);
+              // Don't throw error - HubSpot sync failure shouldn't break email verification
+            }
+          }
         }
+      } else {
+        console.log("[useAuth] No pending referrals found for user");
       }
     } catch (error) {
       console.error("Error handling email verification:", error);

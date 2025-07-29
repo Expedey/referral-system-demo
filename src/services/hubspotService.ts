@@ -29,6 +29,7 @@ export interface UpdateContactData {
   email: string;
   referralCount?: number;
   lastReferralAt?: string;
+  referralCode?: string;
 }
 
 /**
@@ -44,6 +45,7 @@ export class HubSpotService {
   private static initialize() {
     if (!this.isInitialized) {
       const apiKey = process.env.HUBSPOT_API_KEY;
+      console.log('[HubSpotService] apiKey exists:', !!apiKey);
       if (!apiKey) {
         throw new Error('HUBSPOT_API_KEY environment variable is required');
       }
@@ -72,18 +74,18 @@ export class HubSpotService {
       
       if (existingContact) {
         console.log('[HubSpotService] Contact already exists, updating:', existingContact.id);
+        // Update existing contact with new data
         return await this.updateContact({
           email: contactData.email,
+          referralCode: contactData.referralCode,
         });
       }
 
       // Create new contact
       const properties: HubSpotContact = {
         email: contactData.email,
-        username: contactData.username,
         referral_code: contactData.referralCode,
         referral_count: 0,
-        created_at: new Date().toISOString(),
       };
 
       console.log('[HubSpotService] Creating contact with properties:', properties);
@@ -135,6 +137,13 @@ export class HubSpotService {
       if (updateData.lastReferralAt !== undefined) {
         updateProperties.last_referral_at = updateData.lastReferralAt;
       }
+
+      // Add referral_code if provided
+      if ('referralCode' in updateData && updateData.referralCode) {
+        updateProperties.referral_code = updateData.referralCode;
+      }
+
+      console.log('[HubSpotService] Updating contact with properties:', updateProperties);
 
       const response = await this.client.crm.contacts.basicApi.update(
         existingContact.id,
@@ -321,21 +330,20 @@ export class HubSpotService {
    * @returns Success status
    */
   static async syncUserToHubSpot(userData: {
-    id: string;
+    id?: string;
     email: string;
     username?: string;
     referral_code: string;
-    is_verified: boolean;
+    is_verified?: boolean;
     referral_count: number;
     last_referral_at?: string;
-    created_at: string;
+    created_at?: string;
   }): Promise<boolean> {
     try {
       console.log('[HubSpotService] Syncing user to HubSpot:', userData.email);
 
       const result = await this.createOrUpdateContact({
         email: userData.email,
-        username: userData.username,
         referralCode: userData.referral_code,
       });
 
