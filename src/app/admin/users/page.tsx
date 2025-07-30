@@ -170,8 +170,8 @@ export default function AdminUsersPage() {
       {/* Search and Filters */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
               <Input
                 id="search"
                 type="text"
@@ -179,9 +179,10 @@ export default function AdminUsersPage() {
                 value={searchTerm}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
                 placeholder="Search by email, username, or referral code..."
+                className="w-full h-10"
               />
             </div>
-            <div>
+            <div className="flex-shrink-0">
               <label htmlFor="sort-by" className="block text-sm font-medium text-gray-700 mb-2">
                 Sort By
               </label>
@@ -189,14 +190,14 @@ export default function AdminUsersPage() {
                 id="sort-by"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'created_at' | 'referral_count' | 'email' | 'last_referral_at')}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+                className="block w-fit min-w-[120px] h-10 rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm px-2"
               >
                 <option value="created_at">Join Date</option>
                 <option value="referral_count">Referrals</option>
                 <option value="email">Email</option>
               </select>
             </div>
-            <div>
+            <div className="flex-shrink-0">
               <label htmlFor="sort-order" className="block text-sm font-medium text-gray-700 mb-2">
                 Order
               </label>
@@ -204,7 +205,7 @@ export default function AdminUsersPage() {
                 id="sort-order"
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+                className="block w-fit min-w-[120px] h-10 rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm px-2"
               >
                 <option value="desc">Descending</option>
                 <option value="asc">Ascending</option>
