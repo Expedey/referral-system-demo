@@ -306,8 +306,8 @@ export default function AdminReferralsPage() {
       {/* Search and Filters */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
               <Input
                 id="search"
                 type="text"
@@ -315,9 +315,10 @@ export default function AdminReferralsPage() {
                 value={searchTerm}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
                 placeholder="Search by email, username, or referral code..."
+                className="w-full h-10"
               />
             </div>
-            <div>
+            <div className="flex-shrink-0">
               <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-2">
                 Status Filter
               </label>
@@ -325,7 +326,7 @@ export default function AdminReferralsPage() {
                 id="status-filter"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as 'all' | 'pending' | 'verified' | 'cancelled')}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+                className="block w-fit min-w-[120px] h-10 rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm px-2"
               >
                 <option value="all">All Statuses</option>
                 <option value="pending">Pending</option>
@@ -333,7 +334,7 @@ export default function AdminReferralsPage() {
                 <option value="cancelled">Cancelled</option>
               </select>
             </div>
-            <div>
+            <div className="flex-shrink-0">
               <label htmlFor="sort-by" className="block text-sm font-medium text-gray-700 mb-2">
                 Sort By
               </label>
@@ -341,7 +342,7 @@ export default function AdminReferralsPage() {
                 id="sort-by"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'created_at' | 'status' | 'updated_at')}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+                className="block w-fit min-w-[120px] h-10 rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm px-2"
               >
                 <option value="created_at">Created Date</option>
                 <option value="status">Status</option>
