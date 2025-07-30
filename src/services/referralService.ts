@@ -7,7 +7,6 @@ import {
   ReferralRateLimiter,
   validateReferralData,
 } from "@/utils/antiFraud";
-import { checkIPThrottle, recordIPAttempt } from "@/utils/ipThrottling";
 
 export interface ReferralData {
   id: string;
@@ -49,25 +48,13 @@ export class ReferralService {
         );
       }
 
-      // Basic IP throttling check
+      // IP throttling is now handled in the server action
+      // Only log IP for debugging if provided
       if (referralData.userIp) {
         console.log(`[ReferralService] IP tracking: ${referralData.userIp}`);
-        
-        const throttleCheck = checkIPThrottle(referralData.userIp);
-        console.log(`[ReferralService] Throttle check:`, throttleCheck);
-        
-        if (throttleCheck.throttled) {
-          throw new Error(throttleCheck.reason || 'Rate limit exceeded');
-        }
-        
-        // Record the attempt
-        recordIPAttempt(referralData.userIp, false);
-        console.log(`[ReferralService] IP attempt recorded for: ${referralData.userIp}`);
-      } else {
-        console.log(`[ReferralService] No IP provided for referral`);
       }
 
-      // Check rate limiting
+      // Check rate limiting (user-based)
       if (!ReferralRateLimiter.canSubmit(referralData.referrerId)) {
         throw new Error("Rate limit exceeded. Please try again later.");
       }

@@ -14,6 +14,7 @@ import {
 import { isValidReferralCode } from "@/utils/generateReferralCode";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
+import { createReferralAction } from '@/app/actions/referral';
 
 function SignupForm() {
   const router = useRouter();
@@ -130,26 +131,25 @@ function SignupForm() {
         const referrerId = localStorage.getItem("referrer_id");
         if (referralCode && referrerId && result?.user?.id) {
           try {
-                    // Get client IP (simple method)
-        let clientIP = 'unknown';
-        try {
-          const response = await fetch('/api/referral');
-          const data = await response.json();
-          clientIP = data.ip;
-          console.log(`[Signup] Detected IP: ${clientIP}`);
-        } catch (error) {
-          console.log(`[Signup] Could not detect IP:`, error);
-        }
-
-        // Create referral record with the correct user ID and IP
-        await ReferralService.createReferral({
-          referrerId: referrerId,
-          referredEmail: formData.email,
-          referredUserId: result.user.id,
-          userIp: clientIP,
-          userAgent: navigator.userAgent,
-        });
-            console.log("[Signup] Created referral record for:", formData.email);
+            // Create referral record using server action
+            const referralResult = await createReferralAction({
+              referrerId: referrerId,
+              referredEmail: formData.email,
+              referredUserId: result.user.id,
+              userAgent: navigator.userAgent,
+            });
+            
+            if (!referralResult.success) {
+              if (referralResult.throttled) {
+                console.warn("[Signup] Referral creation throttled:", referralResult.error);
+                // Don't show error to user for throttling - just log it
+              } else {
+                console.error("[Signup] Failed to create referral:", referralResult.error);
+                // Could show a non-blocking error message here if needed
+              }
+            } else {
+              console.log("[Signup] Created referral record for:", formData.email);
+            }
             
             // Validate the referral
             const referralRes = await ReferralService.validateReferralOnSignup(

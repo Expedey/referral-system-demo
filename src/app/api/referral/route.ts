@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkIPThrottle, recordIPAttempt } from '@/utils/ipThrottling';
+import { checkIPThrottle } from '@/utils/ipThrottling';
 
 // Simple IP extraction function
 function getRequestIP(request: NextRequest): string {
@@ -15,67 +15,8 @@ function getRequestIP(request: NextRequest): string {
 }
 
 /**
- * IP throttling middleware for referral endpoints
- * Implements basic fraud prevention with rate limiting
- */
-export async function POST(request: NextRequest) {
-  try {
-    // Get client IP
-    const clientIP = getRequestIP(request);
-    
-    // Check IP throttling before processing
-    const throttleCheck = checkIPThrottle(clientIP);
-    
-    if (throttleCheck.throttled) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Rate limit exceeded',
-          reason: throttleCheck.reason,
-          remainingAttempts: throttleCheck.remainingAttempts,
-          remainingVerifications: throttleCheck.remainingVerifications,
-        },
-        { status: 429 } // Too Many Requests
-      );
-    }
-
-    // Record this attempt
-    recordIPAttempt(clientIP, false);
-
-    // Parse request body
-    const body = await request.json();
-    const { action } = body;
-
-    // Process the referral request
-    if (action === 'verify') {
-      // Record verification attempt
-      recordIPAttempt(clientIP, true);
-    }
-
-    // Your existing referral logic here
-    // For now, just return success
-    return NextResponse.json({
-      success: true,
-      message: 'Referral processed successfully',
-      ip: clientIP,
-      remainingAttempts: throttleCheck.remainingAttempts - 1,
-      remainingVerifications: throttleCheck.remainingVerifications,
-    });
-
-  } catch (error) {
-    console.error('Error in referral API:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-      },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * GET endpoint to check current IP limits
+ * GET endpoint to check current IP limits and get client IP
+ * Used for debugging and IP detection
  */
 export async function GET(request: NextRequest) {
   try {
@@ -89,8 +30,8 @@ export async function GET(request: NextRequest) {
       remainingAttempts: throttleCheck.remainingAttempts,
       remainingVerifications: throttleCheck.remainingVerifications,
       limits: {
-        maxAttemptsPerHour: 10,
-        maxVerificationsPerDay: 5,
+        maxAttemptsPerHour: 2,
+        maxVerificationsPerDay: 1,
       },
     });
   } catch (error) {
@@ -103,4 +44,16 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * POST endpoint for referral operations (legacy support)
+ * Note: Main referral creation is now handled by server actions
+ */
+export async function POST() {
+  return NextResponse.json({
+    success: false,
+    error: 'Use server actions for referral creation',
+    message: 'Referral creation has been moved to server actions for better IP detection and security',
+  }, { status: 400 });
 } 

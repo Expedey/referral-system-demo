@@ -142,6 +142,33 @@ export class UserService {
   }
 
   /**
+   * Gets a user profile by user ID
+   * @param userId - The user ID to look up
+   * @returns The user profile or null if not found
+   */
+  static async getUserById(
+    userId: string
+  ): Promise<UserProfile | null> {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user by ID:", error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error in getUserById:", error);
+      return null;
+    }
+  }
+
+  /**
    * Updates user verification status
    * @param userId - The user ID to update
    * @param isVerified - The verification status

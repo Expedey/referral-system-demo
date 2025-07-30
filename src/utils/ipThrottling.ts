@@ -10,8 +10,8 @@ interface ThrottleConfig {
 
 // Default configuration
 const DEFAULT_CONFIG: ThrottleConfig = {
-  maxAttemptsPerHour: 10,
-  maxVerificationsPerDay: 5,
+  maxAttemptsPerHour: 2,
+  maxVerificationsPerDay: 1,
 };
 
 // In-memory storage for IP attempts (in production, use Redis or database)
