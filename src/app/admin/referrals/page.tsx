@@ -10,6 +10,7 @@ interface Referral {
   referrer_id: string;
   referred_user_id: string | null;
   referred_email: string;
+  referred_ip: string | null;
   status: 'pending' | 'verified' | 'cancelled';
   created_at: string;
   updated_at: string;
@@ -134,7 +135,8 @@ export default function AdminReferralsPage() {
         referral.referrer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         referral.referrer.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         referral.referred_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        referral.referrer.referral_code.toLowerCase().includes(searchTerm.toLowerCase())
+        referral.referrer.referral_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        referral.referred_ip?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -168,11 +170,12 @@ export default function AdminReferralsPage() {
 
   const exportReferrals = () => {
     const csvContent = [
-      ['Referrer', 'Referred Email', 'Status', 'Created Date', 'Updated Date'],
+      ['Referrer', 'Referred Email', 'Status', 'IP Address', 'Created Date', 'Updated Date'],
       ...filteredReferrals.map(referral => [
         referral.referrer.email,
         referral.referred_email,
         referral.status,
+        referral.referred_ip || 'N/A',
         new Date(referral.created_at).toLocaleDateString(),
         new Date(referral.updated_at).toLocaleDateString()
       ])
@@ -314,7 +317,7 @@ export default function AdminReferralsPage() {
                 label="Search Referrals"
                 value={searchTerm}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-                placeholder="Search by email, username, or referral code..."
+                placeholder="Search by email, username, referral code, or IP address..."
               />
             </div>
             <div>
@@ -375,6 +378,9 @@ export default function AdminReferralsPage() {
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      IP Address
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Created
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -421,6 +427,9 @@ export default function AdminReferralsPage() {
                         }`}>
                           {referral.status}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {referral.referred_ip || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(referral.created_at).toLocaleDateString()}
