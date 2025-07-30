@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       remainingAttempts: throttleCheck.remainingAttempts,
       remainingVerifications: throttleCheck.remainingVerifications,
       limits: {
-        maxAttemptsPerHour: 2,
+        maxAttemptsPerHour: 10,
         maxVerificationsPerDay: 1,
       },
     });
