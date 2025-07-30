@@ -16,7 +16,7 @@ function getRequestIP(request: NextRequest): string {
 }
 
 /**
- * Middleware for IP throttling on referral endpoints
+ * Middleware for IP throttling on referral API endpoints
  * Implements basic fraud prevention as pre-flight check
  */
 export function middleware(request: NextRequest) {
@@ -29,12 +29,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Only apply to referral-related routes
-  if (
-    request.nextUrl.pathname.startsWith('/api/referral') ||
-    request.nextUrl.pathname.startsWith('/ref/') ||
-    request.nextUrl.pathname === '/signup'
-  ) {
+  // Only apply to referral API routes (not signup page)
+  if (request.nextUrl.pathname.startsWith('/api/referral')) {
     try {
       // Get client IP
       const clientIP = getRequestIP(request);
@@ -57,9 +53,7 @@ export function middleware(request: NextRequest) {
       }
 
       // Record the attempt for API calls
-      if (request.nextUrl.pathname.startsWith('/api/referral')) {
-        recordIPAttempt(clientIP, false);
-      }
+      recordIPAttempt(clientIP, false);
 
       // Continue with the request
       return NextResponse.next();
@@ -77,8 +71,6 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/api/referral/:path*',
-    '/ref/:path*',
-    '/signup',
     '/admin/:path*',
   ],
 }; 
