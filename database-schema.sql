@@ -42,15 +42,33 @@ CREATE INDEX idx_referrals_status ON public.referrals(status);
 CREATE INDEX idx_referrals_created_at ON public.referrals(created_at);
 
 -- Create the leaderboard view
-CREATE VIEW public.leaderboard AS
+CREATE OR REPLACE VIEW public.leaderboard AS
 SELECT
-    u.id,
-    u.username,
-    u.referral_code,
-    u.referral_count as total_referrals,
-    ROW_NUMBER() OVER (ORDER BY u.referral_count DESC, u.created_at ASC) as rank
-FROM public.users u
-ORDER BY u.referral_count DESC, u.created_at ASC;
+  u.id,
+  u.username,
+  u.referral_code,
+  u.referral_count AS total_referrals,
+  row_number() OVER (
+    ORDER BY
+      u.referral_count DESC,
+      u.created_at
+  ) AS rank
+FROM
+  users u
+WHERE
+  NOT (
+    u.user_type = 'corporate'::user_type
+    OR EXISTS (
+      SELECT 1
+      FROM referrals r
+      WHERE r.referred_user_id = u.id
+        AND r.source_type = 'team-invite'::source_type
+    )
+  )
+ORDER BY
+  u.referral_count DESC,
+  u.created_at;
+
 
 -- Create a function to increment referral count
 CREATE OR REPLACE FUNCTION increment_referral_count(user_id uuid)
@@ -111,7 +129,7 @@ CREATE TRIGGER update_referrals_updated_at
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
 
--- 5. Trigger function to handle pending -> verified transition
+-- Trigger function to handle pending -> verified transition
 CREATE OR REPLACE FUNCTION public.handle_referral_verified()
 RETURNS trigger AS $$
 BEGIN
@@ -131,7 +149,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 6. Attach the trigger to referrals.status updates
+-- Attach the trigger to referrals.status updates
 CREATE TRIGGER trg_referral_status_change
     AFTER UPDATE OF status ON public.referrals
     FOR EACH ROW
