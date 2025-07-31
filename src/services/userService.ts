@@ -9,6 +9,7 @@ export interface UserProfile {
   is_verified: boolean;
   referral_count: number;
   last_referral_at?: string;
+  user_type: 'regular' | 'corporate';
   created_at: string;
 }
 
@@ -17,6 +18,7 @@ export interface CreateUserProfileData {
   email: string;
   username?: string;
   referralCode?: string;
+  user_type?: 'regular' | 'corporate';
 }
 
 /**
@@ -43,6 +45,7 @@ export class UserService {
           email: userData.email,
           username: userData.username,
           referral_code: referralCode.toUpperCase(),
+          user_type: userData.user_type || 'regular',
         })
         .select()
         .single();

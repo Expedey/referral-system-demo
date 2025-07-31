@@ -200,8 +200,9 @@ export const useAuth = () => {
     };
   }, []);
 
-  const signUp = async (email: string, password: string, username?: string) => {
+  const signUp = async (email: string, password: string, username?: string, userType: 'regular' | 'corporate' = 'regular') => {
     try {
+      console.log("[useAuth] Starting signup with user type:", userType);
       // Don't set global loading state during signup
       // The component should handle its own loading state
 
@@ -219,11 +220,14 @@ export const useAuth = () => {
 
       if (data.user) {
         // Create user profile
+        console.log("[useAuth] Creating user profile with type:", userType);
         const profile = await UserService.createUserProfile({
           id: data.user.id,
           email: data.user.email!,
           username,
+          user_type: userType,
         });
+        console.log("[useAuth] Created user profile:", profile);
 
         // Don't set user state immediately for new signups
         // Let the component handle the flow (show alert, then redirect after email verification)

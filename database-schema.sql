@@ -1,6 +1,9 @@
 -- Create the referral_status enum type
 CREATE TYPE public.referral_status AS ENUM ('pending', 'verified', 'cancelled');
 
+-- Create the user_type enum type
+CREATE TYPE public.user_type AS ENUM ('regular', 'corporate');
+
 -- Create the users table
 CREATE TABLE public.users (
     id uuid PRIMARY KEY REFERENCES auth.users(id),
@@ -10,6 +13,7 @@ CREATE TABLE public.users (
     is_verified boolean NOT NULL DEFAULT FALSE,
     referral_count integer NOT NULL DEFAULT 0,
     last_referral_at timestamptz,
+    user_type public.user_type NOT NULL DEFAULT 'regular',
     created_at timestamptz NOT NULL DEFAULT now()
 );
 
