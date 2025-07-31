@@ -365,4 +365,56 @@ export class HubSpotService {
       return false;
     }
   }
+
+  /**
+   * Sends an admin invitation email via HubSpot API directly
+   * @param email - Admin's email address
+   * @param password - Generated password
+   * @param role - Admin role
+   * @returns Success status
+   */
+  static async sendAdminInvitationEmail(
+    email: string,
+    password: string,
+    role: 'super_admin' | 'admin' 
+  ): Promise<boolean> {
+    try {
+      const apiKey = process.env.HUBSPOT_API_KEY;
+      if (!apiKey) {
+        throw new Error('HUBSPOT_API_KEY environment variable is required');
+      }
+
+      // Send transactional email using fetch
+      const response = await fetch('https://api.hubapi.com/marketing/v3/transactional/single-email/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          emailId: process.env.HUBSPOT_ADMIN_INVITE_TEMPLATE_ID,
+          message: {
+            to: email,
+            customProperties: {
+              role: role.replace('_', ' '),
+              password: password,
+              loginUrl: `${process.env.NEXT_PUBLIC_APP_URL}/admin/login`,
+            },
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[HubSpotService] Failed to send invitation email:', errorData);
+        return false;
+      }
+
+      console.log('[HubSpotService] Admin invitation email sent to:', email);
+      return true;
+    } catch (error) {
+      console.error('[HubSpotService] Error sending admin invitation email:', error);
+      return false;
+    }
+  }
 } 

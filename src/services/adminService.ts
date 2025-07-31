@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { generateSecureToken } from '@/utils/generateReferralCode';
+import { generateSecurePassword } from '@/utils/generatePassword';
 
 export interface Admin {
   id: string;
@@ -96,13 +97,13 @@ export class AdminService {
   }
 
   /**
-   * Create admin invitation
+   * Create admin invitation and signup user
    */
   static async createInvitation(
     email: string, 
-    role: 'super_admin' | 'admin' | 'moderator' = 'admin',
+    role: 'super_admin' | 'admin' = 'admin',
     invitedBy: string
-  ): Promise<{ success: boolean; invitation?: AdminInvitation; error?: string }> {
+  ): Promise<{ success: boolean; invitation?: AdminInvitation; password?: string; error?: string }> {
     try {
       // Check if admin already exists
       const { data: existingAdmin } = await supabase
@@ -126,14 +127,48 @@ export class AdminService {
         return { success: false, error: 'Invitation already exists for this email' };
       }
 
-      // Generate secure token
+      // Generate secure token and password
       const token = generateSecureToken();
+      const password = generateSecurePassword();
       
       // Set expiration (7 days from now)
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7);
 
-      const { data, error } = await supabase
+      // First create the Supabase auth user using signup
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (authError || !authData.user) {
+        console.error('Error creating auth user:', authError);
+        return { success: false, error: authError?.message || 'Failed to create user account' };
+      }
+
+      // Create admin record in admins table
+      const { error: adminError } = await supabase
+        .from('admins')
+        .insert({
+          id: authData.user.id,
+          email: email,
+          role: role,
+          is_active: true,
+          invited_by: invitedBy,
+          invited_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (adminError) {
+        // If admin creation fails, we should clean up the auth user
+        await supabase.auth.admin.deleteUser(authData.user.id);
+        console.error('Error creating admin record:', adminError);
+        return { success: false, error: 'Failed to create admin record' };
+      }
+
+      // Create invitation record
+      const { data: invitationData, error: invitationError } = await supabase
         .from('admin_invitations')
         .insert({
           email,
@@ -145,14 +180,26 @@ export class AdminService {
         .select()
         .single();
 
-      if (error) {
-        console.error('Error creating invitation:', error);
+      if (invitationError) {
+        // If invitation creation fails, clean up admin and auth user
+        await supabase.from('admins').delete().eq('id', authData.user.id);
+        await supabase.auth.admin.deleteUser(authData.user.id);
+        console.error('Error creating invitation:', invitationError);
         return { success: false, error: 'Failed to create invitation' };
       }
 
+      // // Send invitation email via HubSpot
+      // const emailSent = await HubSpotService.sendAdminInvitationEmail(email, password, role);
+      // if (!emailSent) {
+      //   console.error('Failed to send invitation email');
+      //   // Don't return error here, the invitation is still created
+      // }
 
-
-      return { success: true, invitation: data };
+      return { 
+        success: true, 
+        invitation: invitationData,
+        password 
+      };
     } catch (error) {
       console.error('Error in createInvitation:', error);
       return { success: false, error: 'An unexpected error occurred' };
