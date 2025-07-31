@@ -13,6 +13,7 @@ export async function createReferralAction(referralData: {
   referredEmail: string;
   referredUserId: string;
   userAgent?: string;
+  userType?: 'regular' | 'corporate';
 }) {
   try {
     // Get client IP from headers
@@ -53,7 +54,7 @@ export async function createReferralAction(referralData: {
     recordIPAttempt(clientIP, false);
     console.log(`[ReferralAction] IP attempt recorded for: ${clientIP}`);
 
-    // Create referral with IP
+    // Create referral with IP and user type
     const referral = await ReferralService.createReferral({
       ...referralData,
       userIp: clientIP,

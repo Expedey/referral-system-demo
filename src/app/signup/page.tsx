@@ -136,12 +136,20 @@ function SignupForm() {
         const referrerId = localStorage.getItem("referrer_id");
         if (referralCode && referrerId && result?.user?.id) {
           try {
+            // Get referrer's user type
+            const referrer = await UserService.getUserById(referrerId);
+            if (!referrer) {
+              console.error("[Signup] Referrer not found:", referrerId);
+              return;
+            }
+
             // Create referral record using server action
             const referralResult = await createReferralAction({
               referrerId: referrerId,
               referredEmail: formData.email,
               referredUserId: result.user.id,
               userAgent: navigator.userAgent,
+              userType: referrer.user_type, // Use referrer's user type
             });
             
             if (!referralResult.success) {
@@ -153,7 +161,7 @@ function SignupForm() {
                 // Could show a non-blocking error message here if needed
               }
             } else {
-              console.log("[Signup] Created referral record for:", formData.email);
+              console.log("[Signup] Created referral record for:", formData.email, "with referrer type:", referrer.user_type);
             }
             
             // Validate the referral

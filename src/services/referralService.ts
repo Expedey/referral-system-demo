@@ -15,6 +15,7 @@ export interface ReferralData {
   referred_email: string;
   referred_ip?: string;
   status: 'pending' | 'verified' | 'cancelled';
+  source_type: 'organic' | 'team-invite';
   created_at: string;
   updated_at: string;
 }
@@ -25,6 +26,7 @@ export interface CreateReferralData {
   referredUserId?: string;
   userIp?: string;
   userAgent?: string;
+  userType?: 'regular' | 'corporate';
 }
 
 /**
@@ -68,7 +70,7 @@ export class ReferralService {
       if (existingReferral) {
         throw new Error("Referral already exists for this email");
       }
-
+      console.log("[ReferralService] Creating referral record for:", referralData);
       // Create referral record
       const { data, error } = await supabase
         .from("referrals")
@@ -78,9 +80,11 @@ export class ReferralService {
           referred_email: referralData.referredEmail.toLowerCase(),
           referred_ip: referralData.userIp,
           status: 'pending',
+          source_type: referralData.userType === 'corporate' ? 'team-invite' : 'organic',
         })
         .select()
         .single();
+        console.log("[ReferralService] Referral created:", data);
 
       if (error) {
         console.error("Error creating referral:", error);

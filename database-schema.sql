@@ -4,6 +4,9 @@ CREATE TYPE public.referral_status AS ENUM ('pending', 'verified', 'cancelled');
 -- Create the user_type enum type
 CREATE TYPE public.user_type AS ENUM ('regular', 'corporate');
 
+-- Create the source_type enum type
+CREATE TYPE public.source_type AS ENUM ('organic', 'team-invite');
+
 -- Create the users table
 CREATE TABLE public.users (
     id uuid PRIMARY KEY REFERENCES auth.users(id),
@@ -25,6 +28,7 @@ CREATE TABLE public.referrals (
     referred_email text NOT NULL,
     referred_ip inet,
     status public.referral_status NOT NULL DEFAULT 'pending',
+    source_type public.source_type NOT NULL DEFAULT 'organic',
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
 );
