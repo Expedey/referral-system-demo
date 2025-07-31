@@ -1,4 +1,3 @@
-import { Client } from '@hubspot/api-client';
 
 // HubSpot contact properties mapping
 export interface HubSpotContact {
@@ -11,6 +10,11 @@ export interface HubSpotContact {
   created_at?: string;
   referral_code?: string;
 }
+
+// Type for contact property updates
+export type HubSpotContactUpdate = {
+  [K in keyof HubSpotContact]?: string;
+};
 
 export interface HubSpotContactResponse {
   id: string;
@@ -86,7 +90,7 @@ export class HubSpotDirectService {
   /**
    * Update contact properties using direct API
    */
-  static async updateContact(contactId: string, properties: Record<string, any>): Promise<boolean> {
+  static async updateContact(contactId: string, properties: HubSpotContactUpdate): Promise<boolean> {
     try {
       console.log('[HubSpotDirectService] Updating contact:', contactId, 'with properties:', properties);
 
@@ -131,7 +135,7 @@ export class HubSpotDirectService {
       }
 
       // Prepare update properties
-      const properties: Record<string, any> = {
+      const properties: HubSpotContactUpdate = {
         referral_count: referralCount.toString(),
       };
 
