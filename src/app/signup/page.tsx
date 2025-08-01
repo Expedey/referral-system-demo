@@ -36,13 +36,18 @@ function SignupForm() {
     referralCode: string;
   } | null>(null);
 
+  // Check for source parameter
+  const userType = React.useMemo(() => {
+    const source = searchParams.get('source');
+    const determinedUserType = source === 'corporate' ? 'corporate' : 'regular';
+    return determinedUserType;
+  }, [searchParams]);
+
   // Check for referral code on page load
   React.useEffect(() => {
-    console.log("[Signup] useEffect: Checking referral code...");
     const checkReferralCode = async () => {
       // Check URL parameters first
       const refParam = searchParams.get("ref");
-      console.log("[Signup] searchParams ref:", refParam);
       if (refParam && isValidReferralCode(refParam)) {
         setReferralCode(refParam.toUpperCase());
         storeReferralCode(refParam.toUpperCase());
@@ -123,20 +128,28 @@ function SignupForm() {
       const result = await signUp(
         formData.email,
         formData.password,
-        formData.username
+        formData.username,
+        userType
       );
-      console.log("[Signup] signUp result:", result);
       if (result.success) {
         // --- CREATE REFERRAL RECORD IF REFERRAL CODE PRESENT ---
         const referrerId = localStorage.getItem("referrer_id");
         if (referralCode && referrerId && result?.user?.id) {
           try {
+            // Get referrer's user type
+            const referrer = await UserService.getUserById(referrerId);
+            if (!referrer) {
+              console.error("[Signup] Referrer not found:", referrerId);
+              return;
+            }
+
             // Create referral record using server action
             const referralResult = await createReferralAction({
               referrerId: referrerId,
               referredEmail: formData.email,
               referredUserId: result.user.id,
               userAgent: navigator.userAgent,
+              userType: referrer.user_type, // Use referrer's user type
             });
             
             if (!referralResult.success) {
@@ -148,7 +161,7 @@ function SignupForm() {
                 // Could show a non-blocking error message here if needed
               }
             } else {
-              console.log("[Signup] Created referral record for:", formData.email);
+              console.log("[Signup] Created referral record for:", formData.email, "with referrer type:", referrer.user_type);
             }
             
             // Validate the referral

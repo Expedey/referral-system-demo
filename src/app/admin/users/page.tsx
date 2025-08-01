@@ -14,6 +14,7 @@ interface User {
   is_verified: boolean;
   created_at: string;
   last_referral_at: string | null;
+  access_granted: boolean;
 }
 
 export default function AdminUsersPage() {
@@ -96,13 +97,14 @@ export default function AdminUsersPage() {
 
   const exportUsers = () => {
     const csvContent = [
-      ['Email', 'Username', 'Referral Code', 'Referrals', 'Verified', 'Joined Date'],
+      ['Email', 'Username', 'Referral Code', 'Referrals', 'Verified', 'Access', 'Joined Date'],
       ...filteredUsers.map(user => [
         user.email,
         user.username || '',
         user.referral_code,
         user.referral_count.toString(),
         user.is_verified ? 'Yes' : 'No',
+        user.access_granted ? 'Granted' : 'Pending',
         new Date(user.created_at).toLocaleDateString()
       ])
     ].map(row => row.join(',')).join('\n');
@@ -247,6 +249,9 @@ export default function AdminUsersPage() {
                     <th className="px-6 py-3 text-left">
                       <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Referral</span>
                     </th>
+                    <th className="px-6 py-3 text-left">
+                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Access</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -292,6 +297,29 @@ export default function AdminUsersPage() {
                           ? new Date(user.last_referral_at).toLocaleDateString()
                           : 'Never'
                         }
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${
+                          user.access_granted
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {user.access_granted ? (
+                            <>
+                              <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                              Granted
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                              </svg>
+                              Pending
+                            </>
+                          )}
+                        </span>
                       </td>
                     </tr>
                   ))}

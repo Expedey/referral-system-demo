@@ -12,6 +12,7 @@ interface Referral {
   referred_email: string;
   referred_ip: string | null;
   status: 'pending' | 'verified' | 'cancelled';
+  source_type: 'organic' | 'team-invite';
   created_at: string;
   updated_at: string;
   referrer: {
@@ -170,11 +171,12 @@ export default function AdminReferralsPage() {
 
   const exportReferrals = () => {
     const csvContent = [
-      ['Referrer', 'Referred Email', 'Status', 'IP Address', 'Created Date', 'Updated Date'],
+      ['Referrer', 'Referred Email', 'Status', 'Source', 'IP Address', 'Created Date', 'Updated Date'],
       ...filteredReferrals.map(referral => [
         referral.referrer.email,
         referral.referred_email,
         referral.status,
+        referral.source_type === 'organic' ? 'Organic' : 'Team Invite',
         referral.referred_ip || 'N/A',
         new Date(referral.created_at).toLocaleDateString(),
         new Date(referral.updated_at).toLocaleDateString()
@@ -379,6 +381,9 @@ export default function AdminReferralsPage() {
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Source
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       IP Address
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -427,6 +432,29 @@ export default function AdminReferralsPage() {
                             : 'bg-red-100 text-red-800'
                         }`}>
                           {referral.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${
+                          referral.source_type === 'organic'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-purple-100 text-purple-800'
+                        }`}>
+                          {referral.source_type === 'organic' ? (
+                            <>
+                              <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                              </svg>
+                              Organic
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                              </svg>
+                              Team Invite
+                            </>
+                          )}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

@@ -50,6 +50,7 @@ const navigation: NavItem[] = [
       </svg>
     ),
   },
+
   {
     name: 'Settings',
     href: '/admin/settings',

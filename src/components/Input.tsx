@@ -23,7 +23,7 @@ const Input: React.FC<InputProps> = ({
   const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
 
   const baseStyles =
-    "block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm transition-colors duration-200 focus:border-blue-500 focus:ring-blue-500 dark:focus:border-blue-400 dark:focus:ring-blue-400 disabled:bg-gray-50 disabled:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 px-4 py-3 text-base";
+    "block w-full rounded-lg border-gray-300 dark:border-gray-300 shadow-sm transition-colors duration-200 focus:border-blue-500 focus:ring-blue-500 dark:focus:border-blue-400 dark:focus:ring-blue-400 disabled:bg-gray-50 disabled:text-gray-500 dark:disabled:bg-gray-100 dark:disabled:text-gray-600 bg-white text-gray-900 dark:text-gray-900 placeholder-gray-500 dark:placeholder-gray-500 px-4 py-3 text-base";
   const errorStyles = "border-red-300 dark:border-red-500 focus:border-red-500 focus:ring-red-500 dark:focus:border-red-400 dark:focus:ring-red-400";
   const iconStyles = leftIcon ? "pl-12" : rightIcon ? "pr-12" : "";
 
