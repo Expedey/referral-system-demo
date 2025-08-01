@@ -139,6 +139,18 @@ export class WaveService {
    */
   static async deleteWave(waveId: string): Promise<boolean> {
     try {
+      // First, remove all users from this wave to avoid foreign key constraint
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({ wave_id: null, access_granted: false })
+        .eq("wave_id", waveId);
+
+      if (updateError) {
+        console.error("Error removing users from wave:", updateError);
+        return false;
+      }
+
+      // Then delete the wave
       const { error } = await supabase
         .from("waves")
         .delete()
@@ -186,13 +198,41 @@ export class WaveService {
    */
   static async deactivateWave(waveId: string): Promise<boolean> {
     try {
+      // Try the database function first
       const { data, error } = await supabase.rpc('deactivate_wave', {
         wave_uuid: waveId
       });
 
       if (error) {
-        console.error("Error deactivating wave:", error);
-        return false;
+        console.error("Database function failed, using fallback:", error);
+        
+        // Fallback: manually update the wave and users
+        const { error: waveError } = await supabase
+          .from("waves")
+          .update({ 
+            is_active: false, 
+            activated_at: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", waveId);
+
+        if (waveError) {
+          console.error("Error updating wave status:", waveError);
+          return false;
+        }
+
+        // Update all users in this wave to revoke access
+        const { error: usersError } = await supabase
+          .from("users")
+          .update({ access_granted: false })
+          .eq("wave_id", waveId);
+
+        if (usersError) {
+          console.error("Error revoking user access:", usersError);
+          return false;
+        }
+
+        return true;
       }
 
       return data;
@@ -229,13 +269,14 @@ export class WaveService {
    */
   static async getWaveStats(waveId: string): Promise<WaveStats> {
     try {
-      const { data, error } = await supabase
+      // Use count instead of select to avoid 406 errors
+      const { count: totalUsers, error: countError } = await supabase
         .from("users")
-        .select("access_granted")
+        .select("*", { count: "exact", head: true })
         .eq("wave_id", waveId);
 
-      if (error) {
-        console.error("Error fetching wave stats:", error);
+      if (countError) {
+        console.error("Error fetching wave user count:", countError);
         return {
           total_users: 0,
           active_users: 0,
@@ -243,13 +284,27 @@ export class WaveService {
         };
       }
 
-      const totalUsers = data?.length || 0;
-      const activeUsers = data?.filter(user => user.access_granted).length || 0;
-      const pendingUsers = totalUsers - activeUsers;
+      // Get active users count
+      const { count: activeUsers, error: activeError } = await supabase
+        .from("users")
+        .select("*", { count: "exact", head: true })
+        .eq("wave_id", waveId)
+        .eq("access_granted", true);
+
+      if (activeError) {
+        console.error("Error fetching active users count:", activeError);
+        return {
+          total_users: totalUsers || 0,
+          active_users: 0,
+          pending_users: totalUsers || 0,
+        };
+      }
+
+      const pendingUsers = (totalUsers || 0) - (activeUsers || 0);
 
       return {
-        total_users: totalUsers,
-        active_users: activeUsers,
+        total_users: totalUsers || 0,
+        active_users: activeUsers || 0,
         pending_users: pendingUsers,
       };
     } catch (error) {
@@ -331,4 +386,6 @@ export class WaveService {
       return false;
     }
   }
+
+
 } 

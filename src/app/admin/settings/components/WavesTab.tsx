@@ -40,12 +40,15 @@ export default function WavesTab() {
   const handleCreateWave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await WaveService.createWave(formData);
+      console.log('Creating wave:', formData);
+      const result = await WaveService.createWave(formData);
+      console.log('Create result:', result);
       setShowCreateModal(false);
       setFormData({ name: '', description: '', start_position: 1, end_position: 100 });
-      loadWaves();
+      await loadWaves();
     } catch (error) {
       console.error('Error creating wave:', error);
+      alert('Error creating wave: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
@@ -54,41 +57,69 @@ export default function WavesTab() {
     if (!editingWave) return;
     
     try {
-      await WaveService.updateWave(editingWave.id, formData);
-      setEditingWave(null);
-      setFormData({ name: '', description: '', start_position: 1, end_position: 100 });
-      loadWaves();
+      console.log('Updating wave:', editingWave.id, formData);
+      const result = await WaveService.updateWave(editingWave.id, formData);
+      console.log('Update result:', result);
+      if (result) {
+        setEditingWave(null);
+        setFormData({ name: '', description: '', start_position: 1, end_position: 100 });
+        await loadWaves();
+      } else {
+        alert('Failed to update wave. Check console for details.');
+      }
     } catch (error) {
       console.error('Error updating wave:', error);
+      alert('Error updating wave: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
   const handleDeleteWave = async (waveId: string) => {
-    if (!confirm('Are you sure you want to delete this wave?')) return;
+    if (!confirm('Are you sure you want to delete this wave? This will remove all users from this wave.')) return;
     
     try {
-      await WaveService.deleteWave(waveId);
-      loadWaves();
+      console.log('Deleting wave:', waveId);
+      const result = await WaveService.deleteWave(waveId);
+      console.log('Delete result:', result);
+      if (result) {
+        await loadWaves();
+      } else {
+        alert('Failed to delete wave. The wave may have users assigned to it. Please remove users from the wave first or deactivate it instead.');
+      }
     } catch (error) {
       console.error('Error deleting wave:', error);
+      alert('Error deleting wave: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
   const handleActivateWave = async (waveId: string) => {
     try {
-      await WaveService.activateWave(waveId);
-      loadWaves();
+      console.log('Activating wave:', waveId);
+      const result = await WaveService.activateWave(waveId);
+      console.log('Activation result:', result);
+      if (result) {
+        await loadWaves();
+      } else {
+        alert('Failed to activate wave. Check console for details.');
+      }
     } catch (error) {
       console.error('Error activating wave:', error);
+      alert('Error activating wave: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
   const handleDeactivateWave = async (waveId: string) => {
     try {
-      await WaveService.deactivateWave(waveId);
-      loadWaves();
+      console.log('Deactivating wave:', waveId);
+      const result = await WaveService.deactivateWave(waveId);
+      console.log('Deactivation result:', result);
+      if (result) {
+        await loadWaves();
+      } else {
+        alert('Failed to deactivate wave. Check console for details.');
+      }
     } catch (error) {
       console.error('Error deactivating wave:', error);
+      alert('Error deactivating wave: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
@@ -231,6 +262,7 @@ export default function WavesTab() {
                     >
                       Delete
                     </Button>
+
                   </td>
                 </tr>
               ))}
