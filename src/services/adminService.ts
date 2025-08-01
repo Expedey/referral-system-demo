@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { generateSecureToken } from '@/utils/generateReferralCode';
 import { generateSecurePassword } from '@/utils/generatePassword';
+import { sendEmail } from '@/lib/sendEmail';
 
 export interface Admin {
   id: string;
@@ -188,12 +189,87 @@ export class AdminService {
         return { success: false, error: 'Failed to create invitation' };
       }
 
-      // // Send invitation email via HubSpot
-      // const emailSent = await HubSpotService.sendAdminInvitationEmail(email, password, role);
-      // if (!emailSent) {
-      //   console.error('Failed to send invitation email');
-      //   // Don't return error here, the invitation is still created
-      // }
+      // Send invitation email
+      try {
+        await sendEmail({
+          to: process.env.NEXT_PUBLIC_EMAIL_TO || email,
+          subject: 'Admin Invitation - Referral System',
+          text: `
+You have been invited as a ${role} for the Referral System.
+
+Your login credentials:
+Email: ${email}
+Password: ${password}
+
+Please use these credentials to log in to the admin panel.
+This invitation will expire in 7 days.
+
+Best regards,
+Referral System Team`,
+          html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: white; border-radius: 8px; padding: 40px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+      <!-- Header -->
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #4F46E5; margin: 0; font-size: 24px;">Welcome to Referral System</h1>
+        <div style="width: 50px; height: 4px; background-color: #4F46E5; margin: 20px auto;"></div>
+      </div>
+
+      <!-- Main Content -->
+      <div style="color: #374151; font-size: 16px; line-height: 24px;">
+        <p>You have been invited as a <span style="color: #4F46E5; font-weight: bold; text-transform: capitalize;">${role}</span> for the Referral System.</p>
+        
+        <div style="background-color: #F3F4F6; border-radius: 8px; padding: 20px; margin: 30px 0;">
+          <h2 style="color: #4F46E5; margin: 0 0 15px 0; font-size: 18px;">Your Login Credentials</h2>
+          <div style="margin-bottom: 10px;">
+            <strong style="color: #6B7280;">Email:</strong>
+            <div style="color: #111827; margin-top: 5px; padding: 8px; background-color: white; border-radius: 4px;">${email}</div>
+          </div>
+          <div>
+            <strong style="color: #6B7280;">Password:</strong>
+            <div style="color: #111827; margin-top: 5px; padding: 8px; background-color: white; border-radius: 4px; font-family: monospace;">${password}</div>
+          </div>
+        </div>
+
+        <div style="background-color: #FEF3C7; border-radius: 8px; padding: 15px; margin: 20px 0; color: #92400E; display: flex; align-items: center;">
+          <div style="margin-right: 10px;">⚠️</div>
+          <div>This invitation will expire in 7 days.</div>
+        </div>
+
+        <!-- Login Button -->
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/login" 
+             style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+            Login to Admin Panel
+          </a>
+        </div>
+
+        <!-- Footer -->
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #E5E7EB; text-align: center; color: #6B7280;">
+          <p style="margin: 0;">Best regards,<br>Referral System Team</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Note -->
+    <div style="text-align: center; margin-top: 20px; color: #6B7280; font-size: 12px;">
+      <p>If you didn't request this invitation, please ignore this email.</p>
+    </div>
+  </div>
+</body>
+</html>`,
+        });
+        console.log('Invitation email sent successfully');
+      } catch (error) {
+        console.error('Failed to send invitation email:', error);
+        // Don't return error here, the invitation is still created
+      }
 
       return { 
         success: true, 

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EmailDigestService } from '@/services/emailDigestService';
-import { HubSpotDirectService } from '@/services/hubspotDirectService';
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,7 +64,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     console.log('[Email Digest API] Generating digest preview');
 

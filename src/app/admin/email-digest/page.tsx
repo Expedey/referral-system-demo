@@ -40,7 +40,7 @@ export default function EmailDigestPage() {
   
   const [loading, setLoading] = useState(false);
   const [digestData, setDigestData] = useState<EmailDigestData | null>(null);
-  const [teamEmail, setTeamEmail] = useState('team@yourcompany.com');
+  const [teamEmail, setTeamEmail] = useState(process.env.NEXT_PUBLIC_EMAIL_TO || "");
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -56,27 +56,50 @@ export default function EmailDigestPage() {
       setError('');
       setMessage('');
 
+      // First get the digest data
       const response = await fetch('/api/email-digest/weekly', {
-        method: sendEmail ? 'POST' : 'GET',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: sendEmail ? JSON.stringify({
-          teamEmail,
-          sendEmail: true,
-        }) : undefined,
       });
 
       const result = await response.json();
 
-      if (result.success) {
-        setDigestData(result.data);
-        setMessage(sendEmail 
-          ? `Weekly digest sent successfully to ${teamEmail}!`
-          : 'Digest preview generated successfully!'
-        );
-      } else {
+      if (!result.success) {
         setError(result.error || 'Failed to generate digest');
+        return;
+      }
+
+      setDigestData(result.data);
+
+      // If sendEmail is true, send the email using our email API
+      if (sendEmail && result.data) {
+        const emailContent = generateEmailContent(result.data);
+        
+        const emailResponse = await fetch('/api/sendEmail', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: teamEmail,
+            subject: `Weekly Referral System Digest - ${formatDate(result.data.weekRange.start)}`,
+            text: emailContent.text,
+            html: emailContent.html,
+          }),
+        });
+
+        const emailResult = await emailResponse.json();
+
+        if (!emailResponse.ok) {
+          setError(emailResult.message || 'Failed to send email');
+          return;
+        }
+
+        setMessage(`Weekly digest sent successfully to ${teamEmail}!`);
+      } else {
+        setMessage('Digest preview generated successfully!');
       }
     } catch (error) {
       console.error('Error generating digest:', error);
@@ -84,6 +107,95 @@ export default function EmailDigestPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const generateEmailContent = (data: EmailDigestData) => {
+    const text = `
+Weekly Referral System Digest
+Week: ${formatDate(data.weekRange.start)} - ${formatDate(data.weekRange.end)}
+
+🏆 Top Referrers:
+${data.topReferrers.map((r, i) => `${i + 1}. ${r.username} (${r.email}) - ${r.count} referrals`).join('\n')}
+
+📈 Total Growth:
+- Total Users: ${data.totalGrowth.totalUsers.toLocaleString()}
+- Total Referrals: ${data.totalGrowth.totalReferrals.toLocaleString()}
+- Verified Referrals: ${data.totalGrowth.verifiedReferrals.toLocaleString()}
+- Conversion Rate: ${data.totalGrowth.conversionRate}%
+- Weekly Growth: ${data.totalGrowth.weeklyGrowth}%
+
+🚨 Flagged Accounts:
+- Total Flagged: ${data.flaggedAccounts.totalFlagged}
+- This Week: ${data.flaggedAccounts.weeklyFlagged}
+- Unique IPs: ${data.flaggedAccounts.uniqueIPs}
+
+💎 Tier Breakdown:
+${data.tierBreakdown.map(t => `${t.tier}: ${t.count} users (${t.percentage}%)`).join('\n')}
+`;
+
+    const html = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h1 style="color: #4F46E5;">Weekly Referral System Digest</h1>
+  <p style="color: #6B7280;">Week: ${formatDate(data.weekRange.start)} - ${formatDate(data.weekRange.end)}</p>
+
+  <div style="margin: 24px 0;">
+    <h2 style="color: #4F46E5;">🏆 Top Referrers</h2>
+    ${data.topReferrers.map((r, i) => `
+      <div style="padding: 12px; background: #F3F4F6; margin: 8px 0; border-radius: 6px;">
+        <strong>#${i + 1} ${r.username}</strong><br>
+        <span style="color: #6B7280;">${r.email}</span><br>
+        <span style="color: #4F46E5;">${r.count} referrals</span>
+      </div>
+    `).join('')}
+  </div>
+
+  <div style="margin: 24px 0;">
+    <h2 style="color: #4F46E5;">📈 Total Growth</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+      <div style="padding: 12px; background: #EEF2FF; border-radius: 6px;">
+        <div style="font-size: 24px; font-weight: bold; color: #4F46E5;">${data.totalGrowth.totalUsers.toLocaleString()}</div>
+        <div style="color: #6B7280;">Total Users</div>
+      </div>
+      <div style="padding: 12px; background: #ECFDF5; border-radius: 6px;">
+        <div style="font-size: 24px; font-weight: bold; color: #059669;">${data.totalGrowth.totalReferrals.toLocaleString()}</div>
+        <div style="color: #6B7280;">Total Referrals</div>
+      </div>
+      <div style="padding: 12px; background: #FEF3C7; border-radius: 6px;">
+        <div style="font-size: 24px; font-weight: bold; color: #D97706;">${data.totalGrowth.verifiedReferrals.toLocaleString()}</div>
+        <div style="color: #6B7280;">Verified Referrals</div>
+      </div>
+      <div style="padding: 12px; background: #F3E8FF; border-radius: 6px;">
+        <div style="font-size: 24px; font-weight: bold; color: #7C3AED;">${data.totalGrowth.conversionRate}%</div>
+        <div style="color: #6B7280;">Conversion Rate</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin: 24px 0;">
+    <h2 style="color: #4F46E5;">🚨 Flagged Accounts</h2>
+    <div style="padding: 12px; background: #FEE2E2; border-radius: 6px; margin: 8px 0;">
+      <div style="font-size: 18px; font-weight: bold; color: #DC2626;">${data.flaggedAccounts.totalFlagged}</div>
+      <div style="color: #6B7280;">Total Flagged</div>
+    </div>
+    <div style="padding: 12px; background: #FFF7ED; border-radius: 6px; margin: 8px 0;">
+      <div style="font-size: 18px; font-weight: bold; color: #EA580C;">${data.flaggedAccounts.weeklyFlagged}</div>
+      <div style="color: #6B7280;">This Week</div>
+    </div>
+  </div>
+
+  <div style="margin: 24px 0;">
+    <h2 style="color: #4F46E5;">💎 Tier Breakdown</h2>
+    ${data.tierBreakdown.map(t => `
+      <div style="padding: 12px; background: #F3F4F6; margin: 8px 0; border-radius: 6px;">
+        <strong>${t.tier}</strong>
+        <div style="color: #6B7280;">${t.count} users (${t.percentage}%)</div>
+      </div>
+    `).join('')}
+  </div>
+</div>
+`;
+
+    return { text, html };
   };
 
   const formatDate = (dateString: string) => {

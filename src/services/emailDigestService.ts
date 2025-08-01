@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase';
-import { HubSpotDirectService } from './hubspotDirectService';
 
 export interface EmailDigestData {
   topReferrers: Array<{
