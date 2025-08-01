@@ -84,7 +84,7 @@ export default function EmailDigestPage() {
           },
           body: JSON.stringify({
             to: teamEmail,
-            subject: `Weekly Referral System Digest - ${formatDate(result.data.weekRange.start)}`,
+            subject: `Weekly Bonbon Whitelist Digest - ${formatDate(result.data.weekRange.start)}`,
             text: emailContent.text,
             html: emailContent.html,
           }),
@@ -111,7 +111,7 @@ export default function EmailDigestPage() {
 
   const generateEmailContent = (data: EmailDigestData) => {
     const text = `
-Weekly Referral System Digest
+Weekly Bonbon Whitelist Digest
 Week: ${formatDate(data.weekRange.start)} - ${formatDate(data.weekRange.end)}
 
 🏆 Top Referrers:
@@ -135,7 +135,7 @@ ${data.tierBreakdown.map(t => `${t.tier}: ${t.count} users (${t.percentage}%)`).
 
     const html = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-  <h1 style="color: #4F46E5;">Weekly Referral System Digest</h1>
+  <h1 style="color: #4F46E5;">Weekly Bonbon Whitelist Digest</h1>
   <p style="color: #6B7280;">Week: ${formatDate(data.weekRange.start)} - ${formatDate(data.weekRange.end)}</p>
 
   <div style="margin: 24px 0;">
@@ -183,15 +183,7 @@ ${data.tierBreakdown.map(t => `${t.tier}: ${t.count} users (${t.percentage}%)`).
     </div>
   </div>
 
-  <div style="margin: 24px 0;">
-    <h2 style="color: #4F46E5;">💎 Tier Breakdown</h2>
-    ${data.tierBreakdown.map(t => `
-      <div style="padding: 12px; background: #F3F4F6; margin: 8px 0; border-radius: 6px;">
-        <strong>${t.tier}</strong>
-        <div style="color: #6B7280;">${t.count} users (${t.percentage}%)</div>
-      </div>
-    `).join('')}
-  </div>
+
 </div>
 `;
 
@@ -374,7 +366,7 @@ ${data.tierBreakdown.map(t => `${t.tier}: ${t.count} users (${t.percentage}%)`).
             </div>
           </div>
 
-          {/* Tier Breakdown */}
+          {/* Tier Breakdown
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">💎 Tier Breakdown</h2>
             <div className="space-y-3">
@@ -388,7 +380,7 @@ ${data.tierBreakdown.map(t => `${t.tier}: ${t.count} users (${t.percentage}%)`).
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
         </div>
       )}
     </div>
