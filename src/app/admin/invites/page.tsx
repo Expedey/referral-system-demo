@@ -12,7 +12,7 @@ interface Alert {
 export default function AdminInvitesPage() {
   const { admin } = useAdminAuth();
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<'admin' | 'super_admin'>('admin');
+  const [role, setRole] = useState<'admin' | 'super_admin'>('super_admin');
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<Alert | null>(null);
   const [inviteResult, setInviteResult] = useState<{
@@ -118,7 +118,7 @@ export default function AdminInvitesPage() {
             />
           </div>
 
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Role
             </label>
@@ -131,7 +131,7 @@ export default function AdminInvitesPage() {
               <option value="admin">Admin</option>
               <option value="super_admin">Super Admin</option>
             </select>
-          </div>
+          </div> */}
 
           <button
             type="submit"

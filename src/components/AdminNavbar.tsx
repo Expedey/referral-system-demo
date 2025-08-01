@@ -54,9 +54,13 @@ const navigation: NavItem[] = [
     name: 'Invite Admin',
     href: '/admin/invites',
     icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-      </svg>
+<svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+  <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+  <circle cx="8.5" cy="7" r="4" />
+  <path d="M20 8v6M23 11h-6" />
+</svg>
+
+
     ),
   },
   {
