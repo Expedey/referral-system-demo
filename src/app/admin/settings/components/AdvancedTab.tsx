@@ -172,7 +172,7 @@ export default function AdvancedTab() {
                   Email Address
                 </label>
                 <div className="relative">
-                  <input
+                  <Input
                     id="email"
                     type="email"
                     value={email}
