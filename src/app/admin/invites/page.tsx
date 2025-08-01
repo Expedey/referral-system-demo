@@ -12,7 +12,6 @@ interface Alert {
 export default function AdminInvitesPage() {
   const { admin } = useAdminAuth();
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<'admin' | 'super_admin'>('super_admin');
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<Alert | null>(null);
   const [inviteResult, setInviteResult] = useState<{
@@ -41,7 +40,7 @@ export default function AdminInvitesPage() {
     try {
       const result = await AdminService.createInvitation(
         email,
-        role,
+        'super_admin',
         admin?.id as string
       );
 
