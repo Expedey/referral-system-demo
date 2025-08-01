@@ -1,0 +1,334 @@
+import { supabase } from "@/lib/supabase";
+
+export interface Wave {
+  id: string;
+  name: string;
+  description?: string;
+  start_position: number;
+  end_position: number;
+  is_active: boolean;
+  activated_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateWaveData {
+  name: string;
+  description?: string;
+  start_position: number;
+  end_position: number;
+}
+
+export interface WaveStats {
+  total_users: number;
+  active_users: number;
+  pending_users: number;
+}
+
+/**
+ * Wave service for managing wave definitions and user access
+ */
+export class WaveService {
+  /**
+   * Creates a new wave
+   * @param waveData - The wave data to create
+   * @returns The created wave
+   */
+  static async createWave(waveData: CreateWaveData): Promise<Wave> {
+    try {
+      const { data, error } = await supabase
+        .from("waves")
+        .insert(waveData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating wave:", error);
+        throw new Error("Failed to create wave");
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error in createWave:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Gets all waves
+   * @returns Array of waves
+   */
+  static async getAllWaves(): Promise<Wave[]> {
+    try {
+      const { data, error } = await supabase
+        .from("waves")
+        .select("*")
+        .order("start_position", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching waves:", error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error("Error in getAllWaves:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Gets a wave by ID
+   * @param waveId - The wave ID
+   * @returns The wave or null
+   */
+  static async getWaveById(waveId: string): Promise<Wave | null> {
+    try {
+      const { data, error } = await supabase
+        .from("waves")
+        .select("*")
+        .eq("id", waveId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching wave:", error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error in getWaveById:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Updates a wave
+   * @param waveId - The wave ID
+   * @param updates - The updates to apply
+   * @returns The updated wave
+   */
+  static async updateWave(
+    waveId: string,
+    updates: Partial<CreateWaveData>
+  ): Promise<Wave | null> {
+    try {
+      const { data, error } = await supabase
+        .from("waves")
+        .update(updates)
+        .eq("id", waveId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating wave:", error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error in updateWave:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Deletes a wave
+   * @param waveId - The wave ID
+   * @returns Success status
+   */
+  static async deleteWave(waveId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from("waves")
+        .delete()
+        .eq("id", waveId);
+
+      if (error) {
+        console.error("Error deleting wave:", error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error in deleteWave:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Activates a wave and grants access to all users in that wave
+   * @param waveId - The wave ID
+   * @returns Success status
+   */
+  static async activateWave(waveId: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.rpc('activate_wave', {
+        wave_uuid: waveId
+      });
+
+      if (error) {
+        console.error("Error activating wave:", error);
+        return false;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error in activateWave:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Deactivates a wave and revokes access from all users in that wave
+   * @param waveId - The wave ID
+   * @returns Success status
+   */
+  static async deactivateWave(waveId: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.rpc('deactivate_wave', {
+        wave_uuid: waveId
+      });
+
+      if (error) {
+        console.error("Error deactivating wave:", error);
+        return false;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error in deactivateWave:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Assigns users to waves based on their waitlist position
+   * @returns Number of users assigned
+   */
+  static async assignUsersToWaves(): Promise<number> {
+    try {
+      const { data, error } = await supabase.rpc('assign_users_to_waves');
+
+      if (error) {
+        console.error("Error assigning users to waves:", error);
+        return 0;
+      }
+
+      return data || 0;
+    } catch (error) {
+      console.error("Error in assignUsersToWaves:", error);
+      return 0;
+    }
+  }
+
+  /**
+   * Gets wave statistics including user counts
+   * @param waveId - The wave ID
+   * @returns Wave statistics
+   */
+  static async getWaveStats(waveId: string): Promise<WaveStats> {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("access_granted")
+        .eq("wave_id", waveId);
+
+      if (error) {
+        console.error("Error fetching wave stats:", error);
+        return {
+          total_users: 0,
+          active_users: 0,
+          pending_users: 0,
+        };
+      }
+
+      const totalUsers = data?.length || 0;
+      const activeUsers = data?.filter(user => user.access_granted).length || 0;
+      const pendingUsers = totalUsers - activeUsers;
+
+      return {
+        total_users: totalUsers,
+        active_users: activeUsers,
+        pending_users: pendingUsers,
+      };
+    } catch (error) {
+      console.error("Error in getWaveStats:", error);
+      return {
+        total_users: 0,
+        active_users: 0,
+        pending_users: 0,
+      };
+    }
+  }
+
+  /**
+   * Gets all wave statistics
+   * @returns Array of waves with their statistics
+   */
+  static async getAllWavesWithStats(): Promise<(Wave & WaveStats)[]> {
+    try {
+      const waves = await this.getAllWaves();
+      const wavesWithStats = await Promise.all(
+        waves.map(async (wave) => {
+          const stats = await this.getWaveStats(wave.id);
+          return { ...wave, ...stats };
+        })
+      );
+
+      return wavesWithStats;
+    } catch (error) {
+      console.error("Error in getAllWavesWithStats:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Gets the wave for a specific user
+   * @param userId - The user ID
+   * @returns The wave or null
+   */
+  static async getUserWave(userId: string): Promise<Wave | null> {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("wave_id")
+        .eq("id", userId)
+        .single();
+
+      if (error || !data?.wave_id) {
+        return null;
+      }
+
+      return await this.getWaveById(data.wave_id);
+    } catch (error) {
+      console.error("Error in getUserWave:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Checks if a user has access granted
+   * @param userId - The user ID
+   * @returns Whether the user has access
+   */
+  static async userHasAccess(userId: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("access_granted")
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        console.error("Error checking user access:", error);
+        return false;
+      }
+
+      return data?.access_granted || false;
+    } catch (error) {
+      console.error("Error in userHasAccess:", error);
+      return false;
+    }
+  }
+} 

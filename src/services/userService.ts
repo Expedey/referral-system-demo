@@ -10,6 +10,8 @@ export interface UserProfile {
   referral_count: number;
   last_referral_at?: string;
   user_type: 'regular' | 'corporate';
+  wave_id?: string;
+  access_granted: boolean;
   created_at: string;
 }
 
