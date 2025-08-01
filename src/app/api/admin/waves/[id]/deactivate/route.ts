@@ -3,10 +3,11 @@ import { WaveService } from '@/services/waveService';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const success = await WaveService.deactivateWave(params.id);
+    const { id } = await params;
+    const success = await WaveService.deactivateWave(id);
     
     if (!success) {
       return NextResponse.json(

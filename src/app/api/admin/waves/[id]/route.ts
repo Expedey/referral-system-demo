@@ -3,10 +3,11 @@ import { WaveService, CreateWaveData } from '@/services/waveService';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const wave = await WaveService.getWaveById(params.id);
+    const { id } = await params;
+    const wave = await WaveService.getWaveById(id);
     
     if (!wave) {
       return NextResponse.json(
@@ -27,9 +28,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body: Partial<CreateWaveData> = await request.json();
     
     // Validate position range if both are provided
@@ -42,7 +44,7 @@ export async function PUT(
       }
     }
 
-    const wave = await WaveService.updateWave(params.id, body);
+    const wave = await WaveService.updateWave(id, body);
     
     if (!wave) {
       return NextResponse.json(
@@ -63,10 +65,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const success = await WaveService.deleteWave(params.id);
+    const { id } = await params;
+    const success = await WaveService.deleteWave(id);
     
     if (!success) {
       return NextResponse.json(
