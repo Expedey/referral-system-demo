@@ -401,7 +401,60 @@ Bonbon Whitelist Team`,
     }
   }
 
+  /**
+   * Delete admin user
+   */
+  static async deleteAdmin(adminId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      // First check if admin exists
+      const { data: admin, error: adminError } = await supabase
+        .from('admins')
+        .select('*')
+        .eq('id', adminId)
+        .single();
 
+      if (adminError || !admin) {
+        return { success: false, error: 'Admin not found' };
+      }
+
+      // Delete from admins table
+      const { error: deleteAdminError } = await supabase
+        .from('admins')
+        .delete()
+        .eq('id', adminId);
+
+      if (deleteAdminError) {
+        console.error('Error deleting admin:', deleteAdminError);
+        return { success: false, error: 'Failed to delete admin record' };
+      }
+
+      // Delete from admin_invitations table if exists
+      await supabase
+        .from('admin_invitations')
+        .delete()
+        .eq('email', admin.email);
+
+      // For deleting from Supabase auth, we need to make an API call to your backend
+      // You should implement an API endpoint that uses Supabase service role key to delete the user
+      const response = await fetch('/api/admin/delete-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: adminId }),
+      });
+
+      if (!response.ok) {
+        console.error('Error deleting auth user');
+        // Don't return error here as the admin is already deleted from our tables
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error in deleteAdmin:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  }
 
   /**
    * Admin sign out

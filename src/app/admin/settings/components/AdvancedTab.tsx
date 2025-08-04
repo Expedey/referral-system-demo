@@ -30,6 +30,12 @@ export default function AdvancedTab() {
   } | null>(null);
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [loadingAdmins, setLoadingAdmins] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    show: boolean;
+    adminId: string;
+    email: string;
+  } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Auto-dismiss alert after 5 seconds
   useEffect(() => {
@@ -100,6 +106,50 @@ export default function AdvancedTab() {
 
   const clearInviteResult = () => {
     setInviteResult(null);
+  };
+
+  const handleDelete = async (adminId: string, email: string) => {
+    // Prevent deleting yourself
+    if (admin?.id === adminId) {
+      setAlert({
+        type: 'error',
+        message: 'You cannot delete your own account'
+      });
+      return;
+    }
+    
+    setDeleteConfirm({ show: true, adminId, email });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
+    
+    setDeleting(true);
+    try {
+      const result = await AdminService.deleteAdmin(deleteConfirm.adminId);
+      
+      if (result.success) {
+        setAlert({
+          type: 'success',
+          message: 'Team member deleted successfully'
+        });
+        // Refresh the admins list
+        fetchAdmins();
+      } else {
+        setAlert({
+          type: 'error',
+          message: result.error || 'Failed to delete team member'
+        });
+      }
+    } catch (error) {
+      setAlert({
+        type: 'error',
+        message: 'Failed to delete team member'
+      });
+    } finally {
+      setDeleting(false);
+      setDeleteConfirm(null);
+    }
   };
 
   return (
@@ -311,6 +361,9 @@ export default function AdvancedTab() {
                         <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Last Active
                         </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -364,6 +417,16 @@ export default function AdvancedTab() {
                               </div>
                             )}
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            {admin?.id !== adminUser.id && (
+                              <button
+                                onClick={() => handleDelete(adminUser.id, adminUser.email)}
+                                className="text-red-600 hover:text-red-900 transition-colors duration-200"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -374,6 +437,44 @@ export default function AdvancedTab() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm?.show && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Delete Team Member</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Are you sure you want to delete <span className="font-medium text-gray-900">{deleteConfirm.email}</span>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                {deleting ? (
+                  <div className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Deleting...
+                  </div>
+                ) : (
+                  'Delete'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
