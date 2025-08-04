@@ -142,6 +142,7 @@ export default function AdvancedTab() {
         });
       }
     } catch (error) {
+      console.log(error);
       setAlert({
         type: 'error',
         message: 'Failed to delete team member'
