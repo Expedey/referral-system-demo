@@ -121,12 +121,7 @@ function SignupForm() {
       newErrors.username = "Username must be at least 3 characters";
     }
 
-    if (formData.dateOfBirth) {
-      const birthDate = new Date(formData.dateOfBirth);
-      const today = new Date();
-      const age = today.getFullYear() - birthDate.getFullYear();
-  
-    }
+
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
