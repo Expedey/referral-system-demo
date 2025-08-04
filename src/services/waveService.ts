@@ -36,18 +36,34 @@ export class WaveService {
    */
   static async createWave(waveData: CreateWaveData): Promise<Wave> {
     try {
-      const { data, error } = await supabase
+      // First create the wave
+      const { data: wave, error: waveError } = await supabase
         .from("waves")
         .insert(waveData)
         .select()
         .single();
 
-      if (error) {
-        console.error("Error creating wave:", error);
+      if (waveError) {
+        console.error("Error creating wave:", waveError);
         throw new Error("Failed to create wave");
       }
 
-      return data;
+      // Find and update users whose referral_count falls within the wave's range
+      const { data: updatedUsers, error: updateError } = await supabase
+        .from("users")
+        .update({ wave_id: wave.id })
+        .gte('referral_count', waveData.start_position)
+        .lte('referral_count', waveData.end_position)
+        .select();
+
+      if (updateError) {
+        console.error("Error assigning users to wave:", updateError);
+        // Don't throw here - wave was created successfully
+      } else {
+        console.log(`Assigned ${updatedUsers?.length || 0} users to wave ${wave.id}`);
+      }
+
+      return wave;
     } catch (error) {
       console.error("Error in createWave:", error);
       throw error;
@@ -113,19 +129,66 @@ export class WaveService {
     updates: Partial<CreateWaveData>
   ): Promise<Wave | null> {
     try {
-      const { data, error } = await supabase
+      console.log(updates, "updates");
+      // First update the wave
+      const { data: wave, error: waveError } = await supabase
         .from("waves")
         .update(updates)
         .eq("id", waveId)
         .select()
         .single();
 
-      if (error) {
-        console.error("Error updating wave:", error);
+      if (waveError) {
+        console.error("Error updating wave:", waveError);
         return null;
       }
+      console.log(updates, "updates");
 
-      return data;
+      // If start_position or end_position was updated, we need to reassign users
+      if (updates.start_position !== undefined || updates.end_position !== undefined) {
+        // First, get the current wave data to know the new range
+        const { data: currentWave, error: fetchError } = await supabase
+          .from("waves")
+          .select("start_position, end_position")
+          .eq("id", waveId)
+          .single();
+
+        if (fetchError) {
+          console.error("Error fetching current wave:", fetchError);
+          return wave;
+        }
+
+        // Remove wave_id from users who are now outside the range
+        const { data: removedUsers, error: removeError } = await supabase
+          .from("users")
+          .update({ wave_id: null, access_granted: false })
+          .eq("wave_id", waveId)
+          .or(`referral_count.lt.${currentWave.start_position},referral_count.gt.${currentWave.end_position}`)
+          .select();
+
+        if (removeError) {
+          console.error("Error removing users from wave:", removeError);
+        } else {
+          console.log(`Removed ${removedUsers?.length || 0} users from wave ${waveId} who are now out of range`);
+        }
+
+        // Update users who should be in this wave based on the new range
+        const { data: updatedUsers, error: updateError } = await supabase
+          .from("users")
+          .update({ wave_id: waveId })
+          .gte('referral_count', currentWave.start_position)
+          .lte('referral_count', currentWave.end_position)
+          .is('wave_id', null) // Only assign users who aren't already in a wave
+          .select();
+
+        if (updateError) {
+          console.error("Error updating users for wave:", updateError);
+        } else {
+          console.log(`Assigned ${updatedUsers?.length || 0} new users to wave ${waveId}`);
+        }
+      }
+
+      return wave;
     } catch (error) {
       console.error("Error in updateWave:", error);
       return null;
@@ -140,15 +203,18 @@ export class WaveService {
   static async deleteWave(waveId: string): Promise<boolean> {
     try {
       // First, remove all users from this wave to avoid foreign key constraint
-      const { error: updateError } = await supabase
+      const { data: updatedUsers, error: updateError } = await supabase
         .from("users")
         .update({ wave_id: null, access_granted: false })
-        .eq("wave_id", waveId);
+        .eq("wave_id", waveId)
+        .select();
 
       if (updateError) {
         console.error("Error removing users from wave:", updateError);
         return false;
       }
+
+      console.log(`Updated ${updatedUsers?.length || 0} users for wave ${waveId}`);
 
       // Then delete the wave
       const { error } = await supabase
@@ -175,16 +241,35 @@ export class WaveService {
    */
   static async activateWave(waveId: string): Promise<boolean> {
     try {
-      const { data, error } = await supabase.rpc('activate_wave', {
-        wave_uuid: waveId
-      });
+      // First update the wave status
+      const { error: waveError } = await supabase
+        .from("waves")
+        .update({ 
+          is_active: true,
+          activated_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", waveId);
 
-      if (error) {
-        console.error("Error activating wave:", error);
+      if (waveError) {
+        console.error("Error activating wave:", waveError);
         return false;
       }
 
-      return data;
+      // Then update access_granted for all users in this wave
+      const { data: updatedUsers, error: userError } = await supabase
+        .from("users")
+        .update({ access_granted: true })
+        .eq("wave_id", waveId)
+        .select();
+
+      if (userError) {
+        console.error("Error granting access to users:", userError);
+        return false;
+      }
+
+      console.log(`Granted access to ${updatedUsers?.length || 0} users in wave ${waveId}`);
+      return true;
     } catch (error) {
       console.error("Error in activateWave:", error);
       return false;
@@ -198,44 +283,35 @@ export class WaveService {
    */
   static async deactivateWave(waveId: string): Promise<boolean> {
     try {
-      // Try the database function first
-      const { data, error } = await supabase.rpc('deactivate_wave', {
-        wave_uuid: waveId
-      });
+      // First update the wave status
+      const { error: waveError } = await supabase
+        .from("waves")
+        .update({ 
+          is_active: false, 
+          activated_at: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", waveId);
 
-      if (error) {
-        console.error("Database function failed, using fallback:", error);
-        
-        // Fallback: manually update the wave and users
-        const { error: waveError } = await supabase
-          .from("waves")
-          .update({ 
-            is_active: false, 
-            activated_at: null,
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", waveId);
-
-        if (waveError) {
-          console.error("Error updating wave status:", waveError);
-          return false;
-        }
-
-        // Update all users in this wave to revoke access
-        const { error: usersError } = await supabase
-          .from("users")
-          .update({ access_granted: false })
-          .eq("wave_id", waveId);
-
-        if (usersError) {
-          console.error("Error revoking user access:", usersError);
-          return false;
-        }
-
-        return true;
+      if (waveError) {
+        console.error("Error deactivating wave:", waveError);
+        return false;
       }
 
-      return data;
+      // Then update access_granted for all users in this wave
+      const { data: updatedUsers, error: userError } = await supabase
+        .from("users")
+        .update({ access_granted: false })
+        .eq("wave_id", waveId)
+        .select();
+
+      if (userError) {
+        console.error("Error revoking access from users:", userError);
+        return false;
+      }
+
+      console.log(`Revoked access from ${updatedUsers?.length || 0} users in wave ${waveId}`);
+      return true;
     } catch (error) {
       console.error("Error in deactivateWave:", error);
       return false;

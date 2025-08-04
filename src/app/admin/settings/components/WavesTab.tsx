@@ -55,6 +55,13 @@ export default function WavesTab() {
   const handleUpdateWave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingWave) return;
+
+    // Double check if wave is active (in case of race conditions)
+    const currentWave = waves.find(w => w.id === editingWave.id);
+    if (currentWave?.is_active) {
+      alert('Cannot edit an active wave. Please deactivate the wave first.');
+      return;
+    }
     
     try {
       console.log('Updating wave:', editingWave.id, formData);
@@ -124,6 +131,10 @@ export default function WavesTab() {
   };
 
   const openEditModal = (wave: Wave) => {
+    if (wave.is_active) {
+      alert('Cannot edit an active wave. Please deactivate the wave first.');
+      return;
+    }
     setEditingWave(wave);
     setFormData({
       name: wave.name,
@@ -232,6 +243,9 @@ export default function WavesTab() {
                       variant="outline"
                       size="sm"
                       onClick={() => openEditModal(wave)}
+                      disabled={wave.is_active}
+                      className={`${wave.is_active ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      title={wave.is_active ? 'Deactivate wave to edit' : 'Edit wave'}
                     >
                       Edit
                     </Button>
