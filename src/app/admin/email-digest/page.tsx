@@ -50,6 +50,14 @@ export default function EmailDigestPage() {
     return null;
   }
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
   const generateDigest = async (sendEmail: boolean = false) => {
     try {
       setLoading(true);
@@ -114,9 +122,6 @@ export default function EmailDigestPage() {
 Weekly Bonbon Waitlist Digest
 Week: ${formatDate(data.weekRange.start)} - ${formatDate(data.weekRange.end)}
 
-🏆 Top Referrers:
-${data.topReferrers.map((r, i) => `${i + 1}. ${r.username} (${r.email}) - ${r.count} referrals`).join('\n')}
-
 📈 Total Growth:
 - Total Users: ${data.totalGrowth.totalUsers.toLocaleString()}
 - Total Referrals: ${data.totalGrowth.totalReferrals.toLocaleString()}
@@ -129,6 +134,9 @@ ${data.topReferrers.map((r, i) => `${i + 1}. ${r.username} (${r.email}) - ${r.co
 - This Week: ${data.flaggedAccounts.weeklyFlagged}
 - Unique IPs: ${data.flaggedAccounts.uniqueIPs}
 
+🏆 Top Referrers:
+${data.topReferrers.map((r, i) => `${i + 1}. ${r.username} (${r.email}) - ${r.count} referrals`).join('\n')}
+
 💎 Tier Breakdown:
 ${data.tierBreakdown.map(t => `${t.tier}: ${t.count} users (${t.percentage}%)`).join('\n')}
 `;
@@ -137,30 +145,6 @@ ${data.tierBreakdown.map(t => `${t.tier}: ${t.count} users (${t.percentage}%)`).
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #F9FAFB; padding: 24px;">
   <h1 style="color: #4F46E5; text-align: center; margin-bottom: 32px; font-size: 28px; border-bottom: 2px solid #E5E7EB; padding-bottom: 16px;">Weekly Bonbon Waitlist Digest</h1>
   <p style="color: #6B7280; text-align: center; margin-bottom: 32px; font-size: 16px;">Week: ${formatDate(data.weekRange.start)} - ${formatDate(data.weekRange.end)}</p>
-
-  <div style="background-color: white; border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-    <h2 style="color: #4F46E5; margin-bottom: 20px; font-size: 20px; display: flex; align-items: center;">🏆 Top Referrers</h2>
-    <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: separate; border-spacing: 0 12px;">
-      <tbody>
-        ${data.topReferrers.map((r, i) => `
-          <tr>
-            <td style="padding: 0 4px;">
-              <div style="background: #F3F4F6; padding: 12px; border-radius: 8px; border: 1px solid #E5E7EB;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <div style="margin-right: 8px; color: #4F46E5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;">${i + 1}</div>
-                  <div style="min-width: 0; flex: 1;">
-                    <div style="color: #111827; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.username}</div>
-                    <div style="color: #6B7280; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.email}</div>
-                    <div style="color: #4F46E5; font-weight: 600; font-size: 14px; margin-top: 4px;">${r.count} referrals</div>
-                  </div>
-                </div>
-              </div>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  </div>
 
   <div style="background-color: white; border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
     <h2 style="color: #4F46E5; margin-bottom: 20px; font-size: 20px;">📈 Total Growth</h2>
@@ -225,18 +209,34 @@ ${data.tierBreakdown.map(t => `${t.tier}: ${t.count} users (${t.percentage}%)`).
       </tbody>
     </table>
   </div>
+
+  <div style="background-color: white; border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <h2 style="color: #4F46E5; margin-bottom: 20px; font-size: 20px;">🏆 Top Referrers</h2>
+    <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: separate; border-spacing: 0 12px;">
+      <tbody>
+        ${data.topReferrers.map((r, i) => `
+          <tr>
+            <td style="padding: 0 4px;">
+              <div style="background: #F3F4F6; padding: 12px; border-radius: 8px; border: 1px solid #E5E7EB;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="margin-right: 8px; color: #4F46E5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;">${i + 1}</div>
+                  <div style="min-width: 0; flex: 1;">
+                    <div style="color: #111827; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.username}</div>
+                    <div style="color: #6B7280; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.email}</div>
+                    <div style="color: #4F46E5; font-weight: 600; font-size: 14px; margin-top: 4px;">${r.count} referrals</div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>
 </div>
 `;
 
     return { text, html };
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
   };
 
   if (authLoading) {
@@ -336,31 +336,6 @@ ${data.tierBreakdown.map(t => `${t.tier}: ${t.count} users (${t.percentage}%)`).
             </h2>
           </div>
 
-          {/* Top Referrers */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">🏆 Top 10 Referrers</h2>
-            <div className="space-y-3">
-              {digestData.topReferrers.map((referrer, index) => (
-                <div key={referrer.email} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-purple-600">{index + 1}</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{referrer.username}</p>
-                      <p className="text-sm text-gray-500">{referrer.email}</p>
-                      <p className="text-xs text-gray-400 font-mono">{referrer.referral_code}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-gray-900">{referrer.count}</p>
-                    <p className="text-sm text-gray-500">referrals</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Total Growth */}
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">📈 Total Growth</h2>
@@ -404,6 +379,31 @@ ${data.tierBreakdown.map(t => `${t.tier}: ${t.count} users (${t.percentage}%)`).
                 <p className="text-2xl font-bold text-pink-600">{digestData.flaggedAccounts.uniqueIPs.toLocaleString()}</p>
                 <p className="text-sm text-gray-600">Unique IPs</p>
               </div>
+            </div>
+          </div>
+
+          {/* Top Referrers */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">🏆 Top 10 Referrers</h2>
+            <div className="space-y-3">
+              {digestData.topReferrers.map((referrer, index) => (
+                <div key={referrer.email} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium text-purple-600">{index + 1}</span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{referrer.username}</p>
+                      <p className="text-sm text-gray-500">{referrer.email}</p>
+                      <p className="text-xs text-gray-400 font-mono">{referrer.referral_code}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-gray-900">{referrer.count}</p>
+                    <p className="text-sm text-gray-500">referrals</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
