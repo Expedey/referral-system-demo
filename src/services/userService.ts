@@ -10,8 +10,8 @@ export interface UserProfile {
   referral_count: number;
   last_referral_at?: string;
   user_type: 'regular' | 'corporate';
-  wave_id?: string;
-  access_granted: boolean;
+  sex?: 'male' | 'female' | 'other';
+  date_of_birth?: string;
   created_at: string;
 }
 
@@ -19,8 +19,9 @@ export interface CreateUserProfileData {
   id: string;
   email: string;
   username?: string;
-  referralCode?: string;
-  user_type?: 'regular' | 'corporate';
+  user_type: 'regular' | 'corporate';
+  sex?: 'male' | 'female' | 'other';
+  date_of_birth?: string;
 }
 
 /**
@@ -37,8 +38,7 @@ export class UserService {
   ): Promise<UserProfile> {
     try {
       // Generate unique referral code
-      const referralCode =
-        userData.referralCode || generateReferralCode(userData.username);
+      const referralCode = generateReferralCode(userData.username);
 
       const { data, error } = await supabase
         .from("users")
@@ -48,6 +48,8 @@ export class UserService {
           username: userData.username,
           referral_code: referralCode.toUpperCase(),
           user_type: userData.user_type || 'regular',
+          sex: userData.sex,
+          date_of_birth: userData.date_of_birth,
         })
         .select()
         .single();

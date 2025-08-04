@@ -7,6 +7,9 @@ CREATE TYPE public.user_type AS ENUM ('regular', 'corporate');
 -- Create the source_type enum type
 CREATE TYPE public.source_type AS ENUM ('organic', 'team-invite');
 
+-- Create the sex enum type
+CREATE TYPE public.sex AS ENUM ('male', 'female', 'other');
+
 -- Create the users table
 CREATE TABLE public.users (
     id uuid PRIMARY KEY REFERENCES auth.users(id),
@@ -17,6 +20,8 @@ CREATE TABLE public.users (
     referral_count integer NOT NULL DEFAULT 0,
     last_referral_at timestamptz,
     user_type public.user_type NOT NULL DEFAULT 'regular',
+    sex public.sex,
+    date_of_birth date,
     created_at timestamptz NOT NULL DEFAULT now()
 );
 

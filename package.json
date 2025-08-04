@@ -16,11 +16,13 @@
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.50.2",
     "@types/nodemailer": "^6.4.17",
+    "@types/react-datepicker": "^6.2.0",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.0",
     "next": "15.3.4",
     "nodemailer": "^7.0.5",
     "react": "^19.0.0",
+    "react-datepicker": "^8.4.0",
     "react-dom": "^19.0.0",
     "request-ip": "^3.3.0"
   },

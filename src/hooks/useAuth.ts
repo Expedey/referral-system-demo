@@ -200,7 +200,14 @@ export const useAuth = () => {
     };
   }, []);
 
-  const signUp = async (email: string, password: string, username?: string, userType: 'regular' | 'corporate' = 'regular') => {
+  const signUp = async (
+    email: string,
+    password: string,
+    username?: string,
+    userType: 'regular' | 'corporate' = 'regular',
+    sex?: 'male' | 'female' | 'other',
+    dateOfBirth?: string
+  ) => {
     try {
       console.log("[useAuth] Starting signup with user type:", userType);
       // Don't set global loading state during signup
@@ -217,8 +224,9 @@ export const useAuth = () => {
       if (error) {
         throw error;
       }
-
+      
       if (data.user) {
+        console.log(data,"data",sex,dateOfBirth);
         // Create user profile
         console.log("[useAuth] Creating user profile with type:", userType);
         const profile = await UserService.createUserProfile({
@@ -226,6 +234,8 @@ export const useAuth = () => {
           email: data.user.email!,
           username,
           user_type: userType,
+          sex,
+          date_of_birth: dateOfBirth,
         });
         console.log("[useAuth] Created user profile:", profile);
 

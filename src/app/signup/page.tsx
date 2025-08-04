@@ -4,6 +4,9 @@ import React, { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "@/styles/datepicker.css";
 import { useAuth } from "@/hooks/useAuth";
 import { UserService } from "@/services/userService";
 import { ReferralService } from "@/services/referralService";
@@ -14,6 +17,7 @@ import {
 import { isValidReferralCode } from "@/utils/generateReferralCode";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
+import Select from "@/components/Select";
 import { createReferralAction } from '@/app/actions/referral';
 
 function SignupForm() {
@@ -26,6 +30,8 @@ function SignupForm() {
     password: "",
     confirmPassword: "",
     username: "",
+    sex: "" as "" | "male" | "female" | "other",
+    dateOfBirth: "",
   });
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [loading, setLoading] = React.useState(false);
@@ -96,7 +102,7 @@ function SignupForm() {
     if (!formData.email) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (!formData.password) {
@@ -105,12 +111,21 @@ function SignupForm() {
       newErrors.password = "Password must be at least 6 characters";
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
     }
 
     if (formData.username && formData.username.length < 3) {
       newErrors.username = "Username must be at least 3 characters";
+    }
+
+    if (formData.dateOfBirth) {
+      const birthDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+  
     }
 
     setErrors(newErrors);
@@ -124,12 +139,15 @@ function SignupForm() {
     }
     setLoading(true);
     try {
+      console.log(formData,"formData");
       // --- CONTINUE WITH SIGNUP ---
       const result = await signUp(
         formData.email,
         formData.password,
         formData.username,
-        userType
+        userType,
+        (formData.sex || undefined) as "male" | "female" | "other" | undefined,
+        formData.dateOfBirth || undefined
       );
       if (result.success) {
         // --- CREATE REFERRAL RECORD IF REFERRAL CODE PRESENT ---
@@ -342,6 +360,57 @@ function SignupForm() {
                   helperText="Choose a unique username for your profile"
                   autoComplete="username"
                 />
+
+                {/* Sex and Date of Birth Row */}
+                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> */}
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="w-full md:w-2/6 min-w-28">
+
+                  <Select
+                    id="sex"
+                    label="Sex (optional)"
+                    value={formData.sex}
+                    onChange={(e) => handleInputChange("sex", e.target.value)}
+                    options={[
+                      { value: "", label: "Select..." },
+                      { value: "male", label: "Male" },
+                      { value: "female", label: "Female" },
+                      { value: "other", label: "Other" },
+                    ]}
+                    />
+                    </div>
+
+                  <div className="w-full">
+                    <label
+                      htmlFor="dateOfBirth"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                    >
+                      Date of Birth (optional)
+                    </label>
+                    <div className="mt-1">
+                      <DatePicker
+                        id="dateOfBirth"
+                        selected={formData.dateOfBirth ? new Date(formData.dateOfBirth) : null}
+                        onChange={(date: Date | null) => 
+                          handleInputChange("dateOfBirth", date ? date.toISOString().split('T')[0] : '')
+                        }
+                        dateFormat="MMMM d, yyyy"
+                        showMonthDropdown
+                        showYearDropdown
+                        dropdownMode="select"
+                        placeholderText="Select date"
+                        maxDate={new Date()}
+                        className="block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm focus:ring-purple-500 focus:border-purple-500 dark:text-white"
+                        calendarClassName="dark:bg-gray-800 dark:text-white"
+                      />
+                    </div>
+                    {errors.dateOfBirth && (
+                      <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                        {errors.dateOfBirth}
+                      </p>
+                    )}
+                  </div>
+                </div>
 
                 <Input
                   label="Password"
