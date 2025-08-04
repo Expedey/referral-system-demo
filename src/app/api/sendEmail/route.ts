@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
     // Send email
     await transporter.sendMail({
-      from: `"Referral System" <${process.env.EMAIL_USER}>`,
+      from: `"BonBon Waitlist System" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       text,

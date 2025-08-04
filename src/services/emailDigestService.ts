@@ -265,7 +265,7 @@ export class EmailDigestService {
           html: emailContent,
           from: {
             email: 'noreply@yourcompany.com', // You can customize this
-            name: 'Referral System'
+            name: 'BonBon Waitlist System'
           }
         }),
       });

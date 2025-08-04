@@ -193,9 +193,9 @@ export class AdminService {
       try {
         await sendEmail({
           to: process.env.NEXT_PUBLIC_EMAIL_TO || email,
-          subject: 'Admin Invitation - Bonbon Whitelist',
+          subject: 'Admin Invitation - Bonbon Waitlist',
           text: `
-You have been invited as a ${role} for the Bonbon Whitelist.
+You have been invited as a ${role} for the Bonbon Waitlist.
 
 Your login credentials:
 Email: ${email}
@@ -205,7 +205,7 @@ Please use these credentials to log in to the admin panel.
 This invitation will expire in 7 days.
 
 Best regards,
-Bonbon Whitelist Team`,
+Bonbon Waitlist Team`,
           html: `
 <!DOCTYPE html>
 <html>
@@ -217,13 +217,13 @@ Bonbon Whitelist Team`,
     <div style="background-color: white; border-radius: 8px; padding: 40px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
       <!-- Header -->
       <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #4F46E5; margin: 0; font-size: 24px;">Welcome to Bonbon Whitelist</h1>
+        <h1 style="color: #4F46E5; margin: 0; font-size: 24px;">Welcome to Bonbon Waitlist</h1>
         <div style="width: 50px; height: 4px; background-color: #4F46E5; margin: 20px auto;"></div>
       </div>
 
       <!-- Main Content -->
       <div style="color: #374151; font-size: 16px; line-height: 24px;">
-        <p>You have been invited as a <span style="color: #4F46E5; font-weight: bold; text-transform: capitalize;">${role}</span> for the Bonbon Whitelist.</p>
+        <p>You have been invited as a <span style="color: #4F46E5; font-weight: bold; text-transform: capitalize;">${role}</span> for the Bonbon Waitlist.</p>
         
         <div style="background-color: #F3F4F6; border-radius: 8px; padding: 20px; margin: 30px 0;">
           <h2 style="color: #4F46E5; margin: 0 0 15px 0; font-size: 18px;">Your Login Credentials</h2>
@@ -247,7 +247,7 @@ Bonbon Whitelist Team`,
 
         <!-- Footer -->
         <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #E5E7EB; text-align: center; color: #6B7280;">
-          <p style="margin: 0;">Best regards,<br>Bonbon Whitelist Team</p>
+          <p style="margin: 0;">Best regards,<br>Bonbon Waitlist Team</p>
         </div>
       </div>
     </div>
