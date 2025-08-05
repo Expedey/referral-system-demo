@@ -9,6 +9,7 @@ import ReferralCard from "@/components/ReferralCard";
 import WaitlistRank from "@/components/WaitlistRank";
 import Button from "@/components/Button";
 import Navbar from "@/components/Navbar";
+import { supabase } from "@/lib/supabase";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -26,6 +27,160 @@ export default function DashboardPage() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showRefreshNotification, setShowRefreshNotification] = useState(false);
+  const [refreshTimeout, setRefreshTimeout] = useState<NodeJS.Timeout | null>(null);
+  console.log(isRefreshing);
+  console.log(showRefreshNotification);
+
+  // Function to refresh user data
+  const refreshUserData = async () => {
+    if (!user) return;
+    
+    // Clear any existing timeout
+    if (refreshTimeout) {
+      clearTimeout(refreshTimeout);
+    }
+    
+    // Set a new timeout to debounce rapid calls
+    const timeout = setTimeout(async () => {
+      try {
+        setIsRefreshing(true);
+        setError(null);
+        
+        // Load user stats and referral stats in parallel with timeout
+        const [stats, refStats] = await Promise.allSettled([
+          Promise.race([
+            UserService.getUserStats(user.id),
+            new Promise<never>((_, reject) => 
+              setTimeout(() => reject(new Error("User stats timeout")), 8000)
+            )
+          ]),
+          Promise.race([
+            ReferralService.getReferralStats(user.id),
+            new Promise<never>((_, reject) => 
+              setTimeout(() => reject(new Error("Referral stats timeout")), 8000)
+            )
+          ])
+        ]);
+
+        // Handle user stats
+        if (stats.status === 'fulfilled') {
+          setUserStats(stats.value);
+        } else {
+          console.error("Error loading user stats:", stats.reason);
+          setError("Failed to load user statistics");
+        }
+
+        // Handle referral stats
+        if (refStats.status === 'fulfilled') {
+          setReferralStats(refStats.value);
+        } else {
+          console.error("Error loading referral stats:", refStats.reason);
+          setError("Failed to load referral statistics");
+        }
+
+        // Show refresh notification if both stats were loaded successfully
+        if (stats.status === 'fulfilled' && refStats.status === 'fulfilled') {
+          setShowRefreshNotification(true);
+          setTimeout(() => setShowRefreshNotification(false), 3000);
+        }
+      } catch (error) {
+        console.error("Error refreshing user data:", error);
+        setError("Failed to refresh dashboard data");
+      } finally {
+        setIsRefreshing(false);
+      }
+    }, 500); // 500ms debounce
+
+    setRefreshTimeout(timeout);
+  };
+
+  // supabase.channel('any').on(
+  //           'postgres_changes',
+  //           {
+  //             event: '*',
+  //             schema: 'public',
+  //             table: 'users'
+  //           },
+  //           (payload) => {
+  //             console.log('Received change:', payload);
+  //           }
+  //         ).subscribe();
+
+  useEffect(() => {
+    async function init() {
+      if (!user) return;
+
+      try {
+        const { data } = await supabase.auth.getSession();
+        const token = data?.session?.access_token;
+        
+        if (token) {
+          supabase.realtime.setAuth(token);
+        }
+
+        // Create channel for users table changes (filtered to current user)
+        const usersChannel = supabase
+          .channel('user-changes')
+          .on('postgres_changes', { 
+            event: '*', 
+            schema: 'public', 
+            table: 'users',
+            filter: `id=eq.${user.id}`
+          }, payload => {
+            console.log('User Change:', payload);
+            console.log('Refreshing user stats due to user data change');
+            // Refresh user stats when user data changes
+            refreshUserData();
+          })
+          .subscribe((status) => {
+            console.log('Users channel status:', status);
+            if (status === 'CHANNEL_ERROR') {
+              console.error('Users channel error occurred');
+            }
+          });
+
+        // Create channel for referrals table changes (filtered to current user's referrals)
+        const referralsChannel = supabase
+          .channel('referrals-changes')
+          .on('postgres_changes', { 
+            event: '*', 
+            schema: 'public', 
+            table: 'referrals',
+            filter: `referrer_id=eq.${user.id}`
+          }, payload => {
+            console.log('Referral Change:', payload);
+            console.log('Refreshing referral stats due to referral data change');
+            // Refresh referral stats when referral data changes
+            refreshUserData();
+          })
+          .subscribe((status) => {
+            console.log('Referrals channel status:', status);
+            if (status === 'CHANNEL_ERROR') {
+              console.error('Referrals channel error occurred');
+            }
+          });
+
+        return () => {
+          usersChannel.unsubscribe();
+          referralsChannel.unsubscribe();
+        };
+      } catch (error) {
+        console.error('Error setting up realtime channels:', error);
+      }
+    }
+
+    const cleanup = init();
+    return () => {
+      cleanup.then(cleanupFn => cleanupFn?.());
+      // Clean up any pending refresh timeout
+      if (refreshTimeout) {
+        clearTimeout(refreshTimeout);
+      }
+    };
+  }, [user]);
+
 
   useEffect(() => {
     // Redirect if not authenticated
@@ -131,14 +286,38 @@ export default function DashboardPage() {
       <Navbar variant="dashboard" title="Dashboard" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Refresh Notification */}
+        {/* {showRefreshNotification && (
+          <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-green-600 text-xs">✓</span>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-green-800">
+                Dashboard updated
+              </p>
+              <p className="text-xs text-green-600">
+                Your stats have been refreshed with the latest data
+              </p>
+            </div>
+          </div>
+        )} */}
+
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {profile.username || profile.email}!
-          </h2>
-          <p className="text-gray-600">
-            Track your referrals and see your position on the waitlist.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Welcome back, {profile.username || profile.email}!
+              </h2>
+              <p className="text-gray-600">
+                Track your referrals and see your position on the waitlist.
+              </p>
+            </div>
+         
+          </div>
         </div>
 
         {/* Stats Grid */}

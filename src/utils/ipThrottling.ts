@@ -10,7 +10,7 @@ interface ThrottleConfig {
 
 // Default configuration
 const DEFAULT_CONFIG: ThrottleConfig = {
-  maxAttemptsPerHour: 2,
+  maxAttemptsPerHour: 10,
   maxVerificationsPerDay: 1,
 };
 
