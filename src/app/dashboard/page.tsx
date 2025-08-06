@@ -11,19 +11,6 @@ import Button from "@/components/Button";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
 
-// // Utility function for retrying async calls
-// async function fetchWithRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
-//   for (let i = 0; i < retries; i++) {
-//     try {
-//       return await fn();
-//     } catch (err) {
-//       if (i === retries - 1) throw err;
-//       await new Promise(res => setTimeout(res, 1000)); // wait 1s before retry
-//     }
-//   }
-//   throw new Error('fetchWithRetry: Unexpected error');
-// }
-
 export default function DashboardPage() {
   const router = useRouter();
   const { user, profile, loading: authLoading } = useAuth();
@@ -41,64 +28,63 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  // const [showRefreshNotification, setShowRefreshNotification] = useState(false);
+  const [showRefreshNotification, setShowRefreshNotification] = useState(false);
   const [refreshTimeout, setRefreshTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [isRetrying, setIsRetrying] = useState(false);
   console.log(isRefreshing);
+  console.log(showRefreshNotification);
 
   // Function to refresh user data
   const refreshUserData = async () => {
     if (!user) return;
+    
     // Clear any existing timeout
     if (refreshTimeout) {
       clearTimeout(refreshTimeout);
     }
+    
     // Set a new timeout to debounce rapid calls
     const timeout = setTimeout(async () => {
       try {
         setIsRefreshing(true);
-        setIsRetrying(false);
         setError(null);
-        let retryCount = 0;
-        const fetchStats = async () => {
-          try {
-            // 15s timeout for each fetch
-            const [stats, refStats] = await Promise.allSettled([
-              Promise.race([
-                UserService.getUserStats(user.id),
-                new Promise<never>((_, reject) => setTimeout(() => reject(new Error("User stats timeout")), 15000))
-              ]),
-              Promise.race([
-                ReferralService.getReferralStats(user.id),
-                new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Referral stats timeout")), 15000))
-              ])
-            ]);
-            // Handle user stats
-            if (stats.status === 'fulfilled') {
-              setUserStats(stats.value);
-            } else {
-              throw stats.reason;
-            }
-            // Handle referral stats
-            if (refStats.status === 'fulfilled') {
-              setReferralStats(refStats.value);
-            } else {
-              throw refStats.reason;
-            }
-            setIsRetrying(false);
-          } catch (err) {
-            retryCount++;
-            if (retryCount < 3) {
-              setIsRetrying(true);
-              await new Promise(res => setTimeout(res, 1000));
-              await fetchStats();
-            } else {
-              setIsRetrying(false);
-              throw err;
-            }
-          }
-        };
-        await fetchStats();
+        
+        // Load user stats and referral stats in parallel with timeout
+        const [stats, refStats] = await Promise.allSettled([
+          Promise.race([
+            UserService.getUserStats(user.id),
+            new Promise<never>((_, reject) => 
+              setTimeout(() => reject(new Error("User stats timeout")), 15000)
+            )
+          ]),
+          Promise.race([
+            ReferralService.getReferralStats(user.id),
+            new Promise<never>((_, reject) => 
+              setTimeout(() => reject(new Error("Referral stats timeout")), 15000)
+            )
+          ])
+        ]);
+
+        // Handle user stats
+        if (stats.status === 'fulfilled') {
+          setUserStats(stats.value);
+        } else {
+          console.error("Error loading user stats:", stats.reason);
+          setError("Failed to load user statistics");
+        }
+
+        // Handle referral stats
+        if (refStats.status === 'fulfilled') {
+          setReferralStats(refStats.value);
+        } else {
+          console.error("Error loading referral stats:", refStats.reason);
+          setError("Failed to load referral statistics");
+        }
+
+        // Show refresh notification if both stats were loaded successfully
+        if (stats.status === 'fulfilled' && refStats.status === 'fulfilled') {
+          setShowRefreshNotification(true);
+          setTimeout(() => setShowRefreshNotification(false), 3000);
+        }
       } catch (error) {
         console.error("Error refreshing user data:", error);
         setError("Failed to refresh dashboard data");
@@ -106,6 +92,7 @@ export default function DashboardPage() {
         setIsRefreshing(false);
       }
     }, 500); // 500ms debounce
+
     setRefreshTimeout(timeout);
   };
 
@@ -257,14 +244,12 @@ export default function DashboardPage() {
   }, [user, profile, authLoading, router]);
 
   // Show loading state
-  if (authLoading || loading || isRetrying) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">
-            {isRetrying ? 'Still loading, please wait…' : 'Loading dashboard...'}
-          </p>
+          <p className="mt-4 text-gray-600">Loading dashboard...</p>
         </div>
       </div>
     );
