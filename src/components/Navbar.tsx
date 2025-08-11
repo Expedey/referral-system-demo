@@ -88,11 +88,24 @@ export default function Navbar({
 
           <div className="flex items-center space-x-4">
             {showBackButton ? (
-              <Link href={backUrl}>
+             <> <Link href={backUrl}>
                 <Button variant="outline" size="sm">
                   {backButtonText}
                 </Button>
               </Link>
+             {user && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={async () => {
+                  await signOut();
+                  router.push('/');
+                }}
+              >
+                Sign Out
+              </Button>
+            )}
+            </>
             ) : variant === "landing" ? (
               <>
                 {user ? (
