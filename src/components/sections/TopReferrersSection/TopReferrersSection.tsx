@@ -65,9 +65,8 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       referrals: leaderboardData[0]?.total_referrals || 0,
       podiumImage: "/group.png",
       rank: "1",
-      podiumHeight: "h-[363px]",
       rankStyles:
-        "w-[61px] h-[194px] top-[22px] left-[46px] text-[123.9px] leading-[173.5px]",
+        "w-[61px] h-[194px] top-[22px] left-[46px] text-[123.9px] leading-[173.5px] max-md:w-[40px] max-md:h-[120px] max-md:top-[15px] max-md:left-[30px] max-md:text-[60px] max-md:leading-[80px] max-sm:w-[30px] max-sm:h-[90px] max-sm:top-[10px] max-sm:left-[25px] max-sm:text-[40px] max-sm:leading-[60px]",
     },
     {
       id: leaderboardData[1]?.id || "2",
@@ -75,9 +74,8 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       referrals: leaderboardData[1]?.total_referrals || 0,
       podiumImage: "/group-1.png",
       rank: "2",
-      podiumHeight: "h-[261px]",
       rankStyles:
-        "w-[71px] h-[162px] top-[23px] left-[41px] text-[99.1px] leading-[138.8px]",
+        "w-[71px] h-[162px] top-[23px] left-[41px] text-[99.1px] leading-[138.8px] max-md:w-[45px] max-md:!h-[100px] max-md:top-[15px] max-md:left-[27px] max-md:text-[50px] max-md:leading-[70px] max-sm:w-[35px] max-sm:h-[75px] max-sm:top-[10px] max-sm:left-[22px] max-sm:text-[35px] max-sm:leading-[55px]",
     },
     {
       id: leaderboardData[2]?.id || "3",
@@ -85,9 +83,8 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       referrals: leaderboardData[2]?.total_referrals || 0,
       podiumImage: "/group-2.png",
       rank: "3",
-      podiumHeight: "h-[204px]",
       rankStyles:
-        "w-[57px] h-[95px] top-[18px] left-[47px] text-[74.3px] leading-[104.1px]",
+        "w-[57px] h-[95px] top-[18px] left-[47px] text-[74.3px] leading-[104.1px] max-md:w-[35px] max-md:!h-[60px] max-md:top-[12px] max-md:left-[32px] max-md:text-[40px] max-md:leading-[55px] max-sm:w-[25px] max-sm:h-[45px] max-sm:top-[8px] max-sm:left-[27px] max-sm:text-[28px] max-sm:leading-[40px]",
     },
   ] : [
     {
@@ -96,9 +93,8 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       referrals: 7,
       podiumImage: "/group.png",
       rank: "1",
-      podiumHeight: "h-[363px]",
       rankStyles:
-        "w-[61px] h-[194px] top-[22px] left-[46px] text-[123.9px] leading-[173.5px]",
+        "w-[61px] h-[194px] top-[22px] left-[46px] text-[123.9px] leading-[173.5px] max-md:w-[40px] max-md:h-[120px] max-md:top-[15px] max-md:left-[30px] max-md:text-[60px] max-md:leading-[80px] max-sm:w-[30px] max-sm:h-[90px] max-sm:top-[10px] max-sm:left-[25px] max-sm:text-[40px] max-sm:leading-[60px]",
     },
     {
       id: "2",
@@ -106,9 +102,8 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       referrals: 7,
       podiumImage: "/group-1.png",
       rank: "2",
-      podiumHeight: "h-[261px]",
       rankStyles:
-        "w-[71px] h-[162px] top-[23px] left-[41px] text-[99.1px] leading-[138.8px]",
+        "w-[71px] h-[162px] top-[23px] left-[41px] text-[99.1px] leading-[138.8px] max-md:w-[45px] max-md:!h-[100px] max-md:top-[15px] max-md:left-[27px] max-md:text-[50px] max-md:leading-[70px] max-sm:w-[35px] max-sm:h-[75px] max-sm:top-[10px] max-sm:left-[22px] max-sm:text-[35px] max-sm:leading-[55px]",
     },
     {
       id: "3",
@@ -116,9 +111,8 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       referrals: 7,
       podiumImage: "/group-2.png",
       rank: "3",
-      podiumHeight: "h-[204px]",
       rankStyles:
-        "w-[57px] h-[95px] top-[18px] left-[47px] text-[74.3px] leading-[104.1px]",
+        "w-[57px] h-[95px] top-[18px] left-[47px] text-[74.3px] leading-[104.1px] max-md:w-[35px] max-md:!h-[60px] max-md:top-[12px] max-md:left-[32px] max-md:text-[40px] max-md:leading-[55px] max-sm:w-[25px] max-sm:h-[45px] max-sm:top-[8px] max-sm:left-[27px] max-sm:text-[28px] max-sm:leading-[40px]",
     },
   ];
 
@@ -128,49 +122,60 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
         Top 3 Champions
       </h2>
 
-      <div className="flex items-end gap-16 relative self-stretch w-full max-md:flex-col max-md:items-center">
+      <div className="flex items-end gap-16 relative self-stretch w-full max-md:flex-row max-md:gap-4 max-md:justify-center">
         {champions.map((champion) => (
           <div
             key={champion.id}
-            className="flex flex-col w-[153px] items-center gap-10 relative"
+            className="flex flex-col w-[153px] max-md:w-[100px] max-sm:w-[80px] items-center gap-10 max-md:gap-4 relative"
           >
             <Card className="border-none bg-transparent shadow-none">
-              <CardContent className="flex flex-col items-center gap-6 p-0">
-                <div className={`relative w-[75px] h-[75px] rounded-full flex items-center justify-center text-white font-rubik font-semibold text-2xl ${getBackgroundColor(champion.name)}`}>
+              <CardContent className="flex flex-col items-center gap-6 max-md:gap-3 p-0">
+                <div className={`relative w-[75px] h-[75px] max-md:w-[60px] max-md:h-[60px] max-sm:w-[50px] max-sm:h-[50px] rounded-full flex items-center justify-center text-white font-rubik font-semibold text-2xl max-md:text-xl max-sm:text-lg ${getBackgroundColor(champion.name)}`}>
                   {getInitials(champion.name)}
                   
                   {/* Badge for top 3 positions */}
-                  <div className="mt-2 absolute -top-4 -left-1">
+                  <div className="mt-2 absolute -top-4 -left-1 max-md:-top-4 max-md:left-0 max-sm:-top-3 max-sm:-left-1">
                     <img
                       src={getBadge(parseInt(champion.rank))}
                       alt={`Rank ${champion.rank} Badge`}
-                      className="w-[35px] h-[30px] inline-block"
+                      className="w-[35px] h-[30px] max-md:w-[25px] max-md:h-[20px] max-sm:w-[20px] max-sm:h-[16px] inline-block"
                     />
                   </div>
                 </div>
 
                 <div className="flex flex-col items-center gap-2 w-full">
-                  <h3 className="font-medium text-[#1f2c73] text-[19.8px] text-center tracking-[0] leading-[29.7px] font-rubik">
+                  <h3 className="font-medium text-[#1f2c73] text-[19.8px] max-md:text-[16px] max-sm:text-[14px] text-center tracking-[0] leading-[29.7px] max-md:leading-[20px] max-sm:leading-[18px] font-rubik">
                     {champion.name}
                   </h3>
 
-                  <Badge className="bg-[#732bc4] text-white px-[14.87px] py-[9.91px] rounded-[14.87px] font-medium text-[14.9px] leading-[22.3px] font-rubik hover:bg-[#732bc4]">
+                  <Badge className="bg-[#732bc4] text-white px-[14.87px] py-[9.91px] max-md:px-[10px] max-md:py-[6px] max-sm:px-[8px] max-sm:py-[4px] rounded-[14.87px] max-md:rounded-[10px] max-sm:rounded-[8px] font-medium text-[14.9px] max-md:text-[12px] max-sm:text-[10px] leading-[22.3px] max-md:leading-[16px] max-sm:leading-[14px] font-rubik hover:bg-[#732bc4]">
                     {champion.referrals} referrals
                   </Badge>
-
                 </div>
               </CardContent>
             </Card>
 
             <div
-              className={`relative w-[153px] ${champion.podiumHeight}`}
+              className={`relative w-[153px] max-md:w-[100px] max-sm:w-[80px] ${
+                champion.rank === "1" ? 
+                  "h-[363px] " :
+                  champion.rank === "2" ?
+                  "h-[261px]" :
+                  "h-[204px]"
+              }`}
               style={{
                 backgroundImage: `url(${champion.podiumImage})`,
                 backgroundSize: "100% 100%",
               }}
             >
               <div
-                className={`absolute ${champion.rankStyles} font-normal text-white text-center tracking-[0] whitespace-nowrap font-rubik`}
+                className={`absolute font-normal text-white text-center tracking-[0] whitespace-nowrap font-rubik
+                  ${champion.rank === "1" ? 
+                    "w-[61px] h-[194px] top-[22px] left-[46px] text-[123.9px] leading-[173.5px] max-md:w-[40px] max-md:h-[120px] max-md:top-[15px] max-md:left-[30px] max-md:text-[60px] max-md:leading-[80px] max-sm:w-[30px] max-sm:h-[90px] max-sm:top-[20px] max-sm:left-[25px] max-sm:text-[40px] max-sm:leading-[60px]" :
+                    champion.rank === "2" ?
+                    "w-[71px] h-[162px] top-[23px] left-[41px] text-[99.1px] leading-[138.8px] max-md:w-[45px] max-md:!h-[100px] max-md:top-[15px] max-md:left-[27px] max-md:text-[50px] max-md:leading-[70px] max-sm:w-[35px] max-sm:h-[75px] max-sm:top-[20px] max-sm:left-[22px] max-sm:text-[35px] max-sm:leading-[55px]" :
+                    "w-[57px] h-[95px] top-[18px] left-[47px] text-[74.3px] leading-[104.1px] max-md:w-[35px] max-md:!h-[60px] max-md:top-[12px] max-md:left-[32px] max-md:text-[40px] max-md:leading-[55px] max-sm:w-[25px] max-sm:h-[45px] max-sm:top-[20px] max-sm:left-[27px] max-sm:text-[28px] max-sm:leading-[40px]"
+                  }`}
               >
                 {champion.rank}
               </div>

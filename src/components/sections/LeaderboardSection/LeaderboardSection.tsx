@@ -116,7 +116,7 @@ export const LeaderboardSection = ({ leaderboardData = [] }: LeaderboardSectionP
   };
 
   return (
-    <section className="w-full max-w-[990px] mx-auto my-10">
+    <section className="relative w-full max-w-[990px] mx-auto md:mt-0 md:pt-0 pt-14 -mt-[200px] z-[999] bg-white">
       <h2 className="text-4xl text-center font-medium text-[#1f2c73] font-rubik mb-10 tracking-[0] leading-[45px]">
         Leaderboard Top Ranking
       </h2>
