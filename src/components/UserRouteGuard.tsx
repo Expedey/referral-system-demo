@@ -21,7 +21,8 @@ export default function UserRouteGuard({
   const protectedPages = [
     '/',
     '/dashboard',
-    '/leaderboard'
+    '/leaderboard',
+    '/leaderboardc',
   ];
 
   const isProtectedPage = protectedPages.includes(pathname);
