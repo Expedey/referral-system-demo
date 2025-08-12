@@ -62,7 +62,7 @@ const WaitlistRank: React.FC<WaitlistRankProps> = ({
   return (
     <div
       className={clsx(
-        "bg-white rounded-xl shadow-lg border border-gray-200 p-6",
+        "bg-white rounded-xl shadow border border-gray-200 p-6",
         className
       )}
     >
