@@ -42,21 +42,21 @@ export default function Navbar({
     switch (variant) {
       case "dashboard":
       case "leaderboard":
-        return { width: 130, height: 20, className: " min-w-[130px]" };
+        return { width: 130, height: 20, className: " sm:min-w-[130px] max-sm:w-[100px]" };
       case "landing":
       default:
-        return { width: 130, height: 20, className: " min-w-[130px]" };
+        return { width: 130, height: 20, className: " sm:min-w-[130px] max-sm:w-[100px]" };
     }
   };
 
   const getBackground = () => {
     switch (variant) {
       case "landing":
-        return "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50";
+        return "bg-white/80  backdrop-blur-sm border-b border-gray-200  sticky top-0 z-50";
       case "dashboard":
       case "leaderboard":
       default:
-        return "bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700";
+        return "bg-white  shadow-sm border-b border-gray-200 ";
     }
   };
 
@@ -77,9 +77,9 @@ export default function Navbar({
               />
               {title && (
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h1>
+                  <h1 className="text-xl font-bold text-gray-900 ">{title}</h1>
                   {subtitle && (
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{subtitle}</p>
+                    <p className="text-sm text-gray-600 ">{subtitle}</p>
                   )}
                 </div>
               )}
@@ -89,13 +89,14 @@ export default function Navbar({
           <div className="flex items-center space-x-4">
             {showBackButton ? (
              <> <Link href={backUrl}>
-                <Button variant="outline" size="sm">
+                <Button className="max-sm:text-xs" variant="purpleOutline" size="sm">
                   {backButtonText}
                 </Button>
               </Link>
              {user && (
               <Button 
-                variant="primary" 
+                variant="purple" 
+                className="max-sm:text-xs"
                 size="sm"
                 onClick={async () => {
                   await signOut();
@@ -110,13 +111,13 @@ export default function Navbar({
               <>
                 {user ? (
                   <Link href="/dashboard">
-                    <Button variant="primary" size="sm">
+                    <Button variant="primary" className="max-sm:text-xs" size="sm">
                       Dashboard
                     </Button>
                   </Link>
                 ) : (
                   <Link href="/signup">
-                    <Button variant="primary" size="sm">
+                    <Button variant="primary" className="max-sm:text-xs" size="sm">
                       Join Waitlist
                     </Button>
                   </Link>
@@ -125,13 +126,14 @@ export default function Navbar({
             ) : (
               <>
                 <Link href="/leaderboard">
-                  <Button variant="purpleOutline" size="sm">
+                  <Button variant="purpleOutline" className="max-sm:text-xs" size="sm">
                     View Leaderboard
                   </Button>
                 </Link>
                 {user && (
                   <Button 
                     variant="purple" 
+                    className="max-sm:text-xs"
                     size="sm"
                     onClick={async () => {
                       await signOut();

@@ -122,15 +122,15 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
           <label className="block text-sm font-medium text-gray-500 mb-2">
             Referral Link
           </label>
-          <div className="flex items-center space-x-3">
-            <div className="flex-1 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600 border border-gray-200">
+          <div className="flex items-center space-x-3 max-sm:flex-col max-sm:gap-3">
+            <div className="flex-1 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600 border border-gray-200 break-all">
               {referralUrl}
             </div>
             <Button
               variant="primary"
               size="sm"
               onClick={shareReferral}
-              className="!bg-[#702DFF] hover:!bg-[#6f2dffc1] !border-none"
+              className="!bg-[#702DFF] hover:!bg-[#6f2dffc1] !border-none max-sm:w-full"
             >
               <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>

@@ -25,7 +25,7 @@ const Button: React.FC<ButtonProps> = ({
     primary:
       "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400",
     purple:
-      "bg-[#702DFF] text-white hover:bg-[#6f2dffbe] focus:!ring-none focus:!ring-offset-0 shadow-sm dark:bg-[#702DFF] dark:hover:bg-[#702DFF] focus:!border-none ",
+      "bg-[#702DFF] text-white hover:bg-[#6f2dffbe] focus:!ring-none focus:!ring-offset-0 shadow-sm dark:bg-[#702DFF]  focus:!border-none ",
     purpleOutline:
       "bg-white text-[#702DFF] hover:bg-[#6f2dff3e] focus:!ring-none focus:!ring-offset-0 focus:!shadow-none focus:!ring-0 border border-[#702DFF]",
     secondary:
