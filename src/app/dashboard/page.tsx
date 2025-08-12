@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { UserService } from "@/services/userService";
@@ -11,6 +11,59 @@ import Button from "@/components/Button";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
+
+// Custom hook for animated counters with fade effects
+const useAnimatedCounter = (value: number, duration: number = 1000) => {
+  const [displayValue, setDisplayValue] = useState(value);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showOldValue, setShowOldValue] = useState(false);
+  const [oldValue, setOldValue] = useState(value);
+  const prevValueRef = useRef(value);
+
+  useEffect(() => {
+    if (value !== prevValueRef.current) {
+      setIsAnimating(true);
+      setOldValue(prevValueRef.current);
+      setShowOldValue(true);
+      
+      const startValue = prevValueRef.current;
+      const endValue = value;
+      const startTime = Date.now();
+
+      // First phase: fade out old value
+      setTimeout(() => {
+        setShowOldValue(false);
+        
+        // Second phase: animate to new value
+        const animate = () => {
+          const currentTime = Date.now();
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+
+          // Easing function for smooth animation
+          const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+          const currentValue = Math.round(startValue + (endValue - startValue) * easeOutQuart);
+
+          setDisplayValue(currentValue);
+
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            setDisplayValue(endValue);
+            setIsAnimating(false);
+          }
+        };
+
+        requestAnimationFrame(animate);
+      }, 200); // Delay before starting the count animation
+
+      prevValueRef.current = value;
+    }
+  }, [value, duration]);
+
+  return { displayValue, isAnimating, showOldValue, oldValue };
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const { user, profile, loading: authLoading } = useAuth();
@@ -30,6 +83,13 @@ export default function DashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showRefreshNotification, setShowRefreshNotification] = useState(false);
   const [refreshTimeout, setRefreshTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Animated counters
+  const totalReferralsCounter = useAnimatedCounter(userStats?.totalReferrals || 0);
+  const verifiedReferralsCounter = useAnimatedCounter(referralStats?.verifiedReferrals || 0);
+  const pendingReferralsCounter = useAnimatedCounter(referralStats?.pendingReferrals || 0);
+  const conversionRateCounter = useAnimatedCounter(referralStats?.conversionRate || 0);
+
   console.log(isRefreshing);
   console.log(showRefreshNotification);
 
@@ -342,7 +402,9 @@ export default function DashboardPage() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={`bg-white rounded-lg shadow p-6 transition-all duration-300 ${
+            totalReferralsCounter.isAnimating ? 'ring-2 ring-blue-200 shadow-lg' : ''
+          }`}>
             <div className="flex items-start justify-between">
          
               <div className="flex flex-col gap-4 w-full">
@@ -353,30 +415,40 @@ export default function DashboardPage() {
                 </p>
                 <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/total-referrals.svg"} alt=""/>
                 </div>
-                <p className="text-3xl font-bold text-gray-900">
-                  {userStats?.totalReferrals || 0}
-                </p>
+                <div className="relative h-12 flex items-center">
+                  {/* Old value fading up */}
+                  {totalReferralsCounter.showOldValue && (
+                    <div className={`absolute inset-0 flex items-center transition-all duration-500 ${
+                      totalReferralsCounter.isAnimating 
+                        ? 'opacity-0 -translate-y-4 text-blue-400' 
+                        : 'opacity-100 translate-y-0'
+                    }`}>
+                      <span className="text-3xl font-bold">{totalReferralsCounter.oldValue}</span>
+                    </div>
+                  )}
+                  
+                  {/* New value fading in */}
+                  <div className={`transition-all duration-500 ${
+                    totalReferralsCounter.isAnimating && !totalReferralsCounter.showOldValue
+                      ? 'opacity-100 translate-y-0 text-blue-600 scale-105' 
+                      : totalReferralsCounter.isAnimating
+                      ? 'opacity-0 translate-y-4'
+                      : 'opacity-100 translate-y-0'
+                  }`}>
+                    <span className="text-3xl font-bold text-gray-900">
+                      {totalReferralsCounter.displayValue}
+                    </span>
+                  </div>
+                </div>
               </div>
               
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={`bg-white rounded-lg shadow p-6 transition-all duration-300 ${
+            verifiedReferralsCounter.isAnimating ? 'ring-2 ring-green-200 shadow-lg' : ''
+          }`}>
             <div className="flex items-center">
-              {/* <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                  <span className="text-green-600 text-lg">✅</span>
-                </div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">
-                  Verified Referrals
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {referralStats?.verifiedReferrals || 0}
-                </p>
-              </div> */}
-
 <div className="flex flex-col gap-4 w-full">
                 <div className="flex items-center justify-between gap-2 w-full">
 
@@ -385,26 +457,39 @@ export default function DashboardPage() {
                 </p>
                 <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/verified-referrals.svg"} alt=""/>
                 </div>
-                <p className="text-3xl font-bold text-gray-900">
-                {referralStats?.verifiedReferrals || 0}
-                </p>
+                <div className="relative h-12 flex items-center">
+                  {/* Old value fading up */}
+                  {verifiedReferralsCounter.showOldValue && (
+                    <div className={`absolute inset-0 flex items-center transition-all duration-500 ${
+                      verifiedReferralsCounter.isAnimating 
+                        ? 'opacity-0 -translate-y-4 text-green-400' 
+                        : 'opacity-100 translate-y-0'
+                    }`}>
+                      <span className="text-3xl font-bold">{verifiedReferralsCounter.oldValue}</span>
+                    </div>
+                  )}
+                  
+                  {/* New value fading in */}
+                  <div className={`transition-all duration-500 ${
+                    verifiedReferralsCounter.isAnimating && !verifiedReferralsCounter.showOldValue
+                      ? 'opacity-100 translate-y-0 text-green-600 scale-105' 
+                      : verifiedReferralsCounter.isAnimating
+                      ? 'opacity-0 translate-y-4'
+                      : 'opacity-100 translate-y-0'
+                  }`}>
+                    <span className="text-3xl font-bold text-gray-900">
+                      {verifiedReferralsCounter.displayValue}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={`bg-white rounded-lg shadow p-6 transition-all duration-300 ${
+            pendingReferralsCounter.isAnimating ? 'ring-2 ring-yellow-200 shadow-lg' : ''
+          }`}>
             <div className="flex items-center">
-              {/* <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <span className="text-yellow-600 text-lg">⏳</span>
-                </div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Pending</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {referralStats?.pendingReferrals || 0}
-                </p>
-              </div> */}
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex items-center justify-between gap-2 w-full">
 
@@ -413,28 +498,39 @@ export default function DashboardPage() {
                 </p>
                 <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/pending-referrals.svg"} alt=""/>
                 </div>
-                <p className="text-3xl font-bold text-gray-900">
-                {referralStats?.pendingReferrals || 0}
-                </p>
+                <div className="relative h-12 flex items-center">
+                  {/* Old value fading up */}
+                  {pendingReferralsCounter.showOldValue && (
+                    <div className={`absolute inset-0 flex items-center transition-all duration-500 ${
+                      pendingReferralsCounter.isAnimating 
+                        ? 'opacity-0 -translate-y-4 text-yellow-400' 
+                        : 'opacity-100 translate-y-0'
+                    }`}>
+                      <span className="text-3xl font-bold">{pendingReferralsCounter.oldValue}</span>
+                    </div>
+                  )}
+                  
+                  {/* New value fading in */}
+                  <div className={`transition-all duration-500 ${
+                    pendingReferralsCounter.isAnimating && !pendingReferralsCounter.showOldValue
+                      ? 'opacity-100 translate-y-0 text-yellow-600 scale-105' 
+                      : pendingReferralsCounter.isAnimating
+                      ? 'opacity-0 translate-y-4'
+                      : 'opacity-100 translate-y-0'
+                  }`}>
+                    <span className="text-3xl font-bold text-gray-900">
+                      {pendingReferralsCounter.displayValue}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={`bg-white rounded-lg shadow p-6 transition-all duration-300 ${
+            conversionRateCounter.isAnimating ? 'ring-2 ring-purple-200 shadow-lg' : ''
+          }`}>
             <div className="flex items-center">
-              {/* <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <span className="text-purple-600 text-lg">📈</span>
-                </div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">
-                  Conversion Rate
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {referralStats?.conversionRate || 0}%
-                </p>
-              </div> */}
                 <div className="flex flex-col gap-4 w-full">
                 <div className="flex items-center justify-between gap-2 w-full">
 
@@ -443,9 +539,31 @@ export default function DashboardPage() {
                 </p>
                 <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/conversion-rate.svg"} alt=""/>
                 </div>
-                <p className="text-3xl font-bold text-gray-900">
-                {referralStats?.conversionRate || 0}%
-                </p>
+                <div className="relative h-12 flex items-center">
+                  {/* Old value fading up */}
+                  {conversionRateCounter.showOldValue && (
+                    <div className={`absolute inset-0 flex items-center transition-all duration-500 ${
+                      conversionRateCounter.isAnimating 
+                        ? 'opacity-0 -translate-y-4 text-purple-400' 
+                        : 'opacity-100 translate-y-0'
+                    }`}>
+                      <span className="text-3xl font-bold">{conversionRateCounter.oldValue}%</span>
+                    </div>
+                  )}
+                  
+                  {/* New value fading in */}
+                  <div className={`transition-all duration-500 ${
+                    conversionRateCounter.isAnimating && !conversionRateCounter.showOldValue
+                      ? 'opacity-100 translate-y-0 text-purple-600 scale-105' 
+                      : conversionRateCounter.isAnimating
+                      ? 'opacity-0 translate-y-4'
+                      : 'opacity-100 translate-y-0'
+                  }`}>
+                    <span className="text-3xl font-bold text-gray-900">
+                      {conversionRateCounter.displayValue}%
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -501,17 +619,39 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                  <div className={`flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200 transition-all duration-300 ${
+                    verifiedReferralsCounter.isAnimating ? 'ring-2 ring-green-200 shadow-lg' : ''
+                  }`}>
                     <div className="flex items-center space-x-3">
-                      {/* <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <span className="text-green-600 text-sm">✅</span>
-                      </div> */}
                       <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/verified-referrals.svg"} alt=""/>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {referralStats?.verifiedReferrals || 0} successful
-                          referrals
-                        </p>
+                      <div className="relative">
+                        <div className={`font-medium text-gray-900 transition-all duration-300 ${
+                          verifiedReferralsCounter.isAnimating ? 'text-green-600' : ''
+                        }`}>
+                          <div className="relative">
+                            {/* Old value fading up */}
+                            {verifiedReferralsCounter.showOldValue && (
+                              <div className={`absolute inset-0 transition-all duration-500 ${
+                                verifiedReferralsCounter.isAnimating 
+                                  ? 'opacity-0 -translate-y-2 text-green-400' 
+                                  : 'opacity-100 translate-y-0'
+                              }`}>
+                                {verifiedReferralsCounter.oldValue} successful referrals
+                              </div>
+                            )}
+                            
+                            {/* New value fading in */}
+                            <div className={`transition-all duration-500 ${
+                              verifiedReferralsCounter.isAnimating && !verifiedReferralsCounter.showOldValue
+                                ? 'opacity-100 translate-y-0' 
+                                : verifiedReferralsCounter.isAnimating
+                                ? 'opacity-0 translate-y-2'
+                                : 'opacity-100 translate-y-0'
+                            }`}>
+                              {verifiedReferralsCounter.displayValue} successful referrals
+                            </div>
+                          </div>
+                      </div>
                         <p className="text-sm text-gray-600">
                           Great job! Keep it up to improve your position.
                         </p>
@@ -520,16 +660,39 @@ export default function DashboardPage() {
                   </div>
 
                   {referralStats && referralStats.pendingReferrals > 0 && (
-                    <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div className={`flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200 transition-all duration-300 ${
+                      pendingReferralsCounter.isAnimating ? 'ring-2 ring-yellow-200 shadow-lg' : ''
+                    }`}>
                       <div className="flex items-center space-x-3">
-                        {/* <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                          <span className="text-yellow-600 text-sm">⏳</span>
-                        </div> */}
                         <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/pending-referrals.svg"} alt=""/>
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {referralStats.pendingReferrals} pending referrals
-                          </p>
+                        <div className="relative">
+                          <div className={`font-medium text-gray-900 transition-all duration-300 ${
+                            pendingReferralsCounter.isAnimating ? 'text-yellow-600' : ''
+                          }`}>
+                            <div className="relative">
+                              {/* Old value fading up */}
+                              {pendingReferralsCounter.showOldValue && (
+                                <div className={`absolute inset-0 transition-all duration-500 ${
+                                  pendingReferralsCounter.isAnimating 
+                                    ? 'opacity-0 -translate-y-2 text-yellow-400' 
+                                    : 'opacity-100 translate-y-0'
+                                }`}>
+                                  {pendingReferralsCounter.oldValue} pending referrals
+                                </div>
+                              )}
+                              
+                              {/* New value fading in */}
+                              <div className={`transition-all duration-500 ${
+                                pendingReferralsCounter.isAnimating && !pendingReferralsCounter.showOldValue
+                                  ? 'opacity-100 translate-y-0' 
+                                  : pendingReferralsCounter.isAnimating
+                                  ? 'opacity-0 translate-y-2'
+                                  : 'opacity-100 translate-y-0'
+                              }`}>
+                                {pendingReferralsCounter.displayValue} pending referrals
+                              </div>
+                            </div>
+                        </div>
                           <p className="text-sm text-gray-600">
                             Waiting for email verification
                           </p>
