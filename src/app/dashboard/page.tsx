@@ -10,7 +10,7 @@ import WaitlistRank from "@/components/WaitlistRank";
 import Button from "@/components/Button";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
-
+import Image from "next/image";
 export default function DashboardPage() {
   const router = useRouter();
   const { user, profile, loading: authLoading } = useAuth();
@@ -259,7 +259,7 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar variant="dashboard" title="Dashboard" />
+        <Navbar variant="dashboard"  />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Dashboard</h3>
@@ -283,7 +283,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <Navbar variant="dashboard" title="Dashboard" />
+      <Navbar variant="dashboard" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Refresh Notification */}
@@ -305,8 +305,28 @@ export default function DashboardPage() {
           </div>
         )} */}
 
+<div className="relative py-[33px] px-[24px] self-stretch w-full  bg-[#702cff] rounded-[20px] overflow-hidden bg-[url('/dashboard-banner.png')] bg-cover bg-center flex flex-col gap-5 mb-[31px]">
+    
+
+   
+   <h1 className="text-white text-3xl font-bold">
+    Welcome back, {profile.username || profile.email}!
+   </h1>
+   <p className="text-white text-sm">
+    Track your referrals and see your position on the waitlist.
+   </p>
+   <Button
+   variant="black"
+   className="!rounded-[40px] w-fit !py-[10px] !px-[16px] !text-[16px]"
+   onClick={() => router.push("/leaderboard")}
+   >
+    View Leaderboard
+    <Image className="ml-3 min-w-[26px] min-h-[26px]" width={26} height={26} src={"/btn.svg"} alt=""/>
+   </Button>
+      </div>
+
         {/* Welcome Section */}
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-2">
@@ -318,31 +338,32 @@ export default function DashboardPage() {
             </div>
          
           </div>
-        </div>
+        </div> */}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <span className="text-blue-600 text-lg">📊</span>
-                </div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">
+            <div className="flex items-start justify-between">
+         
+              <div className="flex flex-col gap-4 w-full">
+                <div className="flex items-center justify-between gap-2 w-full">
+
+                <p className="text-[16px] font-medium text-gray-500">
                   Total Referrals
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
+                <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/total-referrals.svg"} alt=""/>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">
                   {userStats?.totalReferrals || 0}
                 </p>
               </div>
+              
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              {/* <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                   <span className="text-green-600 text-lg">✅</span>
                 </div>
@@ -354,13 +375,26 @@ export default function DashboardPage() {
                 <p className="text-2xl font-bold text-gray-900">
                   {referralStats?.verifiedReferrals || 0}
                 </p>
+              </div> */}
+
+<div className="flex flex-col gap-4 w-full">
+                <div className="flex items-center justify-between gap-2 w-full">
+
+                <p className="text-[16px] font-medium text-gray-500">
+                Verified Referrals
+                </p>
+                <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/verified-referrals.svg"} alt=""/>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">
+                {referralStats?.verifiedReferrals || 0}
+                </p>
               </div>
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              {/* <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
                   <span className="text-yellow-600 text-lg">⏳</span>
                 </div>
@@ -370,13 +404,25 @@ export default function DashboardPage() {
                 <p className="text-2xl font-bold text-gray-900">
                   {referralStats?.pendingReferrals || 0}
                 </p>
+              </div> */}
+              <div className="flex flex-col gap-4 w-full">
+                <div className="flex items-center justify-between gap-2 w-full">
+
+                <p className="text-[16px] font-medium text-gray-500">
+                Pending
+                </p>
+                <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/pending-referrals.svg"} alt=""/>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">
+                {referralStats?.pendingReferrals || 0}
+                </p>
               </div>
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              {/* <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                   <span className="text-purple-600 text-lg">📈</span>
                 </div>
@@ -388,6 +434,18 @@ export default function DashboardPage() {
                 <p className="text-2xl font-bold text-gray-900">
                   {referralStats?.conversionRate || 0}%
                 </p>
+              </div> */}
+                <div className="flex flex-col gap-4 w-full">
+                <div className="flex items-center justify-between gap-2 w-full">
+
+                <p className="text-[16px] font-medium text-gray-500">
+                Conversion Rate
+                </p>
+                <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/conversion-rate.svg"} alt=""/>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">
+                {referralStats?.conversionRate || 0}%
+                </p>
               </div>
             </div>
           </div>
@@ -398,7 +456,6 @@ export default function DashboardPage() {
           {/* Waitlist Position */}
           <WaitlistRank
             position={userStats?.waitlistPosition || 0}
-            className="h-fit"
           />
 
           {/* Referral Card */}
@@ -412,13 +469,13 @@ export default function DashboardPage() {
 
         {/* Recent Activity */}
         <div className="mt-8">
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200">
+          <div className=" rounded-lg ">
+            <div className="">
               <h3 className="text-lg font-semibold text-gray-900">
                 Recent Activity
               </h3>
             </div>
-            <div className="p-6">
+            <div className="py-6">
               {userStats?.totalReferrals === 0 ? (
                 <div className="text-center py-8">
                   <div className="text-gray-400 text-6xl mb-4">🎯</div>
@@ -444,11 +501,12 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      {/* <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                         <span className="text-green-600 text-sm">✅</span>
-                      </div>
+                      </div> */}
+                      <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/verified-referrals.svg"} alt=""/>
                       <div>
                         <p className="font-medium text-gray-900">
                           {referralStats?.verifiedReferrals || 0} successful
@@ -462,11 +520,12 @@ export default function DashboardPage() {
                   </div>
 
                   {referralStats && referralStats.pendingReferrals > 0 && (
-                    <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200">
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                        {/* <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
                           <span className="text-yellow-600 text-sm">⏳</span>
-                        </div>
+                        </div> */}
+                        <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/pending-referrals.svg"} alt=""/>
                         <div>
                           <p className="font-medium text-gray-900">
                             {referralStats.pendingReferrals} pending referrals

@@ -17,12 +17,12 @@ export const TopChampionsSection = () => {
               />
             </div>
 
-            <h2 className="font-medium text-4xl text-center tracking-[0] leading-[45px] font-rubik">
+            <h2 className="font-medium text-4xl max-md:text-2xl text-center tracking-[0] leading-[45px] font-rubik">
               Top Referrers
             </h2>
           </div>
 
-          <p className="w-full text-center text-[22px] font-normal font-rubik tracking-[0] leading-[45px]">
+          <p className="w-full text-center text-[22px] font-normal font-rubik tracking-[0] md:leading-[45px] max-md:text-lg">
             See who&apos;s leading the pack and get inspired to climb the ranks!
           </p>
 

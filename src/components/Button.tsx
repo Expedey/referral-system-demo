@@ -3,7 +3,7 @@ import { clsx } from "clsx";
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | "black" | "light-blue" | "purple" | "purpleOutline";
   size?: "sm" | "md" | "lg";
   loading?: boolean;
   children: React.ReactNode;
@@ -19,11 +19,15 @@ const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed !cursor-pointer";
 
   const variants = {
     primary:
       "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400",
+    purple:
+      "bg-[#702DFF] text-white hover:bg-[#6f2dffbe] focus:!ring-none focus:!ring-offset-0 shadow-sm dark:bg-[#702DFF] dark:hover:bg-[#702DFF] focus:!border-none ",
+    purpleOutline:
+      "bg-white text-[#702DFF] hover:bg-[#6f2dff3e] focus:!ring-none focus:!ring-offset-0 focus:!shadow-none focus:!ring-0 border border-[#702DFF]",
     secondary:
       "bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500 shadow-sm dark:bg-gray-500 dark:hover:bg-gray-600 dark:focus:ring-gray-400",
     outline:
@@ -31,6 +35,10 @@ const Button: React.FC<ButtonProps> = ({
     ghost: "text-gray-700 hover:bg-gray-100 focus:ring-gray-500 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:ring-gray-400",
     danger:
       "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-400",
+    black:
+      "bg-gray-900 text-white hover:bg-gray-800 border-none focus:!border-none focus:!outline-none focus:!ring-0 shadow-sm dark:bg-gray-800 dark:hover:bg-gray-700 focus:!ring-offset-0 ",
+    "light-blue":
+      "bg-blue-100 text-blue-800 hover:bg-blue-200 focus:ring-blue-500 shadow-sm dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-800 dark:focus:ring-blue-400",
   };
 
   const sizes = {

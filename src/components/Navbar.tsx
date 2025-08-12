@@ -31,10 +31,10 @@ export default function Navbar({
     switch (variant) {
       case "dashboard":
       case "leaderboard":
-        return "/PurpleLogo.svg";
+        return "/PurpleLogo2.svg";
       case "landing":
       default:
-        return "/Sh.svg";
+        return "/ShineLogo2.svg";
     }
   };
 
@@ -42,10 +42,10 @@ export default function Navbar({
     switch (variant) {
       case "dashboard":
       case "leaderboard":
-        return { width: 48, height: 48, className: "h-12 w-auto" };
+        return { width: 130, height: 20, className: " min-w-[130px]" };
       case "landing":
       default:
-        return { width: 56, height: 56, className: "h-14 w-auto" };
+        return { width: 130, height: 20, className: " min-w-[130px]" };
     }
   };
 
@@ -95,7 +95,7 @@ export default function Navbar({
               </Link>
              {user && (
               <Button 
-                variant="outline" 
+                variant="primary" 
                 size="sm"
                 onClick={async () => {
                   await signOut();
@@ -125,13 +125,13 @@ export default function Navbar({
             ) : (
               <>
                 <Link href="/leaderboard">
-                  <Button variant="outline" size="sm">
+                  <Button variant="purpleOutline" size="sm">
                     View Leaderboard
                   </Button>
                 </Link>
                 {user && (
                   <Button 
-                    variant="outline" 
+                    variant="purple" 
                     size="sm"
                     onClick={async () => {
                       await signOut();

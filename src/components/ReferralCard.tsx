@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { clsx } from "clsx";
 import Button from "./Button";
+import Image from "next/image";
 
 export interface ReferralCardProps {
   referralCode: string;
@@ -20,13 +21,11 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
   const [copied, setCopied] = useState(false);
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
 
-  const referralUrl = `${
-    typeof window !== "undefined" ? window.location.origin : ""
-  }/ref/${referralCode}`;
+  const referralUrl = `https://referral-system-demo.netlify.app/ref/${referralCode}`;
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(referralUrl);
+      await navigator.clipboard.writeText(referralCode);
       setCopied(true);
       setShowCopiedMessage(true);
       setTimeout(() => {
@@ -37,7 +36,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
       console.error("Failed to copy to clipboard:", error);
       // Fallback for older browsers
       const textArea = document.createElement("textarea");
-      textArea.value = referralUrl;
+      textArea.value = referralCode;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand("copy");
@@ -75,15 +74,16 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
         className
       )}
     >
-      <div className="flex items-center justify-between mb-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-gray-900">
           Your Referral Link
         </h3>
         <div
           className={clsx(
-            "px-2 py-1 rounded-full text-xs font-medium",
+            "px-3 py-1 rounded-full text-xs font-medium",
             isVerified
-              ? "bg-green-100 text-green-800"
+              ? "bg-[#DCFCE7] text-[#16A34A]"
               : "bg-yellow-100 text-yellow-800"
           )}
         >
@@ -91,67 +91,71 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
         </div>
       </div>
 
-      <div className="space-y-4">
-        {/* Referral Code Display */}
+      <div className="space-y-6">
+        {/* Referral Code Section */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-500 mb-2">
             Referral Code
           </label>
-          <div className="flex items-center space-x-2">
-            <div className="flex-1 bg-gray-50 rounded-lg px-3 py-2 font-mono text-sm text-gray-900">
+          <div className="flex items-center justify-between">
+            <div className="text-lg font-bold text-gray-900">
               {referralCode}
             </div>
             <Button
-              variant="outline"
+              variant="light-blue"
               size="sm"
               onClick={copyToClipboard}
-              className="whitespace-nowrap"
+              className="!rounded-[18px]  !shadow-none !border-none !text-[#3B82F6] !bg-[#3B82F617] hover:!bg-[#3b83f642]"
             >
+              {/* <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+              </svg> */}
+              <Image className="w-[14px] h-[14px] mr-2" width={14} height={14} src={"/copy-icon.svg"} alt=""/>
               {copied ? "Copied!" : "Copy"}
             </Button>
           </div>
         </div>
 
-        {/* Referral URL */}
+        {/* Referral Link Section */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-500 mb-2">
             Referral Link
           </label>
-          <div className="flex items-center space-x-2">
-            <div className="flex-1 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600 truncate">
+          <div className="flex items-center space-x-3">
+            <div className="flex-1 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600 border border-gray-200">
               {referralUrl}
             </div>
             <Button
               variant="primary"
               size="sm"
               onClick={shareReferral}
-              className="whitespace-nowrap"
+              className="!bg-[#702DFF] hover:!bg-[#6f2dffc1] !border-none"
             >
+              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+              </svg>
               Share
             </Button>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
-              {totalReferrals}
-            </div>
-            <div className="text-sm text-gray-600">Total Referrals</div>
+        {/* Stats Section */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+          <div className="flex justify-center items-center gap-2">
+            <div className="text-sm text-gray-500">Total Referrals</div>
+            <div className="text-2xl font-bold text-gray-900">{totalReferrals}</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              #{waitlistPosition}
-            </div>
-            <div className="text-sm text-gray-600">Waitlist Position</div>
+          <div className="flex justify-center items-center gap-2">
+            <div className="text-sm text-gray-500">Waitlist Position</div>
+            <div className="text-2xl font-bold text-gray-900">#{waitlistPosition}</div>
           </div>
         </div>
 
         {/* Copy Success Message */}
         {showCopiedMessage && (
           <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg transition-opacity duration-300">
-            Referral link copied to clipboard!
+            Referral code copied to clipboard!
           </div>
         )}
       </div>
