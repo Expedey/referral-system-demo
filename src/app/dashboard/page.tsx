@@ -113,13 +113,13 @@ export default function DashboardPage() {
           Promise.race([
             UserService.getUserStats(user.id),
             new Promise<never>((_, reject) => 
-              setTimeout(() => reject(new Error("User stats timeout")), 15000)
+              setTimeout(() => reject(new Error("User stats timeout")), 20000)
             )
           ]),
           Promise.race([
             ReferralService.getReferralStats(user.id),
             new Promise<never>((_, reject) => 
-              setTimeout(() => reject(new Error("Referral stats timeout")), 15000)
+              setTimeout(() => reject(new Error("Referral stats timeout")), 20000)
             )
           ])
         ]);
