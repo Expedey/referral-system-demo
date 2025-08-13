@@ -365,7 +365,7 @@ export default function DashboardPage() {
           </div>
         )} */}
 
-<div className="relative py-[33px] px-[24px] self-stretch w-full  bg-[#702cff] rounded-[20px] overflow-hidden bg-[url('/dashboard-banner.png')] bg-cover bg-center flex flex-col gap-5 mb-[31px]">
+<div className="relative py-[33px] px-[24px] self-stretch w-full  bg-[#702cff] rounded-[20px] overflow-hidden bg-[url('/dashboard-banner.png')] bg-cover md:bg-right bg-center flex flex-col gap-5 mb-[31px] ">
     
 
    

@@ -86,7 +86,7 @@ export default function Navbar({
             </Link>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {showBackButton ? (
              <> <Link href={backUrl}>
                 <Button className="max-sm:text-xs" variant="purpleOutline" size="sm">
