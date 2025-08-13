@@ -79,3 +79,143 @@ body {
   background: transparent;
 }
 
+/* Position Update Popup Animations */
+@keyframes fade-up-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-from-right {
+  0% {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.animate-fade-up-out {
+  animation: fade-up-out 0.8s ease-out 0.5s forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out 2s both;
+}
+
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.slide-in-from-right {
+  animation: slide-in-from-right 0.3s ease-out;
+}
+
+@keyframes zoom-in-95 {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.zoom-in-95 {
+  animation: zoom-in-95 0.3s ease-out;
+}
+
+.fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Confetti Animations */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-10px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes confetti-fall-2 {
+  0% {
+    transform: translateY(-10px) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(50vh) rotate(360deg) scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg) scale(0.6);
+    opacity: 0;
+  }
+}
+
+@keyframes confetti-fall-3 {
+  0% {
+    transform: translateY(-10px) rotate(0deg) translateX(0);
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(25vh) rotate(180deg) translateX(20px);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateY(50vh) rotate(360deg) translateX(-15px);
+    opacity: 0.7;
+  }
+  75% {
+    transform: translateY(75vh) rotate(540deg) translateX(10px);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg) translateX(0);
+    opacity: 0;
+  }
+}
+
+.confetti-fall {
+  animation: confetti-fall 3s linear forwards;
+}
+
+.confetti-fall-2 {
+  animation: confetti-fall-2 4s ease-in forwards;
+}
+
+.confetti-fall-3 {
+  animation: confetti-fall-3 3.5s ease-out forwards;
+}
+

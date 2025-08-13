@@ -7,6 +7,7 @@ import { UserService } from "@/services/userService";
 import { ReferralService } from "@/services/referralService";
 import ReferralCard from "@/components/ReferralCard";
 import WaitlistRank from "@/components/WaitlistRank";
+import PositionUpdatePopup from "@/components/PositionUpdatePopup";
 import Button from "@/components/Button";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
@@ -87,12 +88,43 @@ export default function DashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showRefreshNotification, setShowRefreshNotification] = useState(false);
   const [refreshTimeout, setRefreshTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [showPositionUpdatePopup, setShowPositionUpdatePopup] = useState(false);
+  const [positionUpdateData, setPositionUpdateData] = useState<{
+    oldPosition: number;
+    newPosition: number;
+    isImprovement: boolean;
+  } | null>(null);
 
   // Animated counters
   const totalReferralsCounter = useAnimatedCounter(userStats?.totalReferrals || 0);
   const verifiedReferralsCounter = useAnimatedCounter(referralStats?.verifiedReferrals || 0);
   const pendingReferralsCounter = useAnimatedCounter(referralStats?.pendingReferrals || 0);
   const conversionRateCounter = useAnimatedCounter(referralStats?.conversionRate || 0);
+  const waitlistPositionCounter = useAnimatedCounter(userStats?.waitlistPosition || 0);
+
+  // Track position changes for popup
+  const prevPositionRef = useRef(userStats?.waitlistPosition || 0);
+
+  useEffect(() => {
+    if (userStats?.waitlistPosition !== undefined && prevPositionRef.current !== userStats.waitlistPosition) {
+      const oldPosition = prevPositionRef.current;
+      const newPosition = userStats.waitlistPosition;
+      const isImprovement = newPosition < oldPosition; // Lower number is better
+
+      // Only show popup if there's an actual change and we have a previous position
+      if (oldPosition > 0) {
+        setPositionUpdateData({
+          oldPosition,
+          newPosition,
+          isImprovement
+        });
+        setShowPositionUpdatePopup(true);
+      }
+
+      // Update the ref after processing
+      prevPositionRef.current = newPosition;
+    }
+  }, [userStats?.waitlistPosition]);
 
   console.log('Current userStats:', userStats);
   console.log('Current referralStats:', referralStats);
@@ -355,6 +387,20 @@ export default function DashboardPage() {
       {/* Header */}
       <Navbar variant="dashboard" />
 
+      {/* Position Update Popup */}
+      {showPositionUpdatePopup && positionUpdateData && (
+        <PositionUpdatePopup
+          isVisible={showPositionUpdatePopup}
+          oldPosition={positionUpdateData.oldPosition}
+          newPosition={positionUpdateData.newPosition}
+          isImprovement={positionUpdateData.isImprovement}
+          onClose={() => {
+            setShowPositionUpdatePopup(false);
+            setPositionUpdateData(null);
+          }}
+        />
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Refresh Notification */}
         {/* {showRefreshNotification && (
@@ -583,7 +629,10 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Waitlist Position */}
           <WaitlistRank
-            position={userStats?.waitlistPosition || 0}
+            position={waitlistPositionCounter.displayValue}
+            isAnimating={waitlistPositionCounter.isAnimating}
+            showOldValue={waitlistPositionCounter.showOldValue}
+            oldValue={waitlistPositionCounter.oldValue}
           />
 
           {/* Referral Card */}

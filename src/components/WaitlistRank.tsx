@@ -6,12 +6,18 @@ export interface WaitlistRankProps {
   position: number;
   totalUsers?: number;
   className?: string;
+  isAnimating?: boolean;
+  showOldValue?: boolean;
+  oldValue?: number;
 }
 
 const WaitlistRank: React.FC<WaitlistRankProps> = ({
   position,
   totalUsers,
   className,
+  isAnimating = false,
+  showOldValue = false,
+  oldValue = 0,
 }) => {
   // Calculate progress percentage (assuming top 1000 get priority access)
   const maxPosition = 1000;
@@ -63,7 +69,8 @@ const WaitlistRank: React.FC<WaitlistRankProps> = ({
     <div
       className={clsx(
         "bg-white rounded-xl shadow border border-gray-200 p-6",
-        className
+        className,
+        isAnimating ? 'ring-2 ring-blue-200 shadow-lg' : ''
       )}
     >
       <div className="flex flex-col gap-4 justify-between">
@@ -82,8 +89,30 @@ const WaitlistRank: React.FC<WaitlistRankProps> = ({
            <Image className="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl mr-4" width={48} height={48} src={"/waitlist-avatar.svg"} alt=""/>
           {/* Rank and Status */}
           <div className="flex items-center gap-3">
-            <div className="text-[34px] font-bold text-[#4F46E5]">
-              #{position.toLocaleString()}
+            <div className="relative h-12 flex items-center">
+              {/* Old value fading up */}
+              {showOldValue && (
+                <div className={`absolute inset-0 flex items-center transition-all duration-500 ${
+                  isAnimating 
+                    ? 'opacity-0 -translate-y-4 text-blue-400' 
+                    : 'opacity-100 translate-y-0'
+                }`}>
+                  <span className="text-[34px] font-bold text-[#4F46E5]">#{oldValue.toLocaleString()}</span>
+                </div>
+              )}
+              
+              {/* New value fading in */}
+              <div className={`transition-all duration-500 ${
+                isAnimating && !showOldValue
+                  ? 'opacity-100 translate-y-0 text-[#4F46E5] scale-105' 
+                  : isAnimating
+                  ? 'opacity-0 translate-y-4'
+                  : 'opacity-100 translate-y-0'
+              }`}>
+                <span className="text-[34px] font-bold text-[#4F46E5]">
+                  #{position.toLocaleString()}
+                </span>
+              </div>
             </div>
             <div
               className={clsx(
