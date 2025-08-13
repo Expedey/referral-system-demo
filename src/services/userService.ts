@@ -194,6 +194,8 @@ export class UserService {
     isVerified: boolean;
   }> {
     try {
+      console.log('getUserStats called for userId:', userId);
+      
       // Get user's referral count and waitlist position in parallel
       const [userResult, leaderboardResult] = await Promise.allSettled([
         supabase
@@ -208,6 +210,9 @@ export class UserService {
           .single()
       ]);
 
+      console.log('User result:', userResult);
+      console.log('Leaderboard result:', leaderboardResult);
+
       // Handle user data result
       if (userResult.status === 'rejected') {
         console.error("Error fetching user data:", userResult.reason);
@@ -219,6 +224,8 @@ export class UserService {
         console.error("Error fetching user data:", userError);
         throw new Error("Failed to fetch user data");
       }
+
+      console.log('User data fetched:', userData);
 
       // Handle leaderboard result
       let waitlistPosition = 0;
@@ -232,11 +239,14 @@ export class UserService {
         // Don't throw error for leaderboard, just use default value
       }
 
-      return {
+      const result = {
         totalReferrals: userData?.referral_count || 0,
         waitlistPosition,
         isVerified: userData?.is_verified || false,
       };
+
+      console.log('getUserStats returning:', result);
+      return result;
     } catch (error) {
       console.error("Error in getUserStats:", error);
       throw error;

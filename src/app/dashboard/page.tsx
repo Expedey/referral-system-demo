@@ -21,7 +21,10 @@ const useAnimatedCounter = (value: number, duration: number = 1000) => {
   const prevValueRef = useRef(value);
 
   useEffect(() => {
+    console.log('useAnimatedCounter - value changed:', value, 'prevValue:', prevValueRef.current);
+    
     if (value !== prevValueRef.current) {
+      console.log('useAnimatedCounter - starting animation from', prevValueRef.current, 'to', value);
       setIsAnimating(true);
       setOldValue(prevValueRef.current);
       setShowOldValue(true);
@@ -51,6 +54,7 @@ const useAnimatedCounter = (value: number, duration: number = 1000) => {
           } else {
             setDisplayValue(endValue);
             setIsAnimating(false);
+            console.log('useAnimatedCounter - animation completed, final value:', endValue);
           }
         };
 
@@ -90,12 +94,16 @@ export default function DashboardPage() {
   const pendingReferralsCounter = useAnimatedCounter(referralStats?.pendingReferrals || 0);
   const conversionRateCounter = useAnimatedCounter(referralStats?.conversionRate || 0);
 
-  console.log(isRefreshing);
-  console.log(showRefreshNotification);
+  console.log('Current userStats:', userStats);
+  console.log('Current referralStats:', referralStats);
+  console.log('isRefreshing:', isRefreshing);
+  console.log('showRefreshNotification:', showRefreshNotification);
 
   // Function to refresh user data
   const refreshUserData = async () => {
     if (!user) return;
+    
+    console.log('refreshUserData called for user:', user.id);
     
     // Clear any existing timeout
     if (refreshTimeout) {
@@ -108,14 +116,23 @@ export default function DashboardPage() {
         setIsRefreshing(true);
         setError(null);
         
+        console.log('Fetching updated user stats...');
+        
+        // Add a small delay to ensure database transaction is committed
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         // Load user stats and referral stats in parallel with proper timeout handling
         const [stats, refStats] = await Promise.allSettled([
           UserService.getUserStats(user.id),
           ReferralService.getReferralStats(user.id)
         ]);
 
+        console.log('User stats result:', stats);
+        console.log('Referral stats result:', refStats);
+
         // Handle user stats
         if (stats.status === 'fulfilled') {
+          console.log('Setting user stats:', stats.value);
           setUserStats(stats.value);
         } else {
           console.error("Error loading user stats:", stats.reason);
@@ -124,6 +141,7 @@ export default function DashboardPage() {
 
         // Handle referral stats
         if (refStats.status === 'fulfilled') {
+          console.log('Setting referral stats:', refStats.value);
           setReferralStats(refStats.value);
         } else {
           console.error("Error loading referral stats:", refStats.reason);
@@ -146,7 +164,7 @@ export default function DashboardPage() {
       } finally {
         setIsRefreshing(false);
       }
-    }, 1000); // Reduced debounce time to 1 second
+    }, 500); // Reduced debounce time to 500ms for faster updates
 
     setRefreshTimeout(timeout);
   };
@@ -185,6 +203,8 @@ export default function DashboardPage() {
             filter: `id=eq.${user.id}`
           }, payload => {
             console.log('User Change:', payload);
+            console.log('User Change - new data:', payload.new);
+            console.log('User Change - old data:', payload.old);
             console.log('Refreshing user stats due to user data change');
             // Refresh user stats when user data changes
             refreshUserData();
@@ -207,6 +227,8 @@ export default function DashboardPage() {
             filter: `referrer_id=eq.${user.id}`
           }, payload => {
             console.log('Referral Change:', payload);
+            console.log('Referral Change - new data:', payload.new);
+            console.log('Referral Change - old data:', payload.old);
             console.log('Refreshing referral stats due to referral data change');
             // Refresh referral stats when referral data changes
             refreshUserData();
