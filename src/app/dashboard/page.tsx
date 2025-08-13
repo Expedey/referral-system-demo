@@ -108,20 +108,10 @@ export default function DashboardPage() {
         setIsRefreshing(true);
         setError(null);
         
-        // Load user stats and referral stats in parallel with timeout
+        // Load user stats and referral stats in parallel with proper timeout handling
         const [stats, refStats] = await Promise.allSettled([
-          Promise.race([
-            UserService.getUserStats(user.id),
-            new Promise<never>((_, reject) => 
-              setTimeout(() => reject(new Error("User stats timeout")), 10000)
-            )
-          ]),
-          Promise.race([
-            ReferralService.getReferralStats(user.id),
-            new Promise<never>((_, reject) => 
-              setTimeout(() => reject(new Error("Referral stats timeout")), 10000)
-            )
-          ])
+          UserService.getUserStats(user.id),
+          ReferralService.getReferralStats(user.id)
         ]);
 
         // Handle user stats
@@ -129,7 +119,7 @@ export default function DashboardPage() {
           setUserStats(stats.value);
         } else {
           console.error("Error loading user stats:", stats.reason);
-          setError("Failed to load user statistics");
+          // Don't set error for individual failures, just log them
         }
 
         // Handle referral stats
@@ -137,11 +127,16 @@ export default function DashboardPage() {
           setReferralStats(refStats.value);
         } else {
           console.error("Error loading referral stats:", refStats.reason);
-          setError("Failed to load referral statistics");
+          // Don't set error for individual failures, just log them
         }
 
-        // Show refresh notification if both stats were loaded successfully
-        if (stats.status === 'fulfilled' && refStats.status === 'fulfilled') {
+        // Only show error if both failed
+        if (stats.status === 'rejected' && refStats.status === 'rejected') {
+          setError("Failed to load dashboard data");
+        }
+
+        // Show refresh notification if at least one stat was loaded successfully
+        if (stats.status === 'fulfilled' || refStats.status === 'fulfilled') {
           setShowRefreshNotification(true);
           setTimeout(() => setShowRefreshNotification(false), 3000);
         }
@@ -151,7 +146,7 @@ export default function DashboardPage() {
       } finally {
         setIsRefreshing(false);
       }
-    }, 5000); // 5000ms debounce
+    }, 1000); // Reduced debounce time to 1 second
 
     setRefreshTimeout(timeout);
   };
@@ -198,6 +193,7 @@ export default function DashboardPage() {
             console.log('Users channel status:', status);
             if (status === 'CHANNEL_ERROR') {
               console.error('Users channel error occurred');
+              // Don't throw error, just log it
             }
           });
 
@@ -219,6 +215,7 @@ export default function DashboardPage() {
             console.log('Referrals channel status:', status);
             if (status === 'CHANNEL_ERROR') {
               console.error('Referrals channel error occurred');
+              // Don't throw error, just log it
             }
           });
 
@@ -228,6 +225,7 @@ export default function DashboardPage() {
         };
       } catch (error) {
         console.error('Error setting up realtime channels:', error);
+        // Don't throw error, just log it
       }
     }
 
@@ -257,20 +255,10 @@ export default function DashboardPage() {
           setLoading(true);
           setError(null);
           
-          // Load user stats and referral stats in parallel with timeout
+          // Load user stats and referral stats in parallel
           const [stats, refStats] = await Promise.allSettled([
-            Promise.race([
-              UserService.getUserStats(user.id),
-              new Promise<never>((_, reject) => 
-                setTimeout(() => reject(new Error("User stats timeout")), 8000)
-              )
-            ]),
-            Promise.race([
-              ReferralService.getReferralStats(user.id),
-              new Promise<never>((_, reject) => 
-                setTimeout(() => reject(new Error("Referral stats timeout")), 8000)
-              )
-            ])
+            UserService.getUserStats(user.id),
+            ReferralService.getReferralStats(user.id)
           ]);
 
           // Handle user stats

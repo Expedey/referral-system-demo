@@ -245,17 +245,11 @@ export class ReferralService {
    */
   static async getUserReferrals(userId: string): Promise<ReferralData[]> {
     try {
-      // Add timeout to prevent hanging
-      const { data, error } = await Promise.race([
-        supabase
-          .from("referrals")
-          .select("*")
-          .eq("referrer_id", userId)
-          .order("created_at", { ascending: false }),
-        new Promise<{ data: null; error: Error }>((_, reject) => 
-          setTimeout(() => reject(new Error("User referrals timeout")), 5000)
-        )
-      ]);
+      const { data, error } = await supabase
+        .from("referrals")
+        .select("*")
+        .eq("referrer_id", userId)
+        .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching user referrals:", error);
@@ -368,13 +362,7 @@ export class ReferralService {
     conversionRate: number;
   }> {
     try {
-      // Add timeout to prevent hanging
-      const referrals = await Promise.race([
-        this.getUserReferrals(userId),
-        new Promise<ReferralData[]>((_, reject) => 
-          setTimeout(() => reject(new Error("Referral stats timeout")), 8000)
-        )
-      ]);
+      const referrals = await this.getUserReferrals(userId);
       
       const totalReferrals = referrals.length;
       const verifiedReferrals = referrals.filter((r) => r.status === 'verified').length;

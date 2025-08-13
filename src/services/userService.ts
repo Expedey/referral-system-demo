@@ -83,17 +83,11 @@ export class UserService {
         return null;
       }
 
-      // Add timeout to prevent hanging
-      const { data, error } = await Promise.race([
-        supabase
-          .from("users")
-          .select("*")
-          .eq("id", user.id)
-          .single(),
-        new Promise<{ data: null; error: Error }>((_, reject) => 
-          setTimeout(() => reject(new Error("Database timeout")), 5000)
-        )
-      ]);
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
       if (error) {
         console.error("Error fetching user profile:", error);
@@ -200,28 +194,18 @@ export class UserService {
     isVerified: boolean;
   }> {
     try {
-      // Get user's referral count and waitlist position in parallel with timeout
+      // Get user's referral count and waitlist position in parallel
       const [userResult, leaderboardResult] = await Promise.allSettled([
-        Promise.race([
-          supabase
-            .from("users")
-            .select("referral_count, is_verified")
-            .eq("id", userId)
-            .single(),
-          new Promise<{ data: null; error: Error }>((_, reject) => 
-            setTimeout(() => reject(new Error("User data timeout")), 5000)
-          )
-        ]),
-        Promise.race([
-          supabase
-            .from("leaderboard")
-            .select("rank")
-            .eq("id", userId)
-            .single(),
-          new Promise<{ data: null; error: Error }>((_, reject) => 
-            setTimeout(() => reject(new Error("Leaderboard timeout")), 5000)
-          )
-        ])
+        supabase
+          .from("users")
+          .select("referral_count, is_verified")
+          .eq("id", userId)
+          .single(),
+        supabase
+          .from("leaderboard")
+          .select("rank")
+          .eq("id", userId)
+          .single()
       ]);
 
       // Handle user data result

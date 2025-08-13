@@ -54,13 +54,8 @@ export const useAuth = () => {
 
         if (session?.user) {
           try {
-            // Get user profile with timeout
-            const profile = await Promise.race([
-              UserService.getCurrentUserProfile(),
-              new Promise<null>((_, reject) => 
-                setTimeout(() => reject(new Error("Profile fetch timeout")), 5000)
-              )
-            ]);
+            // Get user profile
+            const profile = await UserService.getCurrentUserProfile();
             
             // Email verification sync (non-blocking)
             const isEmailVerified = !!session.user.email_confirmed_at;
