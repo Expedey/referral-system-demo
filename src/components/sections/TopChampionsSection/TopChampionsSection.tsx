@@ -1,13 +1,18 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 
 
 
 export const TopChampionsSection = () => {
   return (
     <section className="flex flex-col w-full items-center gap-2">
-      <Card className="w-full  text-white relative bg-[url('/frame-197.svg')] bg-no-repeat  bg-center bg-cover shadow-none rounded-3xl min-h-[268px] flex items-center justify-center max-w-[1040px] mx-auto h-[268px]">
-        <CardContent className="flex flex-col items-center py-6">
+      <Card className="w-full bg-[#4C47C4]  text-white relative  bg-no-repeat  bg-center bg-cover shadow-none rounded-3xl sm:min-h-[268px] flex items-center justify-center max-w-[1040px] mx-auto sm:h-[268px]">
+        <Image className="z-10 absolute top-0 right-0 max-w-[150px]" src="/top-right.svg" alt="Frame 197" width={1040} height={268} />
+        <Image className="max-lg:hidden z-10 absolute top-[23px] left-[31px] max-w-[74px]" src="/top-left.svg" alt="Frame 197" width={1040} height={268} />
+        <Image className="z-10 absolute bottom-0 left-0 max-w-[121px]" src="/bottom-left.svg" alt="Frame 197" width={1040} height={268} />
+        <Image className="max-lg:hidden z-10 absolute bottom-[28px] right-[25px] max-w-[81px]" src="/bottom-right.svg" alt="Frame 197" width={1040} height={268} />
+        <CardContent className="relative z-20 flex flex-col items-center py-6">
           <div className="flex flex-col items-center justify-center gap-2">
             <div className="relative w-[75px] h-[75px] flex items-center justify-center">
               <img

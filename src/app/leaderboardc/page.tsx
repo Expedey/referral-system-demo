@@ -102,8 +102,6 @@ export default function LeaderboardPage() {
       {/* Navigation Header */}
       <Navbar 
         variant="leaderboard" 
-        title="Leaderboard" 
-        subtitle="Top referrers on the waitlist"
         showBackButton={true}
         backUrl="/dashboard"
         backButtonText="Back to Dashboard"
