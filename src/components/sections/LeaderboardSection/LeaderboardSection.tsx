@@ -27,7 +27,7 @@ export const LeaderboardSection = ({ leaderboardData = [] }: LeaderboardSectionP
     id: (index + 1).toString().padStart(2, '0'),
     name: entry.username || "Anonymous",
     referralCount: entry.total_referrals.toString().padStart(2, '0'),
-    rank: index + 1,
+    rank: entry.rank,
   })) : [
     {
       id: "01",
@@ -101,17 +101,16 @@ export const LeaderboardSection = ({ leaderboardData = [] }: LeaderboardSectionP
     return colors[index];
   };
 
-  // Function to get badge based on rank
-  const getBadge = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return "/artboard-15.png"; // 1st place - gold badge
-      case 2:
-        return "/artboard-15-copy-3.png"; // 2nd place - silver badge
-      case 3:
-        return "/artboard-15-copy-4.png"; // 3rd place - bronze badge
-      default:
-        return "/artboard-15-copy-5.png"; // Default badge for others
+  // Function to get badge based on referral count
+  const getBadge = (referralCount: number) => {
+    if (referralCount > 10) {
+      return "/badge/gold.svg"; // Gold badge for more than 10 referrals
+    } else if (referralCount >= 5 && referralCount <= 10) {
+      return "/badge/silver.svg"; // Silver badge for 5-10 referrals
+    } else if (referralCount >= 1 && referralCount <= 4) {
+      return "/badge/bronze.svg"; // Bronze badge for 1-4 referrals
+    } else {
+      return ""; // Default badge for 0 referrals
     }
   };
 
@@ -122,7 +121,7 @@ export const LeaderboardSection = ({ leaderboardData = [] }: LeaderboardSectionP
       </h2>
 
       <Card className="rounded-[18px] border-none shadow-[0px_8px_32px_rgba(0,0,0,0.12)] ">
-        <CardContent className="p-6 overflow-auto max-h-[490px] no-scrollbar">
+        <CardContent className="p-6 overflow-auto max-h-[600px] no-scrollbar">
             <div className="min-w-[600px] ">
               <Table className="">
                 <TableHeader>
@@ -164,11 +163,13 @@ export const LeaderboardSection = ({ leaderboardData = [] }: LeaderboardSectionP
                         {user.referralCount}
                       </TableCell>
                       <TableCell className="text-right">
+                        {parseInt(user.referralCount, 10) > 0 &&
                         <img
-                          src={getBadge(user.rank)}
+                          src={getBadge(parseInt(user.referralCount, 10))}
                           alt="Badge"
                           className="w-[29px] h-[25px] inline-block"
                         />
+                        }
                       </TableCell>
                     </TableRow>
                   ))}

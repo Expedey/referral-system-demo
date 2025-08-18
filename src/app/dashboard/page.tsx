@@ -12,6 +12,8 @@ import Button from "@/components/Button";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
+import { SemiCircleIcon } from "@/components/semiCircle";
+import { CircleIcon } from "@/components/circle";
 
 // Custom hook for animated counters with fade effects
 const useAnimatedCounter = (value: number, duration: number = 1000) => {
@@ -421,19 +423,31 @@ export default function DashboardPage() {
           </div>
         )} */}
 
-<div className="relative py-[33px] px-[24px] self-stretch w-full  bg-[#702cff] rounded-[20px] overflow-hidden bg-[url('/dashboard-banner.png')] bg-cover md:bg-right bg-center flex flex-col gap-5 mb-[31px] ">
+<div className="relative py-[33px] px-[24px] self-stretch w-full  bg-[#702cff] rounded-[20px] overflow-hidden  bg-cover md:bg-right bg-center flex flex-col gap-5 mb-[31px] ">
+<div className="absolute top-2 right-24 w-fit rotate-90 z-10 max-md:hidden ">
+<CircleIcon fillColor="#9461ff" className="w-[80px] h-[80px]"/>
+</div>
+<div className="absolute bottom-2 right-2 w-fit rotate-90 z-10 md:hidden ">
+<CircleIcon fillColor="#9461ff" className="w-[80px] h-[80px]"/>
+</div>
+<div className="absolute -top-10 -right-10 w-fit rotate-90 z-10 max-md:hidden ">
+<SemiCircleIcon fillColor="#9461ff" className="w-[130px] h-[130px]"/>
+</div>
+<div className="absolute -bottom-20 -right-10 max-md:-right-[85px] max-md:-bottom-24 w-fit -rotate-145 z-10 max-md:hidden ">
+<SemiCircleIcon fillColor="#9461ff" className="w-[250px] h-[250px]"/>
+</div>
     
 
    
-   <h1 className="text-white text-3xl font-bold">
+   <h1 className="text-white text-3xl font-bold relative z-20">
     Welcome back, {profile.username || profile.email}!
    </h1>
-   <p className="text-white text-sm">
+   <p className="text-white text-sm relative z-20">
     Track your referrals and see your position on the waitlist.
    </p>
    <Button
    variant="black"
-   className="!rounded-[40px] w-fit !py-[10px] !px-[16px] !text-[16px]"
+   className="!rounded-[40px] w-fit !py-[10px] !px-[16px] !text-[16px] relative z-20"
    onClick={() => router.push("/leaderboard")}
    >
     View Leaderboard

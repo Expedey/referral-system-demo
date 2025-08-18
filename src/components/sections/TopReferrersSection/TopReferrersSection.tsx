@@ -43,17 +43,16 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
     return colors[index];
   };
 
-  // Function to get badge based on rank
-  const getBadge = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return "/artboard-15.png"; // 1st place - gold badge
-      case 2:
-        return "/artboard-15-copy-3.png"; // 2nd place - silver badge
-      case 3:
-        return "/artboard-15-copy-4.png"; // 3rd place - bronze badge
-      default:
-        return "/artboard-15-copy-5.png"; // Default badge
+  // Function to get badge based on referral count
+  const getBadge = (referralCount: number) => {
+    if (referralCount > 10) {
+      return "/badge/gold.svg"; // Gold badge for more than 10 referrals
+    } else if (referralCount >= 5 && referralCount <= 10) {
+      return "/badge/silver.svg"; // Silver badge for 5-10 referrals
+    } else if (referralCount >= 1 && referralCount <= 4) {
+      return "/badge/bronze.svg"; // Bronze badge for 1-4 referrals
+    } else {
+      return ""; // Default badge for 0 referrals
     }
   };
 
@@ -64,7 +63,7 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       name: leaderboardData[0]?.username || "Anonymous",
       referrals: leaderboardData[0]?.total_referrals || 0,
       podiumImage: "/group.png",
-      rank: "1",
+      rank: leaderboardData[0]?.rank,
       rankStyles:
         "w-[61px] h-[194px] top-[22px] left-[46px] text-[123.9px] leading-[173.5px] max-md:w-[40px] max-md:h-[120px] max-md:top-[15px] max-md:left-[30px] max-md:text-[60px] max-md:leading-[80px] max-sm:w-[30px] max-sm:h-[90px] max-sm:top-[10px] max-sm:left-[25px] max-sm:text-[40px] max-sm:leading-[60px]",
     },
@@ -73,7 +72,7 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       name: leaderboardData[1]?.username || "Anonymous",
       referrals: leaderboardData[1]?.total_referrals || 0,
       podiumImage: "/group-1.png",
-      rank: "2",
+      rank: leaderboardData[1]?.rank,
       rankStyles:
         "w-[71px] h-[162px] top-[23px] left-[41px] text-[99.1px] leading-[138.8px] max-md:w-[45px] max-md:!h-[100px] max-md:top-[15px] max-md:left-[27px] max-md:text-[50px] max-md:leading-[70px] max-sm:w-[35px] max-sm:h-[75px] max-sm:top-[10px] max-sm:left-[22px] max-sm:text-[35px] max-sm:leading-[55px]",
     },
@@ -82,7 +81,7 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       name: leaderboardData[2]?.username || "Anonymous",
       referrals: leaderboardData[2]?.total_referrals || 0,
       podiumImage: "/group-2.png",
-      rank: "3",
+      rank: leaderboardData[2]?.rank,
       rankStyles:
         "w-[57px] h-[95px] top-[18px] left-[47px] text-[74.3px] leading-[104.1px] max-md:w-[35px] max-md:!h-[60px] max-md:top-[12px] max-md:left-[32px] max-md:text-[40px] max-md:leading-[55px] max-sm:w-[25px] max-sm:h-[45px] max-sm:top-[8px] max-sm:left-[27px] max-sm:text-[28px] max-sm:leading-[40px]",
     },
@@ -135,11 +134,13 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
                   
                   {/* Badge for top 3 positions */}
                   <div className="mt-2 absolute -top-4 -left-1 max-md:-top-4 max-md:left-0 max-sm:-top-3 max-sm:-left-1">
+                    {champion.referrals>0&&
                     <img
-                      src={getBadge(parseInt(champion.rank))}
+                      src={getBadge(champion.referrals)}
                       alt={`Rank ${champion.rank} Badge`}
                       className="w-[35px] h-[30px] max-md:w-[25px] max-md:h-[20px] max-sm:w-[20px] max-sm:h-[16px] inline-block"
                     />
+                    }
                   </div>
                 </div>
 
@@ -157,9 +158,9 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
 
             <div
               className={`relative w-[153px] max-md:w-[100px] max-sm:w-[80px] ${
-                champion.rank === "1" ? 
+                champion.rank === 1 ? 
                   "h-[363px] " :
-                  champion.rank === "2" ?
+                  champion.rank === 2 ?
                   "h-[261px]" :
                   "h-[204px]"
               }`}
@@ -170,9 +171,9 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
             >
               <div
                 className={`absolute font-normal text-white text-center tracking-[0] whitespace-nowrap font-rubik
-                  ${champion.rank === "1" ? 
+                  ${champion.rank === 1 ? 
                     "w-[61px] h-[194px] top-[22px] left-[46px] text-[123.9px] leading-[173.5px] max-md:w-[40px] max-md:h-[120px] max-md:top-[15px] max-md:left-[30px] max-md:text-[60px] max-md:leading-[80px] max-sm:w-[30px] max-sm:h-[90px] max-sm:top-[20px] max-sm:left-[25px] max-sm:text-[40px] max-sm:leading-[60px]" :
-                    champion.rank === "2" ?
+                    champion.rank === 2 ?
                     "w-[71px] h-[162px] top-[23px] left-[41px] text-[99.1px] leading-[138.8px] max-md:w-[45px] max-md:!h-[100px] max-md:top-[15px] max-md:left-[27px] max-md:text-[50px] max-md:leading-[70px] max-sm:w-[35px] max-sm:h-[75px] max-sm:top-[20px] max-sm:left-[22px] max-sm:text-[35px] max-sm:leading-[55px]" :
                     "w-[57px] h-[95px] top-[18px] left-[47px] text-[74.3px] leading-[104.1px] max-md:w-[35px] max-md:!h-[60px] max-md:top-[12px] max-md:left-[32px] max-md:text-[40px] max-md:leading-[55px] max-sm:w-[25px] max-sm:h-[45px] max-sm:top-[20px] max-sm:left-[27px] max-sm:text-[28px] max-sm:leading-[40px]"
                   }`}
