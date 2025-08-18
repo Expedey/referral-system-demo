@@ -32,22 +32,58 @@ export interface UpdateContactData {
   referralCode?: string;
 }
 
+// New interfaces for HubSpot Forms
+export interface HubSpotFormField {
+  name: string;
+  value: string;
+}
+
+export interface HubSpotFormSubmission {
+  fields: HubSpotFormField[];
+  context?: {
+    pageUri?: string;
+    pageName?: string;
+  };
+}
+
+export interface HubSpotFormResponse {
+  success: boolean;
+  message?: string;
+  contactId?: string;
+}
+
 /**
- * HubSpot service for managing contacts and referral tracking
+ * HubSpot service for managing contacts and referral tracking using Forms API
  */
 export class HubSpotService {
   private static client: Client;
   private static isInitialized = false;
+  private static formId: string;
+  private static portalId: string;
 
   /**
-   * Initialize the HubSpot client
+   * Initialize the HubSpot client and form configuration
    */
   private static initialize() {
     if (!this.isInitialized) {
       const apiKey = process.env.HUBSPOT_API_KEY;
+      this.formId = process.env.HUBSPOT_FORM_ID || '';
+      this.portalId = process.env.HUBSPOT_PORTAL_ID || '';
+      
       console.log('[HubSpotService] apiKey exists:', !!apiKey);
+      console.log('[HubSpotService] formId exists:', !!this.formId);
+      console.log('[HubSpotService] portalId exists:', !!this.portalId);
+      
       if (!apiKey) {
         throw new Error('HUBSPOT_API_KEY environment variable is required');
+      }
+      
+      if (!this.formId) {
+        throw new Error('HUBSPOT_FORM_ID environment variable is required');
+      }
+      
+      if (!this.portalId) {
+        throw new Error('HUBSPOT_PORTAL_ID environment variable is required');
       }
       
       this.client = new Client({ accessToken: apiKey });
@@ -57,7 +93,91 @@ export class HubSpotService {
   }
 
   /**
-   * Creates a new contact in HubSpot
+   * Submits a form to HubSpot to create a new contact
+   * @param contactData - Contact data to submit via form
+   * @returns Form submission response
+   */
+  static async submitForm(
+    contactData: CreateContactData
+  ): Promise<HubSpotFormResponse> {
+    try {
+      this.initialize();
+
+      console.log('[HubSpotService] Submitting form for:', contactData.email);
+
+      // Prepare form fields
+      const fields: HubSpotFormField[] = [
+        { name: 'email', value: contactData.email }
+      ];
+
+      if (contactData.username) {
+        fields.push({ name: 'full_name', value: contactData.username });
+      }
+
+      if (contactData.referralCode) {
+        fields.push({ name: 'ref_code', value: contactData.referralCode });
+      }
+
+      const formSubmission: HubSpotFormSubmission = {
+        fields,
+        context: {
+          pageUri: process.env.NEXT_PUBLIC_APP_URL || '',
+          pageName: 'Referral System Registration'
+        }
+      };
+
+      console.log('[HubSpotService] Submitting form with fields:', fields);
+
+      // Submit form using HubSpot Forms API
+      const response = await fetch(
+        `https://api.hubapi.com/forms/v2/forms/${this.formId}/submissions`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formSubmission),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[HubSpotService] Form submission failed:', errorData);
+        return {
+          success: false,
+          message: `Form submission failed: ${response.status} ${response.statusText}`
+        };
+      }
+
+      const result = await response.json();
+      console.log('[HubSpotService] Form submitted successfully:', result);
+
+      // Try to get the contact ID from the response or search for it
+      let contactId: string | undefined;
+      if (result.contactId) {
+        contactId = result.contactId;
+      } else {
+        // Search for the contact that was just created
+        const contact = await this.getContactByEmail(contactData.email);
+        contactId = contact?.id;
+      }
+
+      return {
+        success: true,
+        message: 'Form submitted successfully',
+        contactId
+      };
+    } catch (error) {
+      console.error('[HubSpotService] Error submitting form:', error);
+      return {
+        success: false,
+        message: `Error submitting form: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  /**
+   * Creates a new contact via form submission (replaces createOrUpdateContact)
    * @param contactData - Contact data to create
    * @returns The created contact or existing contact
    */
@@ -67,40 +187,36 @@ export class HubSpotService {
     try {
       this.initialize();
 
-      console.log('[HubSpotService] Creating/updating contact:', contactData.email);
+      console.log('[HubSpotService] Creating/updating contact via form:', contactData.email);
 
       // Check if contact already exists
       const existingContact = await this.getContactByEmail(contactData.email);
       
       if (existingContact) {
         console.log('[HubSpotService] Contact already exists, updating:', existingContact.id);
-        // Update existing contact with new data
+        // Update existing contact with new data using CRM API
         return await this.updateContact({
           email: contactData.email,
           referralCode: contactData.referralCode,
         });
       }
 
-      // Create new contact
-      const properties: HubSpotContact = {
-        email: contactData.email,
-        referral_code: contactData.referralCode,
-        referral_count: 0,
-      };
-
-      console.log('[HubSpotService] Creating contact with properties:', properties);
+      // Submit form to create new contact
+      const formResult = await this.submitForm(contactData);
       
-      const response = await this.client.crm.contacts.basicApi.create({
-        properties: properties as unknown as Record<string, string>,
-      });
+      if (!formResult.success) {
+        console.error('[HubSpotService] Form submission failed:', formResult.message);
+        return null;
+      }
 
-      console.log('[HubSpotService] Contact created successfully:', response.id);
-      return {
-        id: response.id,
-        properties: response.properties as unknown as HubSpotContact,
-        createdAt: response.createdAt.toISOString(),
-        updatedAt: response.updatedAt.toISOString(),
-      };
+      // Get the newly created contact
+      const newContact = await this.getContactByEmail(contactData.email);
+      if (newContact) {
+        console.log('[HubSpotService] Contact created successfully via form:', newContact.id);
+        return newContact;
+      }
+
+      return null;
     } catch (error) {
       console.error('[HubSpotService] Error creating/updating contact:', error);
       return null;
@@ -108,7 +224,7 @@ export class HubSpotService {
   }
 
   /**
-   * Updates an existing contact in HubSpot
+   * Updates an existing contact in HubSpot (still uses CRM API for updates)
    * @param updateData - Data to update
    * @returns The updated contact
    */
@@ -164,7 +280,7 @@ export class HubSpotService {
   }
 
   /**
-   * Gets a contact by email
+   * Gets a contact by email (still uses CRM API for lookups)
    * @param email - Email to search for
    * @returns The contact or null if not found
    */
@@ -268,12 +384,12 @@ export class HubSpotService {
             to: {
               id: referrerContact.id,
             },
-                           types: [
-                 {
-                   associationCategory: 'HUBSPOT_DEFINED' as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-                   associationTypeId: 1, // Contact to Note association
-                 },
-               ],
+            types: [
+              {
+                associationCategory: 'HUBSPOT_DEFINED' as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+                associationTypeId: 1, // Contact to Note association
+              },
+            ],
           },
         ],
       });
@@ -325,7 +441,7 @@ export class HubSpotService {
   }
 
   /**
-   * Syncs a user from Supabase to HubSpot
+   * Syncs a user from Supabase to HubSpot via form submission
    * @param userData - User data from Supabase
    * @returns Success status
    */
@@ -340,7 +456,7 @@ export class HubSpotService {
     created_at?: string;
   }): Promise<boolean> {
     try {
-      console.log('[HubSpotService] Syncing user to HubSpot:', userData.email);
+      console.log('[HubSpotService] Syncing user to HubSpot via form:', userData.email);
 
       const result = await this.createOrUpdateContact({
         email: userData.email,
@@ -363,6 +479,38 @@ export class HubSpotService {
     } catch (error) {
       console.error('[HubSpotService] Error syncing user to HubSpot:', error);
       return false;
+    }
+  }
+
+  /**
+   * Gets form information from HubSpot
+   * @returns Form details or null if not found
+   */
+  static async getFormInfo(): Promise<any> {
+    try {
+      this.initialize();
+
+      const response = await fetch(
+        `https://api.hubapi.com/forms/v2/forms/${this.formId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.error('[HubSpotService] Failed to get form info:', response.statusText);
+        return null;
+      }
+
+      const formInfo = await response.json();
+      console.log('[HubSpotService] Form info retrieved:', formInfo);
+      return formInfo;
+    } catch (error) {
+      console.error('[HubSpotService] Error getting form info:', error);
+      return null;
     }
   }
 

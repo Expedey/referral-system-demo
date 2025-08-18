@@ -351,12 +351,14 @@ export const useAuth = () => {
           
           const hubspotData = {
             email: userProfile.email,
-            referral_code: userProfile.referral_code,
-            referral_count: userProfile.referral_count,
-            last_referral_at: userProfile.last_referral_at,
+            full_name: userProfile.username,
+            ref_code: userProfile.referral_code,
+            ref_count: userProfile.referral_count,
+            last_referral_time: userProfile.last_referral_at,
+            created_date: userProfile.created_at,
           };
           
-          const response = await fetch('/api/hubspot/sync-user', {
+          const response = await fetch('/api/hubspot/user-list', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -421,17 +423,22 @@ export const useAuth = () => {
               if (referrerProfile) {
                 console.log("[useAuth] Syncing referrer's updated stats to HubSpot:", referrerProfile.email);
                 
-                // Update referrer's stats in HubSpot via server-side API
-                const response = await fetch('/api/hubspot/update-referrer-stats', {
-                  method: 'POST',
+                // Update referrer's stats in HubSpot via update-user API
+                const referrerHubspotData = {
+                  email: referrerProfile.email,
+                  full_name: referrerProfile.username,
+                  ref_code: referrerProfile.referral_code,
+                  ref_count: referrerProfile.referral_count,
+                  last_referral_time: new Date().toISOString(),
+                  created_date: referrerProfile.created_at,
+                };
+                
+                const response = await fetch('/api/hubspot/update-user', {
+                  method: 'PATCH',
                   headers: {
                     'Content-Type': 'application/json',
                   },
-                  body: JSON.stringify({
-                    email: referrerProfile.email,
-                    referralCount: referrerProfile.referral_count,
-                    lastReferralAt: new Date().toISOString(),
-                  }),
+                  body: JSON.stringify(referrerHubspotData),
                 });
 
                 if (response.ok) {
