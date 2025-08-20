@@ -8,11 +8,11 @@ import { ReferralService } from "@/services/referralService";
 import ReferralCard from "@/components/ReferralCard";
 import WaitlistRank from "@/components/WaitlistRank";
 import PositionUpdatePopup from "@/components/PositionUpdatePopup";
+import AvatarSelectionModal from "@/components/AvatarSelectionModal";
 import Button from "@/components/Button";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
-import { SemiCircleIcon } from "@/components/semiCircle";
 import { CircleIcon } from "@/components/circle";
 
 // Custom hook for animated counters with fade effects
@@ -96,6 +96,11 @@ export default function DashboardPage() {
     newPosition: number;
     isImprovement: boolean;
   } | null>(null);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const [loggedInBefore, setLoggedInBefore] = useState(false);
+  const [showFirstTimeAvatarModal, setShowFirstTimeAvatarModal] = useState(false);
+console.log('loggedInBefore', loggedInBefore);
 
   // Animated counters
   const totalReferralsCounter = useAnimatedCounter(userStats?.totalReferrals || 0);
@@ -311,10 +316,11 @@ export default function DashboardPage() {
           setLoading(true);
           setError(null);
           
-          // Load user stats and referral stats in parallel
-          const [stats, refStats] = await Promise.allSettled([
+          // Load user stats, referral stats, and avatar status in parallel
+          const [stats, refStats, avatarStatus] = await Promise.allSettled([
             UserService.getUserStats(user.id),
-            ReferralService.getReferralStats(user.id)
+            ReferralService.getReferralStats(user.id),
+            UserService.getUserAvatarStatus(user.id)
           ]);
 
           // Handle user stats
@@ -331,6 +337,21 @@ export default function DashboardPage() {
           } else {
             console.error("Error loading referral stats:", refStats.reason);
             setError("Failed to load referral statistics");
+          }
+
+          // Handle avatar status
+          if (avatarStatus.status === 'fulfilled') {
+            const avatarData = avatarStatus.value;
+            setUserAvatar(avatarData.avatarImageUrl);
+            setLoggedInBefore(avatarData.loggedInBefore);
+            
+            // Show first-time avatar modal if user hasn't skipped
+            if (!avatarData.loggedInBefore) {
+              setShowFirstTimeAvatarModal(true);
+            }
+          } else {
+            console.error("Error loading avatar status:", avatarStatus.reason);
+            // Don't set error for avatar status, just log it
           }
         } catch (error) {
           console.error("Error loading user data:", error);
@@ -404,71 +425,100 @@ export default function DashboardPage() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Refresh Notification */}
-        {/* {showRefreshNotification && (
-          <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center space-x-3">
-            <div className="flex-shrink-0">
-              <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
-                <span className="text-green-600 text-xs">✓</span>
+        {/* Avatar Selection Modal */}
+        <AvatarSelectionModal
+          isVisible={showAvatarModal}
+          onClose={() => setShowAvatarModal(false)}
+          onSave={(selectedAvatar: string) => {
+            setUserAvatar(selectedAvatar);
+            setShowAvatarModal(false);
+          }}
+          userId={user?.id}
+          isFirstTime={false}
+        />
+
+        {/* First-time avatar modal */}
+        <AvatarSelectionModal
+          isVisible={showFirstTimeAvatarModal}
+          onClose={() => setShowFirstTimeAvatarModal(false)}
+          onSave={(selectedAvatar: string) => {
+            setUserAvatar(selectedAvatar);
+            setLoggedInBefore(true);
+            setShowFirstTimeAvatarModal(false);
+          }}
+          userId={user?.id}
+          isFirstTime={true}
+        />
+
+        {/* Welcome Banner */}
+        <div className="relative py-[33px] px-[24px] self-stretch w-full bg-[#702cff] rounded-[20px] overflow-hidden bg-cover md:bg-right bg-center flex flex-col gap-5 mb-[31px]">
+          <div className="absolute -top-5 -left-[85px] w-fit rotate-90 z-10">
+            <CircleIcon fillColor="#9461ff" className="w-[160px] h-[160px]"/>
+          </div>
+          <div className="absolute -bottom-5 -right-[85px] w-fit rotate-90 z-10">
+            <CircleIcon fillColor="#9461ff" className="w-[160px] h-[160px]"/>
+          </div>
+          
+          <h1 className="text-white text-3xl font-bold relative z-20">
+            Welcome back, {profile.username || profile.email}!
+          </h1>
+          <p className="text-white text-sm relative z-20">
+            Track your referrals and see your position on the waitlist.
+          </p>
+          <Button
+            variant="black"
+            className="!rounded-[40px] w-fit !py-[10px] !px-[16px] !text-[16px] relative z-20"
+            onClick={() => router.push("/leaderboard")}
+          >
+            View Leaderboard
+            <Image className="ml-3 min-w-[26px] min-h-[26px]" width={26} height={26} src={"/btn.svg"} alt=""/>
+          </Button>
+        </div>
+
+        {/* Avatar Section */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex items-center max-md:items-start gap-4 max-md:flex-col justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-purple-100 to-blue-100  outline-2 outline-[#4F46E5]">
+                  {userAvatar ? (
+                    <Image
+                      src={userAvatar}
+                      alt="User Avatar"
+                      width={64}
+                      height={64}
+                      className="object-cover w-full h-full "
+                    />
+                  ) : (
+                    <Image
+                    src={"/avatars/default-avatar.png"}
+                    alt="User Avatar"
+                    width={64}
+                    height={64}
+                    className="object-cover w-full h-full"
+                  />
+                  )}
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 truncate max-w-[200px]">
+                  {profile.username || profile.email}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {userAvatar ? 'Avatar selected' : 'No avatar selected'}
+                </p>
               </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-green-800">
-                Dashboard updated
-              </p>
-              <p className="text-xs text-green-600">
-                Your stats have been refreshed with the latest data
-              </p>
-            </div>
+            <Button
+              variant="purple"
+              onClick={() => setShowAvatarModal(true)}
+              className="!px-4 !py-2"
+            >
+              Change Avatar
+            </Button>
           </div>
-        )} */}
-
-<div className="relative py-[33px] px-[24px] self-stretch w-full  bg-[#702cff] rounded-[20px] overflow-hidden  bg-cover md:bg-right bg-center flex flex-col gap-5 mb-[31px] ">
-<div className="absolute top-2 right-24 w-fit rotate-90 z-10 max-md:hidden ">
-<CircleIcon fillColor="#9461ff" className="w-[80px] h-[80px]"/>
-</div>
-<div className="absolute bottom-2 right-2 w-fit rotate-90 z-10 md:hidden ">
-<CircleIcon fillColor="#9461ff" className="w-[80px] h-[80px]"/>
-</div>
-<div className="absolute -top-10 -right-10 w-fit rotate-90 z-10 max-md:hidden ">
-<SemiCircleIcon fillColor="#9461ff" className="w-[130px] h-[130px]"/>
-</div>
-<div className="absolute -bottom-20 -right-10 max-md:-right-[85px] max-md:-bottom-24 w-fit -rotate-145 z-10 max-md:hidden ">
-<SemiCircleIcon fillColor="#9461ff" className="w-[250px] h-[250px]"/>
-</div>
-    
-
-   
-   <h1 className="text-white text-3xl font-bold relative z-20">
-    Welcome back, {profile.username || profile.email}!
-   </h1>
-   <p className="text-white text-sm relative z-20">
-    Track your referrals and see your position on the waitlist.
-   </p>
-   <Button
-   variant="black"
-   className="!rounded-[40px] w-fit !py-[10px] !px-[16px] !text-[16px] relative z-20"
-   onClick={() => router.push("/leaderboard")}
-   >
-    View Leaderboard
-    <Image className="ml-3 min-w-[26px] min-h-[26px]" width={26} height={26} src={"/btn.svg"} alt=""/>
-   </Button>
-      </div>
-
-        {/* Welcome Section */}
-        {/* <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Welcome back, {profile.username || profile.email}!
-              </h2>
-              <p className="text-gray-600">
-                Track your referrals and see your position on the waitlist.
-              </p>
-            </div>
-         
-          </div>
-        </div> */}
+        </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -476,14 +526,12 @@ export default function DashboardPage() {
             totalReferralsCounter.isAnimating ? 'ring-2 ring-blue-200 shadow-lg' : ''
           }`}>
             <div className="flex items-start justify-between">
-         
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex items-center justify-between gap-2 w-full">
-
-                <p className="text-[16px] font-medium text-gray-500">
-                  Total Referrals
-                </p>
-                <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/total-referrals.svg"} alt=""/>
+                  <p className="text-[16px] font-medium text-gray-500">
+                    Total Referrals
+                  </p>
+                  <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/total-referrals.svg"} alt=""/>
                 </div>
                 <div className="relative h-12 flex items-center">
                   {/* Old value fading up */}
@@ -511,7 +559,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-              
             </div>
           </div>
 
@@ -519,13 +566,12 @@ export default function DashboardPage() {
             verifiedReferralsCounter.isAnimating ? 'ring-2 ring-green-200 shadow-lg' : ''
           }`}>
             <div className="flex items-center">
-<div className="flex flex-col gap-4 w-full">
+              <div className="flex flex-col gap-4 w-full">
                 <div className="flex items-center justify-between gap-2 w-full">
-
-                <p className="text-[16px] font-medium text-gray-500">
-                Verified Referrals
-                </p>
-                <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/verified-referrals.svg"} alt=""/>
+                  <p className="text-[16px] font-medium text-gray-500">
+                    Verified Referrals
+                  </p>
+                  <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/verified-referrals.svg"} alt=""/>
                 </div>
                 <div className="relative h-12 flex items-center">
                   {/* Old value fading up */}
@@ -562,11 +608,10 @@ export default function DashboardPage() {
             <div className="flex items-center">
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex items-center justify-between gap-2 w-full">
-
-                <p className="text-[16px] font-medium text-gray-500">
-                Pending
-                </p>
-                <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/pending-referrals.svg"} alt=""/>
+                  <p className="text-[16px] font-medium text-gray-500">
+                    Pending
+                  </p>
+                  <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/pending-referrals.svg"} alt=""/>
                 </div>
                 <div className="relative h-12 flex items-center">
                   {/* Old value fading up */}
@@ -601,13 +646,12 @@ export default function DashboardPage() {
             conversionRateCounter.isAnimating ? 'ring-2 ring-purple-200 shadow-lg' : ''
           }`}>
             <div className="flex items-center">
-                <div className="flex flex-col gap-4 w-full">
+              <div className="flex flex-col gap-4 w-full">
                 <div className="flex items-center justify-between gap-2 w-full">
-
-                <p className="text-[16px] font-medium text-gray-500">
-                Conversion Rate
-                </p>
-                <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/conversion-rate.svg"} alt=""/>
+                  <p className="text-[16px] font-medium text-gray-500">
+                    Conversion Rate
+                  </p>
+                  <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/conversion-rate.svg"} alt=""/>
                 </div>
                 <div className="relative h-12 flex items-center">
                   {/* Old value fading up */}
@@ -647,6 +691,7 @@ export default function DashboardPage() {
             isAnimating={waitlistPositionCounter.isAnimating}
             showOldValue={waitlistPositionCounter.showOldValue}
             oldValue={waitlistPositionCounter.oldValue}
+            userAvatar={userAvatar}
           />
 
           {/* Referral Card */}

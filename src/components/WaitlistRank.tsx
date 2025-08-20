@@ -9,6 +9,7 @@ export interface WaitlistRankProps {
   isAnimating?: boolean;
   showOldValue?: boolean;
   oldValue?: number;
+  userAvatar?: string | null;
 }
 
 const WaitlistRank: React.FC<WaitlistRankProps> = ({
@@ -18,6 +19,7 @@ const WaitlistRank: React.FC<WaitlistRankProps> = ({
   isAnimating = false,
   showOldValue = false,
   oldValue = 0,
+  userAvatar,
 }) => {
   // Calculate progress percentage (assuming top 1000 get priority access)
   const maxPosition = 1000;
@@ -82,11 +84,23 @@ const WaitlistRank: React.FC<WaitlistRankProps> = ({
         {/* Position Display with Avatar */}
         <div className="flex items-center mb-6">
           {/* Circular Avatar */}
-          {/* <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-500 rounded-full flex items-center justify-center text-white text-xl mr-4">
-            😊
-          </div>
-           */}
-           <Image className="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl mr-4" width={48} height={48} src={"/waitlist-avatar.svg"} alt=""/>
+          {userAvatar ? (
+            <Image 
+              className="w-16 h-16 rounded-full object-cover mr-4  outline-2 outline-[#4F46E5]" 
+              width={64} 
+              height={64} 
+              src={userAvatar} 
+              alt="User Avatar"
+            />
+          ) : (
+            <Image 
+              className="w-16 h-16 rounded-full object-cover mr-4  outline-2 outline-[#4F46E5]" 
+              width={64} 
+              height={64} 
+              src={"/avatars/default-avatar.png"} 
+              alt="Default Avatar"
+            />
+          )}
           {/* Rank and Status */}
           <div className="flex items-center gap-3">
             <div className="relative h-12 flex items-center">

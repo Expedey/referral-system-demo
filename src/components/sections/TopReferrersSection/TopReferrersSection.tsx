@@ -1,6 +1,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 
 interface LeaderboardEntry {
   id: string;
@@ -8,6 +9,7 @@ interface LeaderboardEntry {
   referral_code: string;
   total_referrals: number;
   rank: number;
+  avatar_image_url?: string | null;
 }
 
 interface TopReferrersSectionProps {
@@ -15,33 +17,8 @@ interface TopReferrersSectionProps {
 }
 
 export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectionProps) => {
-  // Function to get initials from name
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
-  // Function to get background color based on name
-  const getBackgroundColor = (name: string) => {
-    const colors = [
-      'bg-blue-500/80',
-      'bg-green-500/80', 
-      'bg-purple-500/80',
-      'bg-pink-500/80',
-      'bg-indigo-500/80',
-      'bg-red-500/80',
-      'bg-yellow-500/80',
-      'bg-teal-500/80',
-      'bg-orange-500/80',
-      'bg-cyan-500/80'
-    ];
-    const index = name.charCodeAt(0) % colors.length;
-    return colors[index];
-  };
+
 
   // Function to get badge based on referral count
   const getBadge = (referralCount: number) => {
@@ -66,6 +43,7 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       rank: leaderboardData[0]?.rank,
       rankStyles:
         "w-[61px] h-[194px] top-[22px] left-[46px] text-[123.9px] leading-[173.5px] max-md:w-[40px] max-md:h-[120px] max-md:top-[15px] max-md:left-[30px] max-md:text-[60px] max-md:leading-[80px] max-sm:w-[30px] max-sm:h-[90px] max-sm:top-[10px] max-sm:left-[25px] max-sm:text-[40px] max-sm:leading-[60px]",
+      avatar: leaderboardData[0]?.avatar_image_url || "/avatars/default-avatar.png",
     },
     {
       id: leaderboardData[1]?.id || "2",
@@ -75,6 +53,7 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       rank: leaderboardData[1]?.rank,
       rankStyles:
         "w-[71px] h-[162px] top-[23px] left-[41px] text-[99.1px] leading-[138.8px] max-md:w-[45px] max-md:!h-[100px] max-md:top-[15px] max-md:left-[27px] max-md:text-[50px] max-md:leading-[70px] max-sm:w-[35px] max-sm:h-[75px] max-sm:top-[10px] max-sm:left-[22px] max-sm:text-[35px] max-sm:leading-[55px]",
+      avatar: leaderboardData[1]?.avatar_image_url || "/avatars/default-avatar.png",
     },
     {
       id: leaderboardData[2]?.id || "3",
@@ -84,6 +63,7 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       rank: leaderboardData[2]?.rank,
       rankStyles:
         "w-[57px] h-[95px] top-[18px] left-[47px] text-[74.3px] leading-[104.1px] max-md:w-[35px] max-md:!h-[60px] max-md:top-[12px] max-md:left-[32px] max-md:text-[40px] max-md:leading-[55px] max-sm:w-[25px] max-sm:h-[45px] max-sm:top-[8px] max-sm:left-[27px] max-sm:text-[28px] max-sm:leading-[40px]",
+      avatar: leaderboardData[2]?.avatar_image_url || "/avatars/default-avatar.png",
     },
   ] : [
     {
@@ -94,6 +74,7 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       rank: "1",
       rankStyles:
         "w-[61px] h-[194px] top-[22px] left-[46px] text-[123.9px] leading-[173.5px] max-md:w-[40px] max-md:h-[120px] max-md:top-[15px] max-md:left-[30px] max-md:text-[60px] max-md:leading-[80px] max-sm:w-[30px] max-sm:h-[90px] max-sm:top-[10px] max-sm:left-[25px] max-sm:text-[40px] max-sm:leading-[60px]",
+      avatar: "/avatars/default-avatar.png",
     },
     {
       id: "2",
@@ -103,6 +84,7 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       rank: "2",
       rankStyles:
         "w-[71px] h-[162px] top-[23px] left-[41px] text-[99.1px] leading-[138.8px] max-md:w-[45px] max-md:!h-[100px] max-md:top-[15px] max-md:left-[27px] max-md:text-[50px] max-md:leading-[70px] max-sm:w-[35px] max-sm:h-[75px] max-sm:top-[10px] max-sm:left-[22px] max-sm:text-[35px] max-sm:leading-[55px]",
+      avatar: "/avatars/default-avatar.png",
     },
     {
       id: "3",
@@ -112,6 +94,7 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
       rank: "3",
       rankStyles:
         "w-[57px] h-[95px] top-[18px] left-[47px] text-[74.3px] leading-[104.1px] max-md:w-[35px] max-md:!h-[60px] max-md:top-[12px] max-md:left-[32px] max-md:text-[40px] max-md:leading-[55px] max-sm:w-[25px] max-sm:h-[45px] max-sm:top-[8px] max-sm:left-[27px] max-sm:text-[28px] max-sm:leading-[40px]",
+      avatar: "/avatars/default-avatar.png",
     },
   ];
 
@@ -129,9 +112,18 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
           >
             <Card className="border-none bg-transparent shadow-none">
               <CardContent className="flex flex-col items-center gap-6 max-md:gap-3 p-0">
-                <div className={`relative w-[75px] h-[75px] max-md:w-[60px] max-md:h-[60px] max-sm:w-[50px] max-sm:h-[50px] rounded-full flex items-center justify-center text-white font-rubik font-semibold text-2xl max-md:text-xl max-sm:text-lg ${getBackgroundColor(champion.name)}`}>
-                  {getInitials(champion.name)}
-                  
+                <div className="w-[75px] h-[75px] max-md:w-[60px] max-md:h-[60px] max-sm:w-[50px] max-sm:h-[50px] rounded-full flex items-center justify-center text-white font-rubik font-semibold text-2xl max-md:text-xl max-sm:text-lg relative">
+                  <div className="w-[75px] h-[75px] max-md:w-[60px] max-md:h-[60px] max-sm:w-[50px] max-sm:h-[50px] rounded-full flex items-center justify-center text-white font-rubik font-semibold text-2xl max-md:text-xl max-sm:text-lg
+                outline-2 outline-[#732bc4]
+                  ">
+                  <Image
+                    src={champion.avatar}
+                    alt="User Avatar"
+                    layout="fill"
+                      className="rounded-full object-cover"
+                    />
+                  </div>
+
                   {/* Badge for top 3 positions */}
                   <div className="mt-2 absolute -top-4 -left-1 max-md:-top-4 max-md:left-0 max-sm:-top-3 max-sm:-left-1">
                     {champion.referrals>0&&

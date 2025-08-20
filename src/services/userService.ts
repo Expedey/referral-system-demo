@@ -272,4 +272,122 @@ export class UserService {
       return false;
     }
   }
+
+  /**
+   * Gets user avatar status
+   * @param userId - The user ID to check
+   * @returns Avatar status information
+   */
+  static async getUserAvatarStatus(userId: string): Promise<{
+    loggedInBefore: boolean;
+    avatarImageUrl: string | null;
+  }> {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("logged_in_before, avatar_image_url")
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user avatar status:", error);
+        throw new Error("Failed to fetch user avatar status");
+      }
+
+      return {
+        loggedInBefore: data?.logged_in_before || false,
+        avatarImageUrl: data?.avatar_image_url || null,
+      };
+    } catch (error) {
+      console.error("Error in getUserAvatarStatus:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Updates user avatar information
+   * @param userId - The user ID to update
+   * @param avatarUrl - The avatar image URL
+   * @returns Success status
+   */
+  static async updateUserAvatar(
+    userId: string,
+    avatarUrl: string
+  ): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from("users")
+        .update({
+          avatar_image_url: avatarUrl,
+        })
+        .eq("id", userId);
+
+      if (error) {
+        console.error("Error updating user avatar:", error);
+        throw new Error("Failed to update user avatar");
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error in updateUserAvatar:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Marks user as having logged in before
+   * @param userId - The user ID to update
+   * @returns Success status
+   */
+  static async markUserAsLoggedIn(userId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from("users")
+        .update({
+          logged_in_before: true,
+        })
+        .eq("id", userId);
+
+      if (error) {
+        console.error("Error updating loggedInBefore status:", error);
+        throw new Error("Failed to update loggedInBefore status");
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error in markUserAsLoggedIn:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Updates user avatar and marks as logged in
+   * @param userId - The user ID to update
+   * @param avatarUrl - The avatar image URL
+   * @returns Success status
+   */
+  static async updateUserAvatarAndMarkLoggedIn(
+    userId: string,
+    avatarUrl: string
+  ): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from("users")
+        .update({
+          avatar_image_url: avatarUrl,
+          logged_in_before: true,
+        })
+        .eq("id", userId);
+
+      if (error) {
+        console.error("Error updating user avatar and login status:", error);
+        throw new Error("Failed to update user avatar and login status");
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error in updateUserAvatarAndMarkLoggedIn:", error);
+      throw error;
+    }
+  }
 }

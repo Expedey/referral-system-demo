@@ -300,6 +300,7 @@ export class ReferralService {
       referral_code: string;
       total_referrals: number;
       rank: number;
+      avatar_image_url?: string | null;
     }>
   > {
     try {

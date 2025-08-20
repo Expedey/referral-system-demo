@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Image from "next/image";
 
 interface LeaderboardEntry {
   id: string;
@@ -15,6 +16,7 @@ interface LeaderboardEntry {
   referral_code: string;
   total_referrals: number;
   rank: number;
+  avatar_image_url?: string | null;
 }
 
 interface LeaderboardSectionProps {
@@ -25,29 +27,34 @@ export const LeaderboardSection = ({ leaderboardData = [] }: LeaderboardSectionP
   // Use real data if available, otherwise fall back to default data
   const tableData = leaderboardData.length > 0 ? leaderboardData.map((entry, index) => ({
     id: (index + 1).toString().padStart(2, '0'),
+    avatar: entry.avatar_image_url || null,
     name: entry.username || "Anonymous",
     referralCount: entry.total_referrals.toString().padStart(2, '0'),
     rank: entry.rank,
   })) : [
     {
+      avatar: "/avatar/avatar1.png",
       id: "01",
       name: "Yeremias",
       referralCount: "07",
       rank: 1,
     },
     {
+      avatar: "/avatar/avatar2.png",
       id: "02",
       name: "John Pentol",
       referralCount: "05",
       rank: 2,
     },
     {
+      avatar: "/avatar/avatar3.png",
       id: "03",
       name: "Magda Hera",
       referralCount: "03",
       rank: 3,
     },
     {
+      avatar: "/avatar/avatar4.png",
       id: "04",
       name: "Danielad Dan",
       referralCount: "04",
@@ -73,33 +80,8 @@ export const LeaderboardSection = ({ leaderboardData = [] }: LeaderboardSectionP
     },
   ];
 
-  // Function to get initials from name
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
-  // Function to get background color based on name
-  const getBackgroundColor = (name: string) => {
-    const colors = [
-      'bg-blue-500',
-      'bg-green-500', 
-      'bg-purple-500',
-      'bg-pink-500',
-      'bg-indigo-500',
-      'bg-red-500',
-      'bg-yellow-500',
-      'bg-teal-500',
-      'bg-orange-500',
-      'bg-cyan-500'
-    ];
-    const index = name.charCodeAt(0) % colors.length;
-    return colors[index];
-  };
+
 
   // Function to get badge based on referral count
   const getBadge = (referralCount: number) => {
@@ -151,8 +133,23 @@ export const LeaderboardSection = ({ leaderboardData = [] }: LeaderboardSectionP
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className={`w-[38px] h-[38px] rounded-full flex items-center justify-center text-white font-rubik font-semibold text-sm ${getBackgroundColor(user.name)}`}>
-                            {getInitials(user.name)}
+                          <div className="w-[38px] h-[38px] relative">
+                          {user.avatar && (
+                            <Image
+                              src={user.avatar}
+                              alt="User Avatar"
+                              layout="fill"
+                              className="rounded-full"
+                            />
+                          )}
+                          {!user.avatar && (
+                            <Image
+                              src="/avatars/default-avatar.png"
+                              alt="User Avatar"
+                              layout="fill"
+                              className="rounded-full object-cover"
+                            />
+                          )}
                           </div>
                           <span className="font-rubik font-medium text-[#7272a8] text-[13px] leading-[20.2px]">
                             {user.name}
