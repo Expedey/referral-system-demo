@@ -35,6 +35,25 @@ const SAFE_COLORS = [
 ];
 
 /**
+ * Determine age group from date of birth
+ * @param dateOfBirth - Date of birth string (YYYY-MM-DD format)
+ * @returns 'young' for 18-35, 'old' for 36+
+ */
+export const getAgeGroupFromDateOfBirth = (dateOfBirth: string): 'young' | 'old' => {
+  const birthDate = new Date(dateOfBirth);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  
+  // Check if birthday has occurred this year
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age <= 35 ? 'young' : 'old';
+};
+
+/**
  * Generate a random color from the safe colors array
  */
 const getRandomColor = (): string => {

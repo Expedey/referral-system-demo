@@ -2,7 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['localhost', 'vlvqauzukigsmcepdlpy.supabase.co'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'vlvqauzukigsmcepdlpy.supabase.co',
+      },
+    ],
   },
   /* config options here */
   redirects: async () => [

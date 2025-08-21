@@ -5,6 +5,7 @@ import { processAvatarSelection } from "@/utils/avatarStorage";
 import { generatePlaceholderAvatarFile } from "@/utils/avatarGenerator";
 import { UserService } from "@/services/userService";
 import { uploadAvatarToStorage } from "@/utils/avatarStorage";
+import { getAgeGroupFromDateOfBirth } from "@/utils/avatarGenerator";
 
 export interface AvatarSelectionModalProps {
   isVisible: boolean;
@@ -30,6 +31,63 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userData, setUserData] = useState<{
+    sex?: Gender;
+    date_of_birth?: string;
+  } | null>(null);
+  const [isLoadingUserData, setIsLoadingUserData] = useState(false);
+
+  // Fetch user data when modal opens
+  useEffect(() => {
+    if (isVisible && userId) {
+      fetchUserData();
+    }
+  }, [isVisible, userId]);
+
+  // Determine initial step based on user data
+  useEffect(() => {
+    if (userData) {
+      console.log("userData", userData);
+      let initialStep = 1;
+      
+      // If user has gender, skip step 1 (gender selection)
+      if (userData.sex) {
+        setSelectedGender(userData.sex);
+        initialStep = 2;
+      }
+      
+      // If user has date of birth, skip step 2 (age selection)
+      if (userData.date_of_birth) {
+        const ageGroup = getAgeGroupFromDateOfBirth(userData.date_of_birth);
+        setSelectedAgeGroup(ageGroup);
+        // If user also has gender, go to step 3, otherwise stay at step 1
+        if (userData.sex) {
+          initialStep = 3;
+        }
+      }
+      
+      setCurrentStep(initialStep);
+    }
+  }, [userData]);
+
+  const fetchUserData = async () => {
+    if (!userId) return;
+    
+    try {
+      setIsLoadingUserData(true);
+      const user = await UserService.getUserById(userId);
+      if (user) {
+        setUserData({
+          sex: user.sex || undefined,
+          date_of_birth: user.date_of_birth || undefined,
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setIsLoadingUserData(false);
+    }
+  };
 
   // Avatar data - you can replace these with actual avatar images
   const avatarData = {
@@ -97,7 +155,12 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
 
   const handleNext = () => {
     if (currentStep < 3) {
-      setCurrentStep(currentStep + 1);
+      // Special case: if user has only DOB and is on step 1 (gender selection), skip to step 3 (avatar selection)
+      if (currentStep === 1 && userData?.date_of_birth && !userData?.sex) {
+        setCurrentStep(3);
+      } else {
+        setCurrentStep(currentStep + 1);
+      }
     }
   };
 
@@ -159,6 +222,8 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
     setSelectedAvatar(null);
     setError(null);
     setIsProcessing(false);
+    setUserData(null);
+    setIsLoadingUserData(false);
     onClose();
   };
 
@@ -244,7 +309,64 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
     };
   }, [isVisible]);
 
+  // Calculate total steps based on user data
+  const getTotalSteps = () => {
+    if (userData?.sex && userData?.date_of_birth) return 1; // Only avatar selection
+    if (userData?.sex || userData?.date_of_birth) return 2; // Gender OR age + avatar selection
+    return 3; // All steps
+  };
+
+  const getCurrentStepNumber = () => {
+    // If user has both sex and DOB, they're always on step 1 of 1 (avatar selection)
+    if (userData?.sex && userData?.date_of_birth) return 1;
+    
+    // If user has only sex, they're on step 1 (age selection) or step 2 (avatar selection)
+    if (userData?.sex && !userData?.date_of_birth) {
+      // When currentStep is 2, it means we're showing age selection (step 1 of 2)
+      // When currentStep is 3, it means we're showing avatar selection (step 2 of 2)
+      return currentStep === 2 ? 1 : 2;
+    }
+    
+    // If user has only DOB, they're on step 1 (gender selection) or step 2 (avatar selection)
+    if (!userData?.sex && userData?.date_of_birth) {
+      return currentStep === 1 ? 1 : 2;
+    }
+    
+    // If user has neither, they go through all 3 steps
+    return currentStep;
+  };
+
+  // Get the actual step name for display
+  const getCurrentStepName = () => {
+    if (userData?.sex && userData?.date_of_birth) return "Avatar Selection";
+    if (userData?.sex && !userData?.date_of_birth) {
+      // When currentStep is 2, it means we're showing age selection (step 1 of 2)
+      // When currentStep is 3, it means we're showing avatar selection (step 2 of 2)
+      return currentStep === 2 ? "Age Selection" : "Avatar Selection";
+    }
+    if (!userData?.sex && userData?.date_of_birth) {
+      return currentStep === 1 ? "Gender Selection" : "Avatar Selection";
+    }
+    return currentStep === 1 ? "Gender Selection" : currentStep === 2 ? "Age Selection" : "Avatar Selection";
+  };
+
   if (!isVisible) return null;
+
+  // Show loading state while fetching user data
+  if (isLoadingUserData) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 animate-in fade-in duration-300">
+        <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8 max-md:px-5 max-md:py-6 max-w-2xl w-full mx-4 transform transition-all duration-300 animate-in zoom-in-95 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-blue-50 opacity-30"></div>
+          <div className="relative z-10 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#702DFF] mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-800">Loading...</h2>
+            <p className="text-gray-600">Preparing avatar selection</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 animate-in fade-in duration-300">
@@ -260,14 +382,14 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
               Choose Your Avatar
             </h2>
             <p className="text-gray-600">
-              Step {currentStep} of 3
+              {getCurrentStepName()} - Step {getCurrentStepNumber()} of {getTotalSteps()}
             </p>
             
             {/* Progress bar */}
             <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
               <div 
                 className="bg-[#702DFF] h-2 rounded-full transition-all duration-300"
-                style={{ width: `${(currentStep / 3) * 100}%` }}
+                style={{ width: `${(getCurrentStepNumber() / getTotalSteps()) * 100}%` }}
               ></div>
             </div>
           </div>
@@ -279,8 +401,8 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
             </div>
           )}
 
-          {/* Step 1: Gender Selection */}
-          {currentStep === 1 && (
+          {/* Step 1: Gender Selection - Only show if user doesn't have gender */}
+          {currentStep === 1 && !userData?.sex && (
             <div className="space-y-6">
               <h3 className="text-xl max-md:text-lg font-semibold text-gray-800 text-center">
                 Select Gender
@@ -368,7 +490,7 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
                         className="text-white rounded-full"
                       />
                     </div>
-                    <h4 className="text-lg max-md:text-sm font-semibold text-gray-800">Other</h4>
+                    <h4 className="text-lg max-md:text-sm font-semibold text-gray-800">Custom</h4>
                   </div>
                   {selectedGender === "other" && (
                     <div className="absolute top-2 right-2 w-6 h-6 bg-[#702DFF] rounded-full flex items-center justify-center">
@@ -386,11 +508,11 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
             </div>
           )}
 
-          {/* Step 2: Age Group Selection */}
-          {currentStep === 2 && selectedGender && (
+          {/* Step 2: Age Group Selection - Only show if user doesn't have date of birth */}
+          {currentStep === 2 && selectedGender && !userData?.date_of_birth && (
             <div className="space-y-6">
               <h3 className="text-xl max-md:text-lg font-semibold text-gray-800 text-center">
-                Select Age Group for {getGenderDisplayName(selectedGender)}
+                Select Age Group for {getGenderDisplayName(selectedGender) === "Other" ? "Custom" : getGenderDisplayName(selectedGender)}
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div
@@ -411,7 +533,7 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
                       />
                     </div>
                     <h4 className="text-lg max-md:text-sm font-semibold text-gray-800">
-                      Young {getGenderDisplayName(selectedGender)}
+                      Classic {getGenderDisplayName(selectedGender) === "Other" ? "" : getGenderDisplayName(selectedGender)}
                     </h4>
                     <p className="text-sm text-gray-600 mt-1">18-35 years</p>
                   </div>
@@ -446,7 +568,7 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
                       />
                     </div>
                     <h4 className="text-lg max-md:text-sm font-semibold text-gray-800">
-                      Old {getGenderDisplayName(selectedGender)}
+                      Prime {getGenderDisplayName(selectedGender) === "Other" ? "" : getGenderDisplayName(selectedGender)}
                     </h4>
                     <p className="text-sm text-gray-600 mt-1">36+ years</p>
                   </div>
@@ -526,7 +648,6 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
 
           {/* Footer Buttons */}
           <div className="flex justify-end items-center mt-8 pt-6 border-t border-gray-200">
-
             <div className="flex gap-3">
               {/* Only show Skip button for first-time users */}
               {isFirstTime && (
@@ -539,17 +660,17 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
                   Skip
                 </Button>
               )}
-                {/* Only show Cancel button for non-first-time users */}
-            {!isFirstTime && (
-              <Button
-                variant="purpleOutline"
-                onClick={handleClose}
-                className="!px-6"
-                disabled={isProcessing}
-              >
-                Cancel
-              </Button>
-            )}
+              {/* Only show Cancel button for non-first-time users */}
+              {!isFirstTime && (
+                <Button
+                  variant="purpleOutline"
+                  onClick={handleClose}
+                  className="!px-6"
+                  disabled={isProcessing}
+                >
+                  Cancel
+                </Button>
+              )}
               
               {currentStep < 3 ? (
                 <Button
@@ -587,4 +708,4 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
   );
 };
 
-export default AvatarSelectionModal; 
+export default AvatarSelectionModal;

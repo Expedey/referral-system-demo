@@ -125,7 +125,7 @@ export const TopReferrersSection = ({ leaderboardData = [] }: TopReferrersSectio
                   </div>
 
                   {/* Badge for top 3 positions */}
-                  <div className="mt-2 absolute -top-4 -left-1 max-md:-top-4 max-md:left-0 max-sm:-top-3 max-sm:-left-1">
+                  <div className="mt-2 absolute -bottom-[6px] -right-1 max-md:-top-4 max-md:left-0 max-sm:-top-3 max-sm:-left-1">
                     {champion.referrals>0&&
                     <img
                       src={getBadge(champion.referrals)}
