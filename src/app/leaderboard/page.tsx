@@ -52,8 +52,8 @@ export default function LeaderboardPage() {
       <div className="bg-white flex flex-col items-center w-full min-h-screen">
         <Navbar 
           variant="leaderboard" 
-          title="Leaderboard" 
-          subtitle="Top referrers on the waitlist"
+          title="" 
+          subtitle=""
           showBackButton={true}
           backUrl="/dashboard"
           backButtonText="Back to Dashboard"
@@ -74,8 +74,8 @@ export default function LeaderboardPage() {
       <div className="bg-white flex flex-col items-center w-full min-h-screen">
         <Navbar 
           variant="leaderboard" 
-          title="Leaderboard" 
-          subtitle="Top referrers on the waitlist"
+          title="" 
+          subtitle=""
           showBackButton={true}
           backUrl="/dashboard"
           backButtonText="Back to Dashboard"
