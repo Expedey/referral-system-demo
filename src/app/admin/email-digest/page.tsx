@@ -81,31 +81,33 @@ export default function EmailDigestPage() {
 
       setDigestData(result.data);
 
-      // If sendEmail is true, send the email using our email API
+      // If sendEmail is true, send the email using SendGrid
       if (sendEmail && result.data) {
-        const emailContent = generateEmailContent(result.data);
-        
-        const emailResponse = await fetch('/api/sendEmail', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            to: teamEmail,
-            subject: `Weekly Bonbon Waitlist Digest - ${formatDate(result.data.weekRange.start)}`,
-            text: emailContent.text,
-            html: emailContent.html,
-          }),
-        });
+        try {
+          const emailResponse = await fetch('/api/sendEmail/weekly-digest', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              to: "mubashir@expedey.com",
+              digestData: result.data
+            }),
+          });
 
-        const emailResult = await emailResponse.json();
+          const emailResult = await emailResponse.json();
 
-        if (!emailResponse.ok) {
-          setError(emailResult.message || 'Failed to send email');
+          if (!emailResponse.ok) {
+            setError(emailResult.message || 'Failed to send email');
+            return;
+          }
+
+          setMessage(`Weekly digest sent successfully to ${teamEmail}!`);
+        } catch (emailError) {
+          console.error('Failed to send email:', emailError);
+          setError('Failed to send email');
           return;
         }
-
-        setMessage(`Weekly digest sent successfully to ${teamEmail}!`);
       } else {
         setMessage('Digest preview generated successfully!');
       }
@@ -117,127 +119,6 @@ export default function EmailDigestPage() {
     }
   };
 
-  const generateEmailContent = (data: EmailDigestData) => {
-    const text = `
-Weekly Bonbon Waitlist Digest
-Week: ${formatDate(data.weekRange.start)} - ${formatDate(data.weekRange.end)}
-
-📈 Total Growth:
-- Total Users: ${data.totalGrowth.totalUsers.toLocaleString()}
-- Total Referrals: ${data.totalGrowth.totalReferrals.toLocaleString()}
-- Verified Referrals: ${data.totalGrowth.verifiedReferrals.toLocaleString()}
-- Conversion Rate: ${data.totalGrowth.conversionRate}%
-- Weekly Growth: ${data.totalGrowth.weeklyGrowth}%
-
-🚨 Flagged Accounts:
-- Total Flagged: ${data.flaggedAccounts.totalFlagged}
-- This Week: ${data.flaggedAccounts.weeklyFlagged}
-- Unique IPs: ${data.flaggedAccounts.uniqueIPs}
-
-🏆 Top Referrers:
-${data.topReferrers.map((r, i) => `${i + 1}. ${r.username} (${r.email}) - ${r.count} referrals`).join('\n')}
-
-💎 Tier Breakdown:
-${data.tierBreakdown.map(t => `${t.tier}: ${t.count} users (${t.percentage}%)`).join('\n')}
-`;
-
-    const html = `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #F9FAFB; padding: 24px;">
-  <h1 style="color: #4F46E5; text-align: center; margin-bottom: 32px; font-size: 28px; border-bottom: 2px solid #E5E7EB; padding-bottom: 16px;">Weekly Bonbon Waitlist Digest</h1>
-  <p style="color: #6B7280; text-align: center; margin-bottom: 32px; font-size: 16px;">Week: ${formatDate(data.weekRange.start)} - ${formatDate(data.weekRange.end)}</p>
-
-  <div style="background-color: white; border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-    <h2 style="color: #4F46E5; margin-bottom: 20px; font-size: 20px;">📈 Total Growth</h2>
-    <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: separate; border-spacing: 4px;">
-      <tbody>
-        <tr>
-          <td style="width: 100%; padding: 12px; background: linear-gradient(to bottom right, #EEF2FF, #E0E7FF); border-radius: 8px; text-align: center; border: 1px solid #E5E7EB;">
-            <div style="font-size: 24px; font-weight: bold; color: #4F46E5; margin-bottom: 4px;">${data.totalGrowth.totalUsers.toLocaleString()}</div>
-            <div style="color: #6B7280; font-size: 14px;">Total Users</div>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 100%; padding: 12px; background: linear-gradient(to bottom right, #ECFDF5, #D1FAE5); border-radius: 8px; text-align: center; border: 1px solid #E5E7EB;">
-            <div style="font-size: 24px; font-weight: bold; color: #059669; margin-bottom: 4px;">${data.totalGrowth.totalReferrals.toLocaleString()}</div>
-            <div style="color: #6B7280; font-size: 14px;">Total Referrals</div>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 100%; padding: 12px; background: linear-gradient(to bottom right, #FEF3C7, #FDE68A); border-radius: 8px; text-align: center; border: 1px solid #E5E7EB;">
-            <div style="font-size: 24px; font-weight: bold; color: #D97706; margin-bottom: 4px;">${data.totalGrowth.verifiedReferrals.toLocaleString()}</div>
-            <div style="color: #6B7280; font-size: 14px;">Verified Referrals</div>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 100%; padding: 12px; background: linear-gradient(to bottom right, #F3E8FF, #E9D5FF); border-radius: 8px; text-align: center; border: 1px solid #E5E7EB;">
-            <div style="font-size: 24px; font-weight: bold; color: #7C3AED; margin-bottom: 4px;">${data.totalGrowth.conversionRate}%</div>
-            <div style="color: #6B7280; font-size: 14px;">Conversion Rate</div>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 100%; padding: 12px; background: linear-gradient(to bottom right, #EEF2FF, #E0E7FF); border-radius: 8px; text-align: center; border: 1px solid #E5E7EB;">
-            <div style="font-size: 24px; font-weight: bold; color: #4F46E5; margin-bottom: 4px;">${data.totalGrowth.weeklyGrowth > 0 ? '+' : ''}${data.totalGrowth.weeklyGrowth}%</div>
-            <div style="color: #6B7280; font-size: 14px;">Weekly Growth</div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div style="background-color: white; border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-    <h2 style="color: #4F46E5; margin-bottom: 20px; font-size: 20px;">🚨 Flagged Accounts</h2>
-    <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: separate; border-spacing: 4px;">
-      <tbody>
-        <tr>
-          <td style="width: 100%; padding: 12px; background: linear-gradient(to bottom right, #FEE2E2, #FECACA); border-radius: 8px; text-align: center; border: 1px solid #FCA5A5;">
-            <div style="font-size: 24px; font-weight: bold; color: #DC2626; margin-bottom: 4px;">${data.flaggedAccounts.totalFlagged}</div>
-            <div style="color: #6B7280; font-size: 14px;">Total Flagged</div>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 100%; padding: 12px; background: linear-gradient(to bottom right, #FFF7ED, #FFEDD5); border-radius: 8px; text-align: center; border: 1px solid #FDBA74;">
-            <div style="font-size: 24px; font-weight: bold; color: #EA580C; margin-bottom: 4px;">${data.flaggedAccounts.weeklyFlagged}</div>
-            <div style="color: #6B7280; font-size: 14px;">This Week</div>
-          </td>
-        </tr>
-        <tr>
-          <td style="width: 100%; padding: 12px; background: linear-gradient(to bottom right, #FCE7F3, #FBCFE8); border-radius: 8px; text-align: center; border: 1px solid #F9A8D4;">
-            <div style="font-size: 24px; font-weight: bold; color: #BE185D; margin-bottom: 4px;">${data.flaggedAccounts.uniqueIPs}</div>
-            <div style="color: #6B7280; font-size: 14px;">Unique IPs</div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div style="background-color: white; border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-    <h2 style="color: #4F46E5; margin-bottom: 20px; font-size: 20px;">🏆 Top Referrers</h2>
-    <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: separate; border-spacing: 0 12px;">
-      <tbody>
-        ${data.topReferrers.map((r, i) => `
-          <tr>
-            <td style="padding: 0 4px;">
-              <div style="background: #F3F4F6; padding: 12px; border-radius: 8px; border: 1px solid #E5E7EB;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <div style="margin-right: 8px; color: #4F46E5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;">${i + 1}</div>
-                  <div style="min-width: 0; flex: 1;">
-                    <div style="color: #111827; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.username}</div>
-                    <div style="color: #6B7280; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.email}</div>
-                    <div style="color: #4F46E5; font-weight: 600; font-size: 14px; margin-top: 4px;">${r.count} referrals</div>
-                  </div>
-                </div>
-              </div>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  </div>
-</div>
-`;
-
-    return { text, html };
-  };
 
   if (authLoading) {
     return (
