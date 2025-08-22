@@ -96,9 +96,6 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
       "/avatars/others/other-1.png",
       "/avatars/others/other-2.png",
       "/avatars/others/other-3.png",
-      "/avatars/others/other-4.png",
-      "/avatars/others/other-5.png",
-      "/avatars/others/other-6.png",
     ],
   };
 
