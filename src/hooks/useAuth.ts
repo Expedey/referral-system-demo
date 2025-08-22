@@ -345,6 +345,35 @@ export const useAuth = () => {
       const userProfile = await UserService.getCurrentUserProfile();
       
       if (userProfile) {
+        // Send account verification welcome email (non-blocking)
+        try {
+          console.log("[useAuth] Sending account verification welcome email to:", userProfile.email);
+          
+          const response = await fetch('/api/sendEmail/account-verified', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              to: userProfile.email,
+              userName: userProfile.username || userProfile.email.split('@')[0],
+              email: userProfile.email,
+              referralCode: userProfile.referral_code,
+            }),
+          });
+
+          if (response.ok) {
+            console.log("[useAuth] Account verification welcome email sent successfully");
+          } else {
+            console.error("[useAuth] Failed to send account verification welcome email:", response.status);
+            const errorData = await response.json();
+            console.error("[useAuth] Email sending error:", errorData);
+          }
+        } catch (emailError) {
+          console.error("[useAuth] Error sending account verification welcome email:", emailError);
+          // Don't throw error - email sending failure shouldn't break email verification
+        }
+
         // Sync user to HubSpot after email confirmation
         try {
           console.log("[useAuth] Syncing verified user to HubSpot:", userProfile.email);

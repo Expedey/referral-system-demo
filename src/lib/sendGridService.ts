@@ -125,4 +125,29 @@ export async function sendWeeklyDigestEmail({
       })),
     }
   });
+}
+
+export async function sendAccountVerifiedEmail({
+  to,
+  userName,
+  email,
+  referralCode
+}: {
+  to: string;
+  userName: string;
+  email: string;
+  referralCode: string;
+}) {
+  return sendSendGridEmail({
+    to,
+    subject: 'Welcome to BonBon! Your Account is Verified',
+    templateId: process.env.SENDGRID_ACCOUNT_VERIFIED_TEMPLATE_ID!,
+    dynamicTemplateData: {
+      user_name: userName,
+      email: email,
+      referral_code: referralCode,
+      dashboard_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+      referral_link: `${process.env.NEXT_PUBLIC_APP_URL}/ref/${referralCode}`
+    }
+  });
 } 

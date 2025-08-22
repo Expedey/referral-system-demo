@@ -44,15 +44,7 @@ export default function EmailDigestPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  // Check authentication
-  if (!authLoading && !user) {
-    router.push("/admin/login");
-    return null;
-  }
 
-  useEffect(() => {
-    setTeamEmail(user?.email || "");
-  }, [user]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -123,7 +115,19 @@ export default function EmailDigestPage() {
     }
   };
 
+  useEffect(() => {
+    if (user) {
+      setTeamEmail(user?.email || "");
+    }
+  }, [user]);
 
+  // Check authentication - moved to end after all hooks
+  if (!authLoading && !user) {
+    router.push("/admin/login");
+    return null;
+  }
+
+  // Check loading state - moved to end after all hooks
   if (authLoading) {
     return (
       <div className="flex items-center justify-center h-64">
