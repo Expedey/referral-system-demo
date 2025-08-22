@@ -5,7 +5,6 @@ import { processAvatarSelection } from "@/utils/avatarStorage";
 import { generatePlaceholderAvatarFile } from "@/utils/avatarGenerator";
 import { UserService } from "@/services/userService";
 import { uploadAvatarToStorage } from "@/utils/avatarStorage";
-import { getAgeGroupFromDateOfBirth } from "@/utils/avatarGenerator";
 
 export interface AvatarSelectionModalProps {
   isVisible: boolean;
@@ -16,7 +15,6 @@ export interface AvatarSelectionModalProps {
 }
 
 type Gender = "male" | "female" | "other";
-type AgeGroup = "young" | "old";
 
 const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
   isVisible,
@@ -27,13 +25,11 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
-  const [selectedAgeGroup, setSelectedAgeGroup] = useState<AgeGroup | null>(null);
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userData, setUserData] = useState<{
     sex?: Gender;
-    date_of_birth?: string;
   } | null>(null);
   const [isLoadingUserData, setIsLoadingUserData] = useState(false);
 
@@ -56,16 +52,6 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
         initialStep = 2;
       }
       
-      // If user has date of birth, skip step 2 (age selection)
-      if (userData.date_of_birth) {
-        const ageGroup = getAgeGroupFromDateOfBirth(userData.date_of_birth);
-        setSelectedAgeGroup(ageGroup);
-        // If user also has gender, go to step 3, otherwise stay at step 1
-        if (userData.sex) {
-          initialStep = 3;
-        }
-      }
-      
       setCurrentStep(initialStep);
     }
   }, [userData]);
@@ -79,7 +65,6 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
       if (user) {
         setUserData({
           sex: user.sex || undefined,
-          date_of_birth: user.date_of_birth || undefined,
         });
       }
     } catch (error) {
@@ -89,101 +74,39 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
     }
   };
 
-  // Avatar data - you can replace these with actual avatar images
+  // Avatar data - simplified to only gender-based avatars
   const avatarData = {
-    male: {
-      young: [
-        "/avatars/male/male-young-1.png",
-        "/avatars/male/male-young-2.png",
-        "/avatars/male/male-young-3.png",
-        "/avatars/male/male-young-4.png",
-        "/avatars/male/male-young-5.png",
-        "/avatars/male/male-young-6.png",
-
-      ],
-      old: [
-        "/avatars/male/male-old-1.png",
-        "/avatars/male/male-old-2.png",
-        "/avatars/male/male-old-3.png",
-        "/avatars/male/male-old-4.png",
-        "/avatars/male/male-old-5.png",
-        "/avatars/male/male-old-6.png",
-
-      ],
-    },
-    female: {
-      young: [
-        "/avatars/female/female-young-1.png",
-        "/avatars/female/female-young-2.png",
-        "/avatars/female/female-young-3.png",
-        "/avatars/female/female-young-4.png",
-        "/avatars/female/female-young-5.png",
-        "/avatars/female/female-young-6.png",
-
-      ],
-      old: [
-        "/avatars/female/female-old-1.png",
-        "/avatars/female/female-old-2.png",
-        "/avatars/female/female-old-3.png",
-        "/avatars/female/female-old-4.png",
-        "/avatars/female/female-old-5.png",
-        "/avatars/female/female-old-6.png",
-
-      ],
-    },
-    other: {
-      young: [
-        "/avatars/others/other-young-1.png",
-        "/avatars/others/other-young-2.png",
-        "/avatars/others/other-young-3.png",
-        "/avatars/others/other-young-4.png",
-        "/avatars/others/other-young-5.png",
-        "/avatars/others/other-young-6.png",
-
-      ],
-      old: [
-        "/avatars/others/other-old-1.png",
-        "/avatars/others/other-old-2.png",
-        "/avatars/others/other-old-3.png",
-        "/avatars/others/other-old-4.png",
-        "/avatars/others/other-old-5.png",
-        "/avatars/others/other-old-6.png",
-
-      ],
-    },
+    male: [
+      "/avatars/male/male-1.png",
+      "/avatars/male/male-2.png",
+      "/avatars/male/male-3.png",
+      "/avatars/male/male-4.png",
+      "/avatars/male/male-5.png",
+      "/avatars/male/male-6.png",
+    ],
+    female: [
+      "/avatars/female/female-1.png",
+      "/avatars/female/female-2.png",
+      "/avatars/female/female-3.png",
+      "/avatars/female/female-4.png",
+      "/avatars/female/female-5.png",
+      "/avatars/female/female-6.png",
+    ],
+    other: [
+      "/avatars/others/other-1.png",
+      "/avatars/others/other-2.png",
+      "/avatars/others/other-3.png",
+      "/avatars/others/other-4.png",
+      "/avatars/others/other-5.png",
+      "/avatars/others/other-6.png",
+    ],
   };
 
   const handleNext = () => {
-    if (currentStep < 3) {
-      // Special case: if user has only DOB and is on step 1 (gender selection), skip to step 3 (avatar selection)
-      if (currentStep === 1 && userData?.date_of_birth && !userData?.sex) {
-        setCurrentStep(3);
-      } else {
-        setCurrentStep(currentStep + 1);
-      }
+    if (currentStep < 2) {
+      setCurrentStep(currentStep + 1);
     }
   };
-
-//   const handleSkip = async () => {
-//     if (currentStep < 3) {
-//       setCurrentStep(currentStep + 1);
-//     }
-    
-//     // If this is the final step and user skips, mark as skipped
-//     if (currentStep === 3 && isFirstTime && userId) {
-//       try {
-//         setIsProcessing(true);
-//         setError(null);
-//         await UserService.skipAvatarSelection(userId);
-//         onClose();
-//       } catch (error) {
-//         console.error('Error skipping avatar selection:', error);
-//         setError('Failed to skip avatar selection');
-//       } finally {
-//         setIsProcessing(false);
-//       }
-//     }
-//   };
 
   const handleSave = async () => {
     if (!selectedAvatar || !userId) return;
@@ -218,7 +141,6 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
     // Reset state when closing
     setCurrentStep(1);
     setSelectedGender(null);
-    setSelectedAgeGroup(null);
     setSelectedAvatar(null);
     setError(null);
     setIsProcessing(false);
@@ -263,38 +185,12 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
     }
   };
 
-// const handleSkip = async () => {
-
-    
-//     // If this is the final step and user skips, mark as skipped
-    
-//       try {
-//         setIsProcessing(true);
-//         setError(null);
-//         await UserService.skipAvatarSelection(userId);
-//         handleClose()
-//       } catch (error) {
-//         console.error('Error skipping avatar selection:', error);
-//         setError('Failed to skip avatar selection');
-//       } finally {
-//         setIsProcessing(false);
-//       }
-    
-//   };
-
   const getCurrentAvatars = () => {
-    if (!selectedGender || !selectedAgeGroup) return [];
-    return avatarData[selectedGender][selectedAgeGroup];
+    if (!selectedGender) return [];
+    return avatarData[selectedGender];
   };
 
-  const getGenderDisplayName = (gender: Gender) => {
-    switch (gender) {
-      case "male": return "Male";
-      case "female": return "Female";
-      case "other": return "Other";
-      default: return "";
-    }
-  };
+
 
   useEffect(() => {
     if (isVisible) {
@@ -311,43 +207,22 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
 
   // Calculate total steps based on user data
   const getTotalSteps = () => {
-    if (userData?.sex && userData?.date_of_birth) return 1; // Only avatar selection
-    if (userData?.sex || userData?.date_of_birth) return 2; // Gender OR age + avatar selection
-    return 3; // All steps
+    if (userData?.sex) return 1; // Only avatar selection
+    return 2; // Gender selection + avatar selection
   };
 
   const getCurrentStepNumber = () => {
-    // If user has both sex and DOB, they're always on step 1 of 1 (avatar selection)
-    if (userData?.sex && userData?.date_of_birth) return 1;
+    // If user has sex, they're always on step 1 of 1 (avatar selection)
+    if (userData?.sex) return 1;
     
-    // If user has only sex, they're on step 1 (age selection) or step 2 (avatar selection)
-    if (userData?.sex && !userData?.date_of_birth) {
-      // When currentStep is 2, it means we're showing age selection (step 1 of 2)
-      // When currentStep is 3, it means we're showing avatar selection (step 2 of 2)
-      return currentStep === 2 ? 1 : 2;
-    }
-    
-    // If user has only DOB, they're on step 1 (gender selection) or step 2 (avatar selection)
-    if (!userData?.sex && userData?.date_of_birth) {
-      return currentStep === 1 ? 1 : 2;
-    }
-    
-    // If user has neither, they go through all 3 steps
+    // If user has no sex, they go through 2 steps
     return currentStep;
   };
 
   // Get the actual step name for display
   const getCurrentStepName = () => {
-    if (userData?.sex && userData?.date_of_birth) return "Avatar Selection";
-    if (userData?.sex && !userData?.date_of_birth) {
-      // When currentStep is 2, it means we're showing age selection (step 1 of 2)
-      // When currentStep is 3, it means we're showing avatar selection (step 2 of 2)
-      return currentStep === 2 ? "Age Selection" : "Avatar Selection";
-    }
-    if (!userData?.sex && userData?.date_of_birth) {
-      return currentStep === 1 ? "Gender Selection" : "Avatar Selection";
-    }
-    return currentStep === 1 ? "Gender Selection" : currentStep === 2 ? "Age Selection" : "Avatar Selection";
+    if (userData?.sex) return "Avatar Selection";
+    return currentStep === 1 ? "Gender Selection" : "Avatar Selection";
   };
 
   if (!isVisible) return null;
@@ -508,88 +383,8 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
             </div>
           )}
 
-          {/* Step 2: Age Group Selection - Only show if user doesn't have date of birth */}
-          {currentStep === 2 && selectedGender && !userData?.date_of_birth && (
-            <div className="space-y-6">
-              <h3 className="text-xl max-md:text-lg font-semibold text-gray-800 text-center">
-                Select Age Group for {getGenderDisplayName(selectedGender) === "Other" ? "Custom" : getGenderDisplayName(selectedGender)}
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div
-                  className={`relative cursor-pointer rounded-xl border-2 transition-all duration-200 hover:shadow-lg ${
-                    selectedAgeGroup === "young"
-                      ? "border-[#702DFF] bg-purple-50 shadow-lg"
-                      : "border-gray-200 hover:border-purple-300"
-                  }`}
-                  onClick={() => setSelectedAgeGroup("young")}
-                >
-                  <div className="p-6 max-md:p-3 text-center">
-                    <div className="relative w-20 h-20 max-md:w-12 max-md:h-12 mx-auto mb-4 rounded-full flex items-center justify-center">
-                      <Image
-                        src={`/avatars/${selectedGender}-young.png`}
-                        alt={`Young ${getGenderDisplayName(selectedGender)}`}
-                        layout="fill"
-                        className="text-white rounded-full"
-                      />
-                    </div>
-                    <h4 className="text-lg max-md:text-sm font-semibold text-gray-800">
-                      Classic {getGenderDisplayName(selectedGender) === "Other" ? "" : getGenderDisplayName(selectedGender)}
-                    </h4>
-                    <p className="text-sm text-gray-600 mt-1">18-35 years</p>
-                  </div>
-                  {selectedAgeGroup === "young" && (
-                    <div className="absolute top-2 right-2 w-6 h-6 bg-[#702DFF] rounded-full flex items-center justify-center">
-                      <Image
-                        src="/icons/checkmark.svg"
-                        alt="Selected"
-                        width={16}
-                        height={16}
-                        className="text-white"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div
-                  className={`relative cursor-pointer rounded-xl border-2 transition-all duration-200 hover:shadow-lg ${
-                    selectedAgeGroup === "old"
-                      ? "border-[#702DFF] bg-purple-50 shadow-lg"
-                      : "border-gray-200 hover:border-purple-300"
-                  }`}
-                  onClick={() => setSelectedAgeGroup("old")}
-                >
-                  <div className="p-6 max-md:p-3 text-center">
-                    <div className="relative w-20 h-20 max-md:w-12 max-md:h-12 mx-auto mb-4 rounded-full flex items-center justify-center">
-                      <Image
-                        src={`/avatars/${selectedGender}-old.png`}
-                        alt={`Old ${getGenderDisplayName(selectedGender)}`}
-                        layout="fill"
-                        className="text-white rounded-full"
-                      />
-                    </div>
-                    <h4 className="text-lg max-md:text-sm font-semibold text-gray-800">
-                      Prime {getGenderDisplayName(selectedGender) === "Other" ? "" : getGenderDisplayName(selectedGender)}
-                    </h4>
-                    <p className="text-sm text-gray-600 mt-1">36+ years</p>
-                  </div>
-                  {selectedAgeGroup === "old" && (
-                    <div className="absolute top-2 right-2 w-6 h-6 bg-[#702DFF] rounded-full flex items-center justify-center">
-                      <Image
-                        src="/icons/checkmark.svg"
-                        alt="Selected"
-                        width={16}
-                        height={16}
-                        className="text-white"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Avatar Selection */}
-          {currentStep === 3 && (
+          {/* Step 2: Avatar Selection */}
+          {currentStep === 2 && (
             <div className="space-y-6">
               <h3 className="text-xl max-md:text-lg font-semibold text-gray-800 text-center">
                 Choose Your Avatar
@@ -672,14 +467,13 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
                 </Button>
               )}
               
-              {currentStep < 3 ? (
+              {currentStep < 2 ? (
                 <Button
                   variant="purple"
                   onClick={handleNext}
                   disabled={
                     isProcessing ||
-                    (currentStep === 1 && !selectedGender) ||
-                    (currentStep === 2 && !selectedAgeGroup)
+                    (currentStep === 1 && !selectedGender)
                   }
                   className="!px-6"
                 >
