@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 
@@ -40,7 +40,7 @@ export default function EmailDigestPage() {
   
   const [loading, setLoading] = useState(false);
   const [digestData, setDigestData] = useState<EmailDigestData | null>(null);
-  const [teamEmail, setTeamEmail] = useState(process.env.NEXT_PUBLIC_EMAIL_TO || "");
+  const [teamEmail, setTeamEmail] = useState(user?.email || "");
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -49,6 +49,10 @@ export default function EmailDigestPage() {
     router.push("/admin/login");
     return null;
   }
+
+  useEffect(() => {
+    setTeamEmail(user?.email || "");
+  }, [user]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -90,7 +94,7 @@ export default function EmailDigestPage() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              to: "mubashir@expedey.com",
+              to: teamEmail,
               digestData: result.data
             }),
           });
