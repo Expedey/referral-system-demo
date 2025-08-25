@@ -8,6 +8,7 @@ import Button from "@/components/Button";
 import Input from "@/components/Input";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { CircleIcon } from "@/components/circle";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -262,9 +263,15 @@ function ResetPasswordForm() {
           </div>
         </div>
         {/* Decorative elements */}
-        <div className="absolute top-20 left-20 w-32 h-32 bg-white opacity-10 rounded-full"></div>
-        <div className="absolute bottom-20 right-20 w-24 h-24 bg-white opacity-10 rounded-full"></div>
-        <div className="absolute top-1/2 left-10 w-16 h-16 bg-white opacity-10 rounded-full"></div>
+        <div className="absolute top-20 left-20 w-32 h-32 rounded-full">
+        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+        </div>
+        <div className="absolute bottom-20 right-20 w-24 h-24 rounded-full">
+        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+        </div>
+        <div className="absolute top-1/2 left-10 w-16 h-16 rounded-full">
+        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+        </div>
       </div>
 
       {/* Right Side - Form Section (40%) */}

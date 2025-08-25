@@ -7,6 +7,7 @@ import Image from "next/image";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import { useAuth } from "@/hooks/useAuth";
+import { CircleIcon } from "@/components/circle";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -61,6 +62,16 @@ export default function ForgotPasswordPage() {
               We&apos;ve sent you a password reset link. Please check your email and follow the instructions.
             </p>
           </div>
+                  {/* Decorative elements */}
+        <div className="absolute top-20 left-20 w-32 h-32 rounded-full">
+        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+        </div>
+        <div className="absolute bottom-20 right-20 w-24 h-24 rounded-full">
+        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+        </div>
+        <div className="absolute top-1/2 left-10 w-16 h-16 rounded-full">
+        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+        </div>
         </div>
 
         <div className="w-full lg:w-2/5 flex items-center justify-center px-8 py-12 bg-white dark:bg-gray-900">
@@ -145,6 +156,16 @@ export default function ForgotPasswordPage() {
               <span>Quick & Easy</span>
             </div>
           </div>
+        </div>
+                {/* Decorative elements */}
+                <div className="absolute top-20 left-20 w-32 h-32 rounded-full">
+        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+        </div>
+        <div className="absolute bottom-20 right-20 w-24 h-24 rounded-full">
+        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+        </div>
+        <div className="absolute top-1/2 left-10 w-16 h-16 rounded-full">
+        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
         </div>
       </div>
 
