@@ -162,15 +162,26 @@ export default function SigninPage() {
                 autoComplete="email"
               />
 
-              <Input
-                label="Password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => handleInputChange("password", e.target.value)}
-                error={errors.password}
-                required
-                autoComplete="current-password"
-              />
+              <div className="space-y-2">
+                <Input
+                  label="Password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  error={errors.password}
+                  required
+                  autoComplete="current-password"
+                />
+                
+                <div className="text-right">
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              </div>
             </div>
 
             {errors.submit && (
