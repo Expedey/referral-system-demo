@@ -147,7 +147,8 @@ export async function sendAccountVerifiedEmail({
       email: email,
       referral_code: referralCode,
       dashboard_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
-      referral_link: `${process.env.NEXT_PUBLIC_APP_URL}/ref/${referralCode}`
+      referral_link: `${process.env.NEXT_PUBLIC_APP_URL}/ref/${referralCode}`,
+      current_year: new Date().getFullYear()
     }
   });
 } 
