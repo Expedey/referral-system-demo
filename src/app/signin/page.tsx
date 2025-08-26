@@ -96,7 +96,7 @@ export default function SigninPage() {
       <div className="hidden lg:flex lg:w-3/5 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 relative overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-20"></div>
         <div className="relative z-10 flex flex-col justify-center items-center text-white px-12 w-full h-full">
-          <div className="mb-8">
+          <a href={process.env.NEXT_PUBLIC_LANDING_PAGE_URL}>
             <Image
               src="/Logo.svg"
               alt="Logo"
@@ -104,7 +104,7 @@ export default function SigninPage() {
               height={120}
               className="mb-6"
             />
-          </div>
+          </a>
           <h1 className="text-4xl font-bold mb-4 text-center">
             Welcome Back
           </h1>
