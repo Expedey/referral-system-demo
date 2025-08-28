@@ -119,10 +119,9 @@ export default function DashboardPage() {
   } | null>(null);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
-  const [loggedInBefore, setLoggedInBefore] = useState(false);
   const [showFirstTimeAvatarModal, setShowFirstTimeAvatarModal] =
     useState(false);
-  console.log("loggedInBefore", loggedInBefore);
+  console.log("___auth", isAuthenticated, userLoading, loading);
 
   // Simple share referral function
   const shareReferral = async () => {
@@ -423,7 +422,6 @@ export default function DashboardPage() {
         if (avatarStatus.status === "fulfilled") {
           const avatarData = avatarStatus.value;
           setUserAvatar(avatarData.avatarImageUrl);
-          setLoggedInBefore(avatarData.loggedInBefore);
 
           // Show first-time avatar modal if user hasn't skipped
           if (!avatarData.loggedInBefore) {
@@ -528,7 +526,6 @@ export default function DashboardPage() {
           onClose={() => setShowFirstTimeAvatarModal(false)}
           onSave={(selectedAvatar: string) => {
             setUserAvatar(selectedAvatar);
-            setLoggedInBefore(true);
             setShowFirstTimeAvatarModal(false);
           }}
           userId={profile?.id}

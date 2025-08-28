@@ -1,19 +1,23 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import { CircleIcon } from "@/components/circle";
 import { login } from "@/utils/supabase/actions";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SigninPage() {
+  const router = useRouter();
   // const { signIn, user, loading: authLoading } = useAuth();
 
-  // const [formData, setFormData] = useState({
-  //   email: "",
-  //   password: "",
-  // });
-  // const [errors, setErrors] = useState<Record<string, string>>({});
-  // const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
 
   // Redirect if already authenticated
   // useEffect(() => {
@@ -22,22 +26,60 @@ export default function SigninPage() {
   //   }
   // }, [user, authLoading, router]);
 
-  // const validateForm = () => {
-  //   const newErrors: Record<string, string> = {};
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
 
-  //   // if (!formData.email) {
-  //   //   newErrors.email = "Email is required";
-  //   // } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-  //   //   newErrors.email = "Please enter a valid email";
-  //   // }
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email";
+    }
 
-  //   // if (!formData.password) {
-  //   //   newErrors.password = "Password is required";
-  //   // }
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    }
 
-  //   // setErrors(newErrors);
-  //   return Object.keys(newErrors).length === 0;
-  // };
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    const data = new FormData();
+    data.append("email", formData.email);
+    data.append("password", formData.password);
+
+    setLoading(true);
+
+    try {
+      const result = await login(data);
+
+      if (result.success) {
+        router.push("/dashboard");
+      } else {
+        setErrors({ submit: result.error || "Failed to sign in" });
+      }
+    } catch (error: unknown) {
+      setErrors({
+        submit: (error as Error).message || "An unexpected error occurred",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
 
   // Only show loading if auth is still initializing, not during signin
   // if (authLoading && !user) {
@@ -114,15 +156,16 @@ export default function SigninPage() {
             </p>
           </div>
 
-          <form className="space-y-8">
+          <form className="space-y-8" onSubmit={handleSubmit}>
             <div className="space-y-6">
               <Input
                 label="Email"
                 type="email"
                 id="email"
                 name="email"
-                // value={formData.email}
-                // error={errors.email}
+                value={formData.email}
+                error={errors.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
                 required
                 autoComplete="email"
               />
@@ -133,8 +176,11 @@ export default function SigninPage() {
                   type="password"
                   id="password"
                   name="password"
-                  // value={formData.password}
-                  // error={errors.password}
+                  value={formData.password}
+                  error={errors.password}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                   required
                   autoComplete="current-password"
                 />
@@ -150,18 +196,17 @@ export default function SigninPage() {
               </div>
             </div>
 
-            {/* {errors.submit && (
+            {errors.submit && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-sm text-red-600 ">{errors.submit}</p>
               </div>
-            )} */}
+            )}
 
             <Button
               type="submit"
-              formAction={login}
-              // loading={loading}
+              loading={loading}
               className="w-full"
-              // disabled={loading}
+              disabled={loading}
             >
               Sign In
             </Button>

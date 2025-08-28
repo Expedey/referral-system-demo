@@ -7,7 +7,6 @@ import Image from "next/image";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "@/styles/datepicker.css";
-import { useAuth } from "@/hooks/useAuth";
 import { UserService } from "@/services/userService";
 import { ReferralService } from "@/services/referralService";
 import {
@@ -18,13 +17,13 @@ import { isValidReferralCode } from "@/utils/generateReferralCode";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import Select from "@/components/Select";
-import { createReferralAction } from '@/app/actions/referral';
+import { createReferralAction } from "@/app/actions/referral";
 import { CircleIcon } from "@/components/circle";
+import { signup } from "@/utils/supabase/actions";
 
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signUp, user, loading: authLoading } = useAuth();
 
   const [formData, setFormData] = React.useState({
     email: "",
@@ -34,9 +33,11 @@ function SignupForm() {
     sex: "" as "" | "male" | "female" | "other",
     dateOfBirth: "",
   });
+
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [loading, setLoading] = React.useState(false);
-  const [showVerificationAlert, setShowVerificationAlert] = React.useState(false);
+  const [showVerificationAlert, setShowVerificationAlert] =
+    React.useState(false);
   const [referralCode, setReferralCode] = React.useState<string | null>(null);
   const [referrerInfo, setReferrerInfo] = React.useState<{
     username?: string;
@@ -45,8 +46,8 @@ function SignupForm() {
 
   // Check for source parameter
   const userType = React.useMemo(() => {
-    const source = searchParams.get('source');
-    const determinedUserType = source === 'corporate' ? 'corporate' : 'regular';
+    const source = searchParams.get("source");
+    const determinedUserType = source === "corporate" ? "corporate" : "regular";
     return determinedUserType;
   }, [searchParams]);
 
@@ -90,12 +91,13 @@ function SignupForm() {
 
   // Redirect if already authenticated (but not when showing verification alert)
   React.useEffect(() => {
-    if (user && !authLoading && !showVerificationAlert) {
+    if (!showVerificationAlert) {
       router.push("/dashboard");
     }
-  }, [user, authLoading, showVerificationAlert, router]);
-
-
+    // if (user && !authLoading && !showVerificationAlert) {
+    //   router.push("/dashboard");
+    // }
+  }, [showVerificationAlert, router]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -122,8 +124,6 @@ function SignupForm() {
       newErrors.username = "Username must be at least 3 characters";
     }
 
-
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -133,18 +133,18 @@ function SignupForm() {
     if (!validateForm()) {
       return;
     }
+    const data = new FormData();
+    data.append("email", formData.email);
+    data.append("password", formData.password);
+    data.append("username", formData.username);
+    data.append("userType", userType);
+    data.append("sex", formData.sex);
+    data.append("dateOfBirth", formData.dateOfBirth);
     setLoading(true);
     try {
-      console.log(formData,"formData");
+      console.log(formData, "formData");
       // --- CONTINUE WITH SIGNUP ---
-      const result = await signUp(
-        formData.email,
-        formData.password,
-        formData.username,
-        userType,
-        (formData.sex || undefined) as "male" | "female" | "other" | undefined,
-        formData.dateOfBirth || undefined
-      );
+      const result = await signup(data);
       if (result.success) {
         // --- CREATE REFERRAL RECORD IF REFERRAL CODE PRESENT ---
         const referrerId = localStorage.getItem("referrer_id");
@@ -165,19 +165,30 @@ function SignupForm() {
               userAgent: navigator.userAgent,
               userType: referrer.user_type, // Use referrer's user type
             });
-            
+
             if (!referralResult.success) {
               if (referralResult.throttled) {
-                console.warn("[Signup] Referral creation throttled:", referralResult.error);
+                console.warn(
+                  "[Signup] Referral creation throttled:",
+                  referralResult.error
+                );
                 // Don't show error to user for throttling - just log it
               } else {
-                console.error("[Signup] Failed to create referral:", referralResult.error);
+                console.error(
+                  "[Signup] Failed to create referral:",
+                  referralResult.error
+                );
                 // Could show a non-blocking error message here if needed
               }
             } else {
-              console.log("[Signup] Created referral record for:", formData.email, "with referrer type:", referrer.user_type);
+              console.log(
+                "[Signup] Created referral record for:",
+                formData.email,
+                "with referrer type:",
+                referrer.user_type
+              );
             }
-            
+
             // Validate the referral
             const referralRes = await ReferralService.validateReferralOnSignup(
               formData.email,
@@ -219,16 +230,16 @@ function SignupForm() {
   };
 
   // Only show loading if auth is still initializing and user is not authenticated
-  if (authLoading && !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 ">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // if (authLoading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-gray-50">
+  //       <div className="text-center">
+  //         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+  //         <p className="mt-4 text-gray-600 ">Loading...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen flex">
@@ -264,13 +275,13 @@ function SignupForm() {
         </div>
         {/* Decorative elements */}
         <div className="absolute top-20 left-20 w-32 h-32 rounded-full">
-        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+          <CircleIcon fillColor="white" className="w-full h-full opacity-10" />
         </div>
         <div className="absolute bottom-20 right-20 w-24 h-24 rounded-full">
-        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+          <CircleIcon fillColor="white" className="w-full h-full opacity-10" />
         </div>
         <div className="absolute top-1/2 left-10 w-16 h-16 rounded-full">
-        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+          <CircleIcon fillColor="white" className="w-full h-full opacity-10" />
         </div>
       </div>
 
@@ -311,7 +322,10 @@ function SignupForm() {
                     Account created successfully!
                   </p>
                   <p className="text-sm text-blue-700 ">
-                    A verification email has been sent to <strong>{formData.email}</strong>. Please check your inbox and click the verification link to complete your registration.
+                    A verification email has been sent to{" "}
+                    <strong>{formData.email}</strong>. Please check your inbox
+                    and click the verification link to complete your
+                    registration.
                   </p>
                 </div>
               </div>
@@ -333,7 +347,9 @@ function SignupForm() {
                   </p>
                   <p className="text-sm text-green-700 ">
                     Referral code:{" "}
-                    <span className="font-mono">{referrerInfo.referralCode}</span>
+                    <span className="font-mono">
+                      {referrerInfo.referralCode}
+                    </span>
                   </p>
                 </div>
               </div>
@@ -357,7 +373,9 @@ function SignupForm() {
                   label="Username (optional)"
                   type="text"
                   value={formData.username}
-                  onChange={(e) => handleInputChange("username", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("username", e.target.value)
+                  }
                   error={errors.username}
                   helperText="Choose a unique username for your profile"
                   autoComplete="username"
@@ -367,20 +385,19 @@ function SignupForm() {
                 {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> */}
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="w-full md:w-2/6 min-w-28">
-
-                  <Select
-                    id="sex"
-                    label="Sex (optional)"
-                    value={formData.sex}
-                    onChange={(e) => handleInputChange("sex", e.target.value)}
-                    options={[
-                      { value: "", label: "Select..." },
-                      { value: "male", label: "Male" },
-                      { value: "female", label: "Female" },
-                      { value: "other", label: "Other" },
-                    ]}
+                    <Select
+                      id="sex"
+                      label="Sex (optional)"
+                      value={formData.sex}
+                      onChange={(e) => handleInputChange("sex", e.target.value)}
+                      options={[
+                        { value: "", label: "Select..." },
+                        { value: "male", label: "Male" },
+                        { value: "female", label: "Female" },
+                        { value: "other", label: "Other" },
+                      ]}
                     />
-                    </div>
+                  </div>
 
                   <div className="w-full">
                     <label
@@ -392,9 +409,16 @@ function SignupForm() {
                     <div className="mt-1">
                       <DatePicker
                         id="dateOfBirth"
-                        selected={formData.dateOfBirth ? new Date(formData.dateOfBirth) : null}
-                        onChange={(date: Date | null) => 
-                          handleInputChange("dateOfBirth", date ? date.toISOString().split('T')[0] : '')
+                        selected={
+                          formData.dateOfBirth
+                            ? new Date(formData.dateOfBirth)
+                            : null
+                        }
+                        onChange={(date: Date | null) =>
+                          handleInputChange(
+                            "dateOfBirth",
+                            date ? date.toISOString().split("T")[0] : ""
+                          )
                         }
                         dateFormat="MMMM d, yyyy"
                         showMonthDropdown
@@ -418,7 +442,9 @@ function SignupForm() {
                   label="Password"
                   type="password"
                   value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                   error={errors.password}
                   required
                   autoComplete="new-password"
@@ -468,7 +494,8 @@ function SignupForm() {
             <div className="space-y-6">
               <div className="text-center">
                 <p className="text-sm text-gray-600  mb-4">
-                  Once you&apos;ve verified your email, you can sign in to access your dashboard.
+                  Once you&apos;ve verified your email, you can sign in to
+                  access your dashboard.
                 </p>
                 <Link href="/signin">
                   <Button variant="primary" className="w-full">

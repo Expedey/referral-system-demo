@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/utils/supabase/server";
@@ -16,14 +15,18 @@ export async function login(formData: FormData) {
     password: formData.get("password") as string,
   };
 
-  const { error } = await supabase.auth.signInWithPassword(data);
+  const { data: signinData, error } = await supabase.auth.signInWithPassword(
+    data
+  );
 
   if (error) {
-    redirect("/error");
+    // redirect("/error");
+    return { success: false, error: error.message };
   }
 
-  revalidatePath("/", "layout");
-  redirect("/dashboard");
+  //   revalidatePath("/", "layout");
+  //   redirect("/dashboard");
+  return { success: true, user: signinData.user };
 }
 
 export async function signup(formData: FormData) {
@@ -34,9 +37,9 @@ export async function signup(formData: FormData) {
   const data = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
-    // options: {
-    //   emailRedirectTo: `${"http://localhost:3000"}/dashboard`,
-    // },
+    options: {
+      emailRedirectTo: `${"http://localhost:3000"}/dashboard`,
+    },
   };
 
   const userType = formData.get("userType") as string;
@@ -47,7 +50,7 @@ export async function signup(formData: FormData) {
   const { data: signupData, error } = await supabase.auth.signUp(data);
 
   if (error) {
-    throw error;
+    return { success: false, error: error.message };
   }
 
   if (signupData.user) {
@@ -88,8 +91,10 @@ export async function signup(formData: FormData) {
   //     redirect("/error");
   //   }
 
-  revalidatePath("/", "layout");
-  redirect("/");
+  return { success: true, user: signupData.user };
+
+  //   revalidatePath("/", "layout");
+  //   redirect("/");
 }
 
 export async function signOut() {
