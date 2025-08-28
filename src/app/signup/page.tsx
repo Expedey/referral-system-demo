@@ -221,10 +221,10 @@ function SignupForm() {
   // Only show loading if auth is still initializing and user is not authenticated
   if (authLoading && !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading...</p>
+          <p className="mt-4 text-gray-600 ">Loading...</p>
         </div>
       </div>
     );
@@ -275,7 +275,7 @@ function SignupForm() {
       </div>
 
       {/* Right Side - Form Section (40%) */}
-      <div className="w-full lg:w-2/5 flex items-center justify-center px-8 py-12 bg-white dark:bg-gray-900">
+      <div className="w-full lg:w-2/5 flex items-center justify-center px-8 py-12 bg-white ">
         <div className="w-full max-w-md space-y-8">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
@@ -289,17 +289,17 @@ function SignupForm() {
           </div>
 
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-3xl font-bold text-gray-900  mb-2">
               Create Account
             </h2>
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className="text-gray-600 ">
               Join our community and start earning rewards
             </p>
           </div>
 
           {/* Email Verification Alert */}
           {showVerificationAlert && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
@@ -307,10 +307,10 @@ function SignupForm() {
                   </div>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  <p className="text-sm font-medium text-blue-900 ">
                     Account created successfully!
                   </p>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                  <p className="text-sm text-blue-700 ">
                     A verification email has been sent to <strong>{formData.email}</strong>. Please check your inbox and click the verification link to complete your registration.
                   </p>
                 </div>
@@ -320,7 +320,7 @@ function SignupForm() {
 
           {/* Referral Banner */}
           {referrerInfo && (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
@@ -328,10 +328,10 @@ function SignupForm() {
                   </div>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                  <p className="text-sm font-medium text-green-900 ">
                     You were invited by {referrerInfo.username || "a friend"}!
                   </p>
-                  <p className="text-sm text-green-700 dark:text-green-300">
+                  <p className="text-sm text-green-700 ">
                     Referral code:{" "}
                     <span className="font-mono">{referrerInfo.referralCode}</span>
                   </p>
@@ -385,7 +385,7 @@ function SignupForm() {
                   <div className="w-full">
                     <label
                       htmlFor="dateOfBirth"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                      className="block text-sm font-medium text-gray-700 "
                     >
                       Date of Birth (optional)
                     </label>
@@ -402,12 +402,12 @@ function SignupForm() {
                         dropdownMode="select"
                         placeholderText="Select date"
                         maxDate={new Date()}
-                        className="block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm focus:ring-purple-500 focus:border-purple-500 dark:text-white"
-                        calendarClassName="dark:bg-gray-800 dark:text-white"
+                        className="block w-full px-3 py-2 bg-white  border border-gray-300 rounded-md shadow-sm text-sm focus:ring-purple-500 focus:border-purple-500 "
+                        calendarClassName=" "
                       />
                     </div>
                     {errors.dateOfBirth && (
-                      <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                      <p className="mt-2 text-sm text-red-600 ">
                         {errors.dateOfBirth}
                       </p>
                     )}
@@ -438,8 +438,8 @@ function SignupForm() {
               </div>
 
               {errors.submit && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
-                  <p className="text-sm text-red-600 dark:text-red-400">{errors.submit}</p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-sm text-red-600 ">{errors.submit}</p>
                 </div>
               )}
 
@@ -453,11 +453,11 @@ function SignupForm() {
               </Button>
 
               <div className="text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-300">
+                <p className="text-sm text-gray-600 ">
                   Already have an account?{" "}
                   <Link
                     href="/signin"
-                    className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300 transition-colors"
+                    className="font-medium text-green-600 hover:text-green-500  transition-colors"
                   >
                     Sign in
                   </Link>
@@ -467,7 +467,7 @@ function SignupForm() {
           ) : (
             <div className="space-y-6">
               <div className="text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                <p className="text-sm text-gray-600  mb-4">
                   Once you&apos;ve verified your email, you can sign in to access your dashboard.
                 </p>
                 <Link href="/signin">

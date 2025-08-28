@@ -21,7 +21,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
   const [copied, setCopied] = useState(false);
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
 
-  const referralUrl = `https://referral-system-demo.netlify.app/ref/${referralCode}`;
+  const referralUrl = `${process.env.NEXT_PUBLIC_APP_URL}/ref/${referralCode}`;
 
   const copyToClipboard = async () => {
     try {

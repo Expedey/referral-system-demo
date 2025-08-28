@@ -83,6 +83,7 @@ const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
       "/avatars/male/male-4.png",
       "/avatars/male/male-5.png",
       "/avatars/male/male-6.png",
+      "/avatars/male/male-7.png",
     ],
     female: [
       "/avatars/female/female-1.png",

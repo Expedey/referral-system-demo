@@ -17,7 +17,7 @@ const Select: React.FC<SelectProps> = ({
     <div>
       <label
         htmlFor={props.id}
-        className="block text-sm font-medium text-gray-700 dark:text-gray-200"
+        className="block text-sm font-medium text-gray-700 "
       >
         {label}
       </label>
@@ -25,19 +25,21 @@ const Select: React.FC<SelectProps> = ({
         <select
           {...props}
           className={`
-            block w-full px-3 py-2 bg-white dark:bg-gray-700
+            block w-full px-3 py-2 bg-white 
             border rounded-md shadow-sm
             text-sm
+            placeholder-gray-500
+            text-gray-900
             ${error
               ? "border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500"
-              : "border-gray-300 dark:border-gray-600 focus:ring-purple-500 focus:border-purple-500"
+              : "border-gray-300  focus:ring-purple-500 focus:border-purple-500"
             }
             disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200 disabled:shadow-none
             ${className}
           `}
         >
           {options.map((option) => (
-            <option key={option.value} value={option.value}>
+            <option className="text-gray-900" key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}

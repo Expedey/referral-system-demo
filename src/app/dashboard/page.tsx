@@ -100,7 +100,46 @@ export default function DashboardPage() {
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [loggedInBefore, setLoggedInBefore] = useState(false);
   const [showFirstTimeAvatarModal, setShowFirstTimeAvatarModal] = useState(false);
-console.log('loggedInBefore', loggedInBefore);
+  console.log('loggedInBefore', loggedInBefore);
+
+  // Simple share referral function
+  const shareReferral = async () => {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
+    const referralUrl = `${baseUrl}/ref/${profile?.referral_code}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Join the waitlist!",
+          text: `I'm on the waitlist! Use my referral code: ${profile?.referral_code}`,
+          url: referralUrl,
+        });
+      } catch (error) {
+        // Fallback to copy
+        console.log(error);
+        copyToClipboard(referralUrl);
+      }
+    } else {
+      // Copy to clipboard
+      copyToClipboard(referralUrl);
+    }
+  };
+
+  // Simple copy to clipboard function
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (error) {
+      console.log(error);
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+    }
+  };
 
   // Animated counters
   const totalReferralsCounter = useAnimatedCounter(userStats?.totalReferrals || 0);
@@ -723,14 +762,7 @@ console.log('loggedInBefore', loggedInBefore);
                   </p>
                   <Button
                     variant="primary"
-                    onClick={() => {
-                      // Scroll to referral card
-                      document
-                        .querySelector("[data-referral-card]")
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                        });
-                    }}
+                    onClick={shareReferral}
                   >
                     Share Your Link
                   </Button>

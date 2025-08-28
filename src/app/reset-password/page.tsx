@@ -113,10 +113,10 @@ function ResetPasswordForm() {
 
   if (isChecking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 ">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Checking reset link...</p>
+          <p className="mt-4 text-gray-600 ">Checking reset link...</p>
         </div>
       </div>
     );
@@ -124,17 +124,17 @@ function ResetPasswordForm() {
 
   if (!tokenValid) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 ">
         <div className="text-center max-w-md mx-auto px-4">
-          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 bg-red-100  rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600 " fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h2 className="text-2xl font-bold text-gray-900  mb-2">
             Invalid Reset Link
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-gray-600  mb-6">
             This password reset link is invalid or has expired. Please request a new one.
           </p>
           <Link href="/forgot-password">
@@ -187,7 +187,7 @@ function ResetPasswordForm() {
         </div>
 
         {/* Right Side - Success Section (40%) */}
-        <div className="w-full lg:w-2/5 flex items-center justify-center px-8 py-12 bg-white dark:bg-gray-900">
+        <div className="w-full lg:w-2/5 flex items-center justify-center px-8 py-12 bg-white ">
           <div className="w-full max-w-md space-y-8 text-center">
             {/* Mobile Logo */}
             <div className="lg:hidden text-center mb-8">
@@ -201,17 +201,17 @@ function ResetPasswordForm() {
             </div>
 
             <div className="space-y-6">
-              <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-600 " fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
               
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-3xl font-bold text-gray-900 ">
                 Success!
               </h2>
               
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-gray-600 ">
                 Your password has been successfully reset. You can now sign in with your new password.
               </p>
             </div>
@@ -275,7 +275,7 @@ function ResetPasswordForm() {
       </div>
 
       {/* Right Side - Form Section (40%) */}
-      <div className="w-full lg:w-2/5 flex items-center justify-center px-8 py-12 bg-white dark:bg-gray-900">
+      <div className="w-full lg:w-2/5 flex items-center justify-center px-8 py-12 bg-white ">
         <div className="w-full max-w-md space-y-8">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
@@ -289,10 +289,10 @@ function ResetPasswordForm() {
           </div>
 
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-3xl font-bold text-gray-900  mb-2">
               New Password
             </h2>
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className="text-gray-600 ">
               Enter your new password below
             </p>
           </div>
@@ -323,8 +323,8 @@ function ResetPasswordForm() {
             </div>
 
             {errors.submit && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.submit}</p>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-600 ">{errors.submit}</p>
               </div>
             )}
 
@@ -338,11 +338,11 @@ function ResetPasswordForm() {
             </Button>
 
             <div className="text-center">
-              <p className="text-sm text-gray-600 dark:text-gray-300">
+              <p className="text-sm text-gray-600 ">
                 Remember your password?{" "}
                 <Link
                   href="/signin"
-                  className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                  className="font-medium text-blue-600 hover:text-blue-500  transition-colors"
                 >
                   Sign in
                 </Link>
@@ -359,10 +359,10 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 ">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-300">Loading...</p>
+            <p className="mt-4 text-gray-600 ">Loading...</p>
           </div>
         </div>
       }
