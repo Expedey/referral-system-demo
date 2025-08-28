@@ -142,6 +142,7 @@ function SignupForm() {
     data.append("userType", userType);
     data.append("sex", formData.sex);
     data.append("dateOfBirth", formData.dateOfBirth);
+    data.append("redirectTo", window.location.origin);
     setLoading(true);
     try {
       console.log(formData, "formData");
