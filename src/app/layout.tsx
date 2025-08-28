@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { Inter, Rubik } from "next/font/google";
 import "./globals.css";
-import UserRouteGuard from "@/components/UserRouteGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const inter = Inter({ subsets: ["latin"] });
-const rubik = Rubik({ 
+const rubik = Rubik({
   subsets: ["latin"],
   variable: "--font-rubik",
   display: "swap",
@@ -34,9 +33,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} ${rubik.variable}`}>
         <ErrorBoundary>
-          <UserRouteGuard>
-            {children}
-          </UserRouteGuard>
+          {/* <UserRouteGuard> */}
+          {children}
+          {/* </UserRouteGuard> */}
         </ErrorBoundary>
       </body>
     </html>

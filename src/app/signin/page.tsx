@@ -1,94 +1,55 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import { CircleIcon } from "@/components/circle";
+import { login } from "@/utils/supabase/actions";
 
 export default function SigninPage() {
-  const router = useRouter();
-  const { signIn, user, loading: authLoading } = useAuth();
+  // const { signIn, user, loading: authLoading } = useAuth();
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+  // const [formData, setFormData] = useState({
+  //   email: "",
+  //   password: "",
+  // });
+  // const [errors, setErrors] = useState<Record<string, string>>({});
+  // const [loading, setLoading] = useState(false);
 
   // Redirect if already authenticated
-  useEffect(() => {
-    if (user && !authLoading) {
-      router.push("/dashboard");
-    }
-  }, [user, authLoading, router]);
+  // useEffect(() => {
+  //   if (user && !authLoading) {
+  //     router.push("/dashboard");
+  //   }
+  // }, [user, authLoading, router]);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+  // const validateForm = () => {
+  //   const newErrors: Record<string, string> = {};
 
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
-    }
+  //   // if (!formData.email) {
+  //   //   newErrors.email = "Email is required";
+  //   // } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+  //   //   newErrors.email = "Please enter a valid email";
+  //   // }
 
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    }
+  //   // if (!formData.password) {
+  //   //   newErrors.password = "Password is required";
+  //   // }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const result = await signIn(formData.email, formData.password);
-
-      if (result.success) {
-        router.push("/dashboard");
-      } else {
-        setErrors({ submit: result.error || "Failed to sign in" });
-      }
-    } catch (error: unknown) {
-      setErrors({
-        submit: (error as Error).message || "An unexpected error occurred",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
+  //   // setErrors(newErrors);
+  //   return Object.keys(newErrors).length === 0;
+  // };
 
   // Only show loading if auth is still initializing, not during signin
-  if (authLoading && !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 ">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 ">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // if (authLoading && !user) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-gray-50 ">
+  //       <div className="text-center">
+  //         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+  //         <p className="mt-4 text-gray-600 ">Loading...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen flex">
@@ -105,9 +66,7 @@ export default function SigninPage() {
               className="mb-6"
             />
           </a>
-          <h1 className="text-4xl font-bold mb-4 text-center">
-            Welcome Back
-          </h1>
+          <h1 className="text-4xl font-bold mb-4 text-center">Welcome Back</h1>
           <p className="text-xl text-center mb-8 opacity-90 max-w-md">
             Sign in to your account and continue building your referral network
           </p>
@@ -124,13 +83,13 @@ export default function SigninPage() {
         </div>
         {/* Decorative elements */}
         <div className="absolute top-20 left-20 w-32 h-32 rounded-full">
-        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+          <CircleIcon fillColor="white" className="w-full h-full opacity-10" />
         </div>
         <div className="absolute bottom-20 right-20 w-24 h-24 rounded-full">
-        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+          <CircleIcon fillColor="white" className="w-full h-full opacity-10" />
         </div>
         <div className="absolute top-1/2 left-10 w-16 h-16 rounded-full">
-        <CircleIcon fillColor="white" className="w-full h-full opacity-10"/>
+          <CircleIcon fillColor="white" className="w-full h-full opacity-10" />
         </div>
       </div>
 
@@ -149,22 +108,21 @@ export default function SigninPage() {
           </div>
 
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900  mb-2">
-              Sign In
-            </h2>
+            <h2 className="text-3xl font-bold text-gray-900  mb-2">Sign In</h2>
             <p className="text-gray-600 ">
               Welcome back! Please enter your details
             </p>
           </div>
 
-          <form className="space-y-8" onSubmit={handleSubmit}>
+          <form className="space-y-8">
             <div className="space-y-6">
               <Input
                 label="Email"
                 type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                error={errors.email}
+                id="email"
+                name="email"
+                // value={formData.email}
+                // error={errors.email}
                 required
                 autoComplete="email"
               />
@@ -173,13 +131,14 @@ export default function SigninPage() {
                 <Input
                   label="Password"
                   type="password"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
-                  error={errors.password}
+                  id="password"
+                  name="password"
+                  // value={formData.password}
+                  // error={errors.password}
                   required
                   autoComplete="current-password"
                 />
-                
+
                 <div className="text-right">
                   <Link
                     href="/forgot-password"
@@ -191,17 +150,18 @@ export default function SigninPage() {
               </div>
             </div>
 
-            {errors.submit && (
+            {/* {errors.submit && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-sm text-red-600 ">{errors.submit}</p>
               </div>
-            )}
+            )} */}
 
             <Button
               type="submit"
-              loading={loading}
+              formAction={login}
+              // loading={loading}
               className="w-full"
-              disabled={loading}
+              // disabled={loading}
             >
               Sign In
             </Button>

@@ -3,9 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+import useUser from "@/hooks/useUser";
+import { signOut } from "@/utils/supabase/actions";
 
 interface NavbarProps {
   variant?: "landing" | "dashboard" | "leaderboard";
@@ -24,7 +25,7 @@ export default function Navbar({
   backUrl = "/dashboard",
   backButtonText = "Back to Dashboard",
 }: NavbarProps) {
-  const { user, signOut } = useAuth();
+  const { isAuthenticated } = useUser();
   const router = useRouter();
 
   const getLogo = () => {
@@ -42,10 +43,18 @@ export default function Navbar({
     switch (variant) {
       case "dashboard":
       case "leaderboard":
-        return { width: 130, height: 20, className: " sm:min-w-[130px] max-sm:w-[100px]" };
+        return {
+          width: 130,
+          height: 20,
+          className: " sm:min-w-[130px] max-sm:w-[100px]",
+        };
       case "landing":
       default:
-        return { width: 130, height: 20, className: " sm:min-w-[130px] max-sm:w-[100px]" };
+        return {
+          width: 130,
+          height: 20,
+          className: " sm:min-w-[130px] max-sm:w-[100px]",
+        };
     }
   };
 
@@ -88,36 +97,50 @@ export default function Navbar({
 
           <div className="flex items-center gap-2 sm:gap-4">
             {showBackButton ? (
-             <> <Link href={backUrl}>
-                <Button className="max-sm:text-xs" variant="purpleOutline" size="sm">
-                  {backButtonText}
-                </Button>
-              </Link>
-             {user && (
-              <Button 
-                variant="purple" 
-                className="max-sm:text-xs"
-                size="sm"
-                onClick={async () => {
-                  await signOut();
-                  router.push('/');
-                }}
-              >
-                Sign Out
-              </Button>
-            )}
-            </>
+              <>
+                {" "}
+                <Link href={backUrl}>
+                  <Button
+                    className="max-sm:text-xs"
+                    variant="purpleOutline"
+                    size="sm"
+                  >
+                    {backButtonText}
+                  </Button>
+                </Link>
+                {isAuthenticated && (
+                  <Button
+                    variant="purple"
+                    className="max-sm:text-xs"
+                    size="sm"
+                    onClick={async () => {
+                      await signOut();
+                      router.push("/");
+                    }}
+                  >
+                    Sign Out
+                  </Button>
+                )}
+              </>
             ) : variant === "landing" ? (
               <>
-                {user ? (
+                {isAuthenticated ? (
                   <Link href="/dashboard">
-                    <Button variant="primary" className="max-sm:text-xs" size="sm">
+                    <Button
+                      variant="primary"
+                      className="max-sm:text-xs"
+                      size="sm"
+                    >
                       Dashboard
                     </Button>
                   </Link>
                 ) : (
                   <Link href="/signup">
-                    <Button variant="primary" className="max-sm:text-xs" size="sm">
+                    <Button
+                      variant="primary"
+                      className="max-sm:text-xs"
+                      size="sm"
+                    >
                       Join Waitlist
                     </Button>
                   </Link>
@@ -126,18 +149,22 @@ export default function Navbar({
             ) : (
               <>
                 <Link href="/leaderboard">
-                  <Button variant="purpleOutline" className="max-sm:text-xs" size="sm">
+                  <Button
+                    variant="purpleOutline"
+                    className="max-sm:text-xs"
+                    size="sm"
+                  >
                     View Leaderboard
                   </Button>
                 </Link>
-                {user && (
-                  <Button 
-                    variant="purple" 
+                {isAuthenticated && (
+                  <Button
+                    variant="purple"
                     className="max-sm:text-xs"
                     size="sm"
                     onClick={async () => {
                       await signOut();
-                      router.push('/');
+                      router.push("/");
                     }}
                   >
                     Sign Out
@@ -150,4 +177,4 @@ export default function Navbar({
       </div>
     </header>
   );
-} 
+}

@@ -14,8 +14,8 @@ export interface ReferralData {
   referred_user_id?: string;
   referred_email: string;
   referred_ip?: string;
-  status: 'pending' | 'verified' | 'cancelled';
-  source_type: 'organic' | 'team-invite';
+  status: "pending" | "verified" | "cancelled";
+  source_type: "organic" | "team-invite";
   created_at: string;
   updated_at: string;
 }
@@ -26,7 +26,7 @@ export interface CreateReferralData {
   referredUserId?: string;
   userIp?: string;
   userAgent?: string;
-  userType?: 'regular' | 'corporate';
+  userType?: "regular" | "corporate";
 }
 
 /**
@@ -70,7 +70,10 @@ export class ReferralService {
       if (existingReferral) {
         throw new Error("Referral already exists for this email");
       }
-      console.log("[ReferralService] Creating referral record for:", referralData);
+      console.log(
+        "[ReferralService] Creating referral record for:",
+        referralData
+      );
       // Create referral record
       const { data, error } = await supabase
         .from("referrals")
@@ -79,12 +82,13 @@ export class ReferralService {
           referred_user_id: referralData.referredUserId,
           referred_email: referralData.referredEmail.toLowerCase(),
           referred_ip: referralData.userIp,
-          status: 'pending',
-          source_type: referralData.userType === 'corporate' ? 'team-invite' : 'organic',
+          status: "pending",
+          source_type:
+            referralData.userType === "corporate" ? "team-invite" : "organic",
         })
         .select()
         .single();
-        console.log("[ReferralService] Referral created:", data);
+      console.log("[ReferralService] Referral created:", data);
 
       if (error) {
         console.error("Error creating referral:", error);
@@ -153,10 +157,10 @@ export class ReferralService {
         .from("referrals")
         .select("*")
         .eq("referred_email", referredEmail.toLowerCase())
-        .eq("status", 'pending');
-      
+        .eq("status", "pending");
+
       console.log("[ReferralService] referrals:", referrals);
-      
+
       if (error) {
         console.error("Error fetching referrals for validation:", error);
         return { success: false };
@@ -170,8 +174,8 @@ export class ReferralService {
       const referral = referrals[0];
 
       // Only verify the referral if the user's email is confirmed
-      const newStatus = isEmailVerified ? 'verified' : 'pending';
-      
+      const newStatus = isEmailVerified ? "verified" : "pending";
+
       // Update the referral with referred_user_id and status
       const { error: updateError } = await supabase
         .from("referrals")
@@ -198,8 +202,11 @@ export class ReferralService {
       // Sync referral update to HubSpot if verification is successful
       if (isEmailVerified && referrer) {
         try {
-          console.log("[ReferralService] Email verified, updating referrer's HubSpot contact:", referrer.email);
-          
+          console.log(
+            "[ReferralService] Email verified, updating referrer's HubSpot contact:",
+            referrer.email
+          );
+
           // Update referrer's stats in HubSpot using direct API
           const hubspotSuccess = await HubSpotDirectService.updateReferrerStats(
             referrer.email,
@@ -215,16 +222,25 @@ export class ReferralService {
               referrer.referral_code
             );
 
-            console.log("[ReferralService] Referrer's HubSpot contact updated successfully");
+            console.log(
+              "[ReferralService] Referrer's HubSpot contact updated successfully"
+            );
           } else {
-            console.error("[ReferralService] Failed to update referrer's HubSpot contact");
+            console.error(
+              "[ReferralService] Failed to update referrer's HubSpot contact"
+            );
           }
         } catch (hubspotError) {
-          console.error("[ReferralService] Error syncing referral to HubSpot:", hubspotError);
+          console.error(
+            "[ReferralService] Error syncing referral to HubSpot:",
+            hubspotError
+          );
           // Don't throw error - HubSpot sync failure shouldn't break referral validation
         }
       } else {
-        console.log("[ReferralService] Email not verified or referrer not found, skipping HubSpot update");
+        console.log(
+          "[ReferralService] Email not verified or referrer not found, skipping HubSpot update"
+        );
       }
 
       return {
@@ -274,7 +290,7 @@ export class ReferralService {
         .from("referrals")
         .select("*", { count: "exact", head: true })
         .eq("referrer_id", userId)
-        .eq("status", 'verified');
+        .eq("status", "verified");
 
       if (error) {
         console.error("Error fetching verified referrals count:", error);
@@ -364,10 +380,14 @@ export class ReferralService {
   }> {
     try {
       const referrals = await this.getUserReferrals(userId);
-      
+
       const totalReferrals = referrals.length;
-      const verifiedReferrals = referrals.filter((r) => r.status === 'verified').length;
-      const pendingReferrals = referrals.filter((r) => r.status === 'pending').length;
+      const verifiedReferrals = referrals.filter(
+        (r) => r.status === "verified"
+      ).length;
+      const pendingReferrals = referrals.filter(
+        (r) => r.status === "pending"
+      ).length;
       const conversionRate =
         totalReferrals > 0 ? (verifiedReferrals / totalReferrals) * 100 : 0;
       return {

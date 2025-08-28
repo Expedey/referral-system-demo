@@ -9,21 +9,16 @@ interface UserRouteGuardProps {
   fallback?: React.ReactNode;
 }
 
-export default function UserRouteGuard({ 
-  children, 
-  fallback 
+export default function UserRouteGuard({
+  children,
+  fallback,
 }: UserRouteGuardProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   // Pages that require authentication (not public pages)
-  const protectedPages = [
-    '/',
-    '/dashboard',
-    '/leaderboard',
-    '/leaderboardc',
-  ];
+  const protectedPages = ["/", "/dashboard", "/leaderboard", "/leaderboardc"];
 
   const isProtectedPage = protectedPages.includes(pathname);
 
@@ -31,22 +26,24 @@ export default function UserRouteGuard({
   useEffect(() => {
     if (!loading && !user && isProtectedPage) {
       // User not authenticated, redirect to signup
-      router.push('/signup');
+      router.push("/signup");
     }
   }, [user, loading, isProtectedPage, router]);
 
   // Show loading state only for protected pages when auth is loading
   if (loading && isProtectedPage) {
-    return fallback || (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+    return (
+      fallback || (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
-      </div>
+      )
     );
   }
 
   // Render children for all cases
   return <>{children}</>;
-} 
+}

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
 import { UserService } from "@/services/userService";
 import { ReferralService } from "@/services/referralService";
 import ReferralCard from "@/components/ReferralCard";
@@ -14,6 +13,7 @@ import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import { CircleIcon } from "@/components/circle";
+import useUser from "@/hooks/useUser";
 
 // Custom hook for animated counters with fade effects
 const useAnimatedCounter = (value: number, duration: number = 1000) => {
@@ -24,14 +24,24 @@ const useAnimatedCounter = (value: number, duration: number = 1000) => {
   const prevValueRef = useRef(value);
 
   useEffect(() => {
-    console.log('useAnimatedCounter - value changed:', value, 'prevValue:', prevValueRef.current);
-    
+    console.log(
+      "useAnimatedCounter - value changed:",
+      value,
+      "prevValue:",
+      prevValueRef.current
+    );
+
     if (value !== prevValueRef.current) {
-      console.log('useAnimatedCounter - starting animation from', prevValueRef.current, 'to', value);
+      console.log(
+        "useAnimatedCounter - starting animation from",
+        prevValueRef.current,
+        "to",
+        value
+      );
       setIsAnimating(true);
       setOldValue(prevValueRef.current);
       setShowOldValue(true);
-      
+
       const startValue = prevValueRef.current;
       const endValue = value;
       const startTime = Date.now();
@@ -39,7 +49,7 @@ const useAnimatedCounter = (value: number, duration: number = 1000) => {
       // First phase: fade out old value
       setTimeout(() => {
         setShowOldValue(false);
-        
+
         // Second phase: animate to new value
         const animate = () => {
           const currentTime = Date.now();
@@ -48,7 +58,9 @@ const useAnimatedCounter = (value: number, duration: number = 1000) => {
 
           // Easing function for smooth animation
           const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-          const currentValue = Math.round(startValue + (endValue - startValue) * easeOutQuart);
+          const currentValue = Math.round(
+            startValue + (endValue - startValue) * easeOutQuart
+          );
 
           setDisplayValue(currentValue);
 
@@ -57,7 +69,10 @@ const useAnimatedCounter = (value: number, duration: number = 1000) => {
           } else {
             setDisplayValue(endValue);
             setIsAnimating(false);
-            console.log('useAnimatedCounter - animation completed, final value:', endValue);
+            console.log(
+              "useAnimatedCounter - animation completed, final value:",
+              endValue
+            );
           }
         };
 
@@ -73,7 +88,11 @@ const useAnimatedCounter = (value: number, duration: number = 1000) => {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, profile, loading: authLoading } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const { isAuthenticated, loading: userLoading, profile } = useUser();
+  console.log(loading, userLoading, isAuthenticated, profile, "__loading");
+
+  // const { user, profile, loading: authLoading } = useAuth();
   const [userStats, setUserStats] = useState<{
     totalReferrals: number;
     waitlistPosition: number;
@@ -85,11 +104,13 @@ export default function DashboardPage() {
     pendingReferrals: number;
     conversionRate: number;
   } | null>(null);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showRefreshNotification, setShowRefreshNotification] = useState(false);
-  const [refreshTimeout, setRefreshTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [refreshTimeout, setRefreshTimeout] = useState<NodeJS.Timeout | null>(
+    null
+  );
   const [showPositionUpdatePopup, setShowPositionUpdatePopup] = useState(false);
   const [positionUpdateData, setPositionUpdateData] = useState<{
     oldPosition: number;
@@ -99,14 +120,15 @@ export default function DashboardPage() {
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [loggedInBefore, setLoggedInBefore] = useState(false);
-  const [showFirstTimeAvatarModal, setShowFirstTimeAvatarModal] = useState(false);
-  console.log('loggedInBefore', loggedInBefore);
+  const [showFirstTimeAvatarModal, setShowFirstTimeAvatarModal] =
+    useState(false);
+  console.log("loggedInBefore", loggedInBefore);
 
   // Simple share referral function
   const shareReferral = async () => {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
     const referralUrl = `${baseUrl}/ref/${profile?.referral_code}`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -142,17 +164,30 @@ export default function DashboardPage() {
   };
 
   // Animated counters
-  const totalReferralsCounter = useAnimatedCounter(userStats?.totalReferrals || 0);
-  const verifiedReferralsCounter = useAnimatedCounter(referralStats?.verifiedReferrals || 0);
-  const pendingReferralsCounter = useAnimatedCounter(referralStats?.pendingReferrals || 0);
-  const conversionRateCounter = useAnimatedCounter(referralStats?.conversionRate || 0);
-  const waitlistPositionCounter = useAnimatedCounter(userStats?.waitlistPosition || 0);
+  const totalReferralsCounter = useAnimatedCounter(
+    userStats?.totalReferrals || 0
+  );
+  const verifiedReferralsCounter = useAnimatedCounter(
+    referralStats?.verifiedReferrals || 0
+  );
+  const pendingReferralsCounter = useAnimatedCounter(
+    referralStats?.pendingReferrals || 0
+  );
+  const conversionRateCounter = useAnimatedCounter(
+    referralStats?.conversionRate || 0
+  );
+  const waitlistPositionCounter = useAnimatedCounter(
+    userStats?.waitlistPosition || 0
+  );
 
   // Track position changes for popup
   const prevPositionRef = useRef(userStats?.waitlistPosition || 0);
 
   useEffect(() => {
-    if (userStats?.waitlistPosition !== undefined && prevPositionRef.current !== userStats.waitlistPosition) {
+    if (
+      userStats?.waitlistPosition !== undefined &&
+      prevPositionRef.current !== userStats.waitlistPosition
+    ) {
       const oldPosition = prevPositionRef.current;
       const newPosition = userStats.waitlistPosition;
       const isImprovement = newPosition < oldPosition; // Lower number is better
@@ -162,7 +197,7 @@ export default function DashboardPage() {
         setPositionUpdateData({
           oldPosition,
           newPosition,
-          isImprovement
+          isImprovement,
         });
         setShowPositionUpdatePopup(true);
       }
@@ -172,45 +207,45 @@ export default function DashboardPage() {
     }
   }, [userStats?.waitlistPosition]);
 
-  console.log('Current userStats:', userStats);
-  console.log('Current referralStats:', referralStats);
-  console.log('isRefreshing:', isRefreshing);
-  console.log('showRefreshNotification:', showRefreshNotification);
+  console.log("Current userStats:", userStats);
+  console.log("Current referralStats:", referralStats);
+  console.log("isRefreshing:", isRefreshing);
+  console.log("showRefreshNotification:", showRefreshNotification);
 
   // Function to refresh user data
   const refreshUserData = async () => {
-    if (!user) return;
-    
-    console.log('refreshUserData called for user:', user.id);
-    
+    if (!isAuthenticated || !profile) return;
+
+    console.log("refreshUserData called for user:", profile?.id);
+
     // Clear any existing timeout
     if (refreshTimeout) {
       clearTimeout(refreshTimeout);
     }
-    
+
     // Set a new timeout to debounce rapid calls
     const timeout = setTimeout(async () => {
       try {
         setIsRefreshing(true);
         setError(null);
-        
-        console.log('Fetching updated user stats...');
-        
+
+        console.log("Fetching updated user stats...");
+
         // Add a small delay to ensure database transaction is committed
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
         // Load user stats and referral stats in parallel with proper timeout handling
         const [stats, refStats] = await Promise.allSettled([
-          UserService.getUserStats(user.id),
-          ReferralService.getReferralStats(user.id)
+          UserService.getUserStats(profile?.id),
+          ReferralService.getReferralStats(profile?.id),
         ]);
 
-        console.log('User stats result:', stats);
-        console.log('Referral stats result:', refStats);
+        console.log("User stats result:", stats);
+        console.log("Referral stats result:", refStats);
 
         // Handle user stats
-        if (stats.status === 'fulfilled') {
-          console.log('Setting user stats:', stats.value);
+        if (stats.status === "fulfilled") {
+          console.log("Setting user stats:", stats.value);
           setUserStats(stats.value);
         } else {
           console.error("Error loading user stats:", stats.reason);
@@ -218,8 +253,8 @@ export default function DashboardPage() {
         }
 
         // Handle referral stats
-        if (refStats.status === 'fulfilled') {
-          console.log('Setting referral stats:', refStats.value);
+        if (refStats.status === "fulfilled") {
+          console.log("Setting referral stats:", refStats.value);
           setReferralStats(refStats.value);
         } else {
           console.error("Error loading referral stats:", refStats.reason);
@@ -227,12 +262,12 @@ export default function DashboardPage() {
         }
 
         // Only show error if both failed
-        if (stats.status === 'rejected' && refStats.status === 'rejected') {
+        if (stats.status === "rejected" && refStats.status === "rejected") {
           setError("Failed to load dashboard data");
         }
 
         // Show refresh notification if at least one stat was loaded successfully
-        if (stats.status === 'fulfilled' || refStats.status === 'fulfilled') {
+        if (stats.status === "fulfilled" || refStats.status === "fulfilled") {
           setShowRefreshNotification(true);
           setTimeout(() => setShowRefreshNotification(false), 3000);
         }
@@ -261,60 +296,70 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function init() {
-      if (!user) return;
+      if (!isAuthenticated) return;
 
       try {
         const { data } = await supabase.auth.getSession();
         const token = data?.session?.access_token;
-        
+
         if (token) {
           supabase.realtime.setAuth(token);
         }
 
         // Create channel for users table changes (filtered to current user)
         const usersChannel = supabase
-          .channel('user-changes')
-          .on('postgres_changes', { 
-            event: '*', 
-            schema: 'public', 
-            table: 'users',
-            filter: `id=eq.${user.id}`
-          }, payload => {
-            console.log('User Change:', payload);
-            console.log('User Change - new data:', payload.new);
-            console.log('User Change - old data:', payload.old);
-            console.log('Refreshing user stats due to user data change');
-            // Refresh user stats when user data changes
-            refreshUserData();
-          })
+          .channel("user-changes")
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "users",
+              filter: `id=eq.${profile?.id}`,
+            },
+            (payload) => {
+              console.log("User Change:", payload);
+              console.log("User Change - new data:", payload.new);
+              console.log("User Change - old data:", payload.old);
+              console.log("Refreshing user stats due to user data change");
+              // Refresh user stats when user data changes
+              refreshUserData();
+            }
+          )
           .subscribe((status) => {
-            console.log('Users channel status:', status);
-            if (status === 'CHANNEL_ERROR') {
-              console.error('Users channel error occurred');
+            console.log("Users channel status:", status);
+            if (status === "CHANNEL_ERROR") {
+              console.error("Users channel error occurred");
               // Don't throw error, just log it
             }
           });
 
         // Create channel for referrals table changes (filtered to current user's referrals)
         const referralsChannel = supabase
-          .channel('referrals-changes')
-          .on('postgres_changes', { 
-            event: '*', 
-            schema: 'public', 
-            table: 'referrals',
-            filter: `referrer_id=eq.${user.id}`
-          }, payload => {
-            console.log('Referral Change:', payload);
-            console.log('Referral Change - new data:', payload.new);
-            console.log('Referral Change - old data:', payload.old);
-            console.log('Refreshing referral stats due to referral data change');
-            // Refresh referral stats when referral data changes
-            refreshUserData();
-          })
+          .channel("referrals-changes")
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "referrals",
+              filter: `referrer_id=eq.${profile?.id}`,
+            },
+            (payload) => {
+              console.log("Referral Change:", payload);
+              console.log("Referral Change - new data:", payload.new);
+              console.log("Referral Change - old data:", payload.old);
+              console.log(
+                "Refreshing referral stats due to referral data change"
+              );
+              // Refresh referral stats when referral data changes
+              refreshUserData();
+            }
+          )
           .subscribe((status) => {
-            console.log('Referrals channel status:', status);
-            if (status === 'CHANNEL_ERROR') {
-              console.error('Referrals channel error occurred');
+            console.log("Referrals channel status:", status);
+            if (status === "CHANNEL_ERROR") {
+              console.error("Referrals channel error occurred");
               // Don't throw error, just log it
             }
           });
@@ -324,91 +369,90 @@ export default function DashboardPage() {
           referralsChannel.unsubscribe();
         };
       } catch (error) {
-        console.error('Error setting up realtime channels:', error);
+        console.error("Error setting up realtime channels:", error);
         // Don't throw error, just log it
       }
     }
 
     const cleanup = init();
     return () => {
-      cleanup.then(cleanupFn => cleanupFn?.());
+      cleanup.then((cleanupFn) => cleanupFn?.());
       // Clean up any pending refresh timeout
       if (refreshTimeout) {
         clearTimeout(refreshTimeout);
       }
     };
-  }, [user]);
-
+  }, [isAuthenticated]);
 
   useEffect(() => {
     // Redirect if not authenticated
-    if (!authLoading && !user) {
-      router.push("/signup");
-      return;
-    }
+    // if (!authLoading && !user) {
+    //   router.push("/signup");
+    //   return;
+    // }
 
-    if (user && profile) {
-      const loadUserData = async () => {
-        if (!user) return;
-        
-        try {
-          setLoading(true);
-          setError(null);
-          
-          // Load user stats, referral stats, and avatar status in parallel
-          const [stats, refStats, avatarStatus] = await Promise.allSettled([
-            UserService.getUserStats(user.id),
-            ReferralService.getReferralStats(user.id),
-            UserService.getUserAvatarStatus(user.id)
-          ]);
+    const loadUserData = async () => {
+      if (!profile) return;
+      try {
+        setError(null);
+        console.log("fetching user data");
+        // Load user stats, referral stats, and avatar status in parallel
+        const [stats, refStats, avatarStatus] = await Promise.allSettled([
+          UserService.getUserStats(profile.id),
+          ReferralService.getReferralStats(profile.id),
+          UserService.getUserAvatarStatus(profile.id),
+        ]);
 
-          // Handle user stats
-          if (stats.status === 'fulfilled') {
-            setUserStats(stats.value);
-          } else {
-            console.error("Error loading user stats:", stats.reason);
-            setError("Failed to load user statistics");
-          }
-
-          // Handle referral stats
-          if (refStats.status === 'fulfilled') {
-            setReferralStats(refStats.value);
-          } else {
-            console.error("Error loading referral stats:", refStats.reason);
-            setError("Failed to load referral statistics");
-          }
-
-          // Handle avatar status
-          if (avatarStatus.status === 'fulfilled') {
-            const avatarData = avatarStatus.value;
-            setUserAvatar(avatarData.avatarImageUrl);
-            setLoggedInBefore(avatarData.loggedInBefore);
-            
-            // Show first-time avatar modal if user hasn't skipped
-            if (!avatarData.loggedInBefore) {
-              setShowFirstTimeAvatarModal(true);
-            }
-          } else {
-            console.error("Error loading avatar status:", avatarStatus.reason);
-            // Don't set error for avatar status, just log it
-          }
-        } catch (error) {
-          console.error("Error loading user data:", error);
-          setError("Failed to load dashboard data");
-        } finally {
-          setLoading(false);
+        // Handle user stats
+        if (stats.status === "fulfilled") {
+          setUserStats(stats.value);
+        } else {
+          console.error("Error loading user stats:", stats.reason);
+          setError("Failed to load user statistics");
         }
-      };
-      
+
+        // Handle referral stats
+        if (refStats.status === "fulfilled") {
+          setReferralStats(refStats.value);
+        } else {
+          console.error("Error loading referral stats:", refStats.reason);
+          setError("Failed to load referral statistics");
+        }
+
+        // Handle avatar status
+        if (avatarStatus.status === "fulfilled") {
+          const avatarData = avatarStatus.value;
+          setUserAvatar(avatarData.avatarImageUrl);
+          setLoggedInBefore(avatarData.loggedInBefore);
+
+          // Show first-time avatar modal if user hasn't skipped
+          if (!avatarData.loggedInBefore) {
+            setShowFirstTimeAvatarModal(true);
+          }
+        } else {
+          console.error("Error loading avatar status:", avatarStatus.reason);
+          // Don't set error for avatar status, just log it
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+        setError("Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    console.log(isAuthenticated, profile, "__isAuthenticated");
+    if (isAuthenticated && !!profile) {
       loadUserData();
-    } else if (!authLoading && !user) {
-      // If auth is done loading and no user, redirect
-      router.push("/signup");
     }
-  }, [user, profile, authLoading, router]);
+    // setLoading(false);
+    // else if (!authLoading && !user) {
+    //   // If auth is done loading and no user, redirect
+    //   router.push("/signup");
+    // }
+  }, [router, isAuthenticated, profile]);
 
   // Show loading state
-  if (authLoading || loading) {
+  if (loading || userLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -423,13 +467,15 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar variant="dashboard"  />
+        <Navbar variant="dashboard" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Dashboard</h3>
+            <h3 className="text-lg font-medium text-red-800 mb-2">
+              Error Loading Dashboard
+            </h3>
             <p className="text-red-600 mb-4">{error}</p>
-            <Button 
-              onClick={() => window.location.reload()} 
+            <Button
+              onClick={() => window.location.reload()}
               className="bg-red-600 hover:bg-red-700"
             >
               Retry
@@ -440,7 +486,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (!user || !profile) {
+  if (!isAuthenticated || !profile) {
     return null; // Will redirect in useEffect
   }
 
@@ -472,7 +518,7 @@ export default function DashboardPage() {
             setUserAvatar(selectedAvatar);
             setShowAvatarModal(false);
           }}
-          userId={user?.id}
+          userId={profile?.id}
           isFirstTime={false}
         />
 
@@ -485,19 +531,19 @@ export default function DashboardPage() {
             setLoggedInBefore(true);
             setShowFirstTimeAvatarModal(false);
           }}
-          userId={user?.id}
+          userId={profile?.id}
           isFirstTime={true}
         />
 
         {/* Welcome Banner */}
         <div className="relative py-[33px] px-[24px] self-stretch w-full bg-[#702cff] rounded-[20px] overflow-hidden bg-cover md:bg-right bg-center flex flex-col gap-5 mb-[31px]">
           <div className="absolute -top-5 -left-[85px] w-fit rotate-90 z-10">
-            <CircleIcon fillColor="#9461ff" className="w-[160px] h-[160px]"/>
+            <CircleIcon fillColor="#9461ff" className="w-[160px] h-[160px]" />
           </div>
           <div className="absolute -bottom-5 -right-[85px] w-fit rotate-90 z-10">
-            <CircleIcon fillColor="#9461ff" className="w-[160px] h-[160px]"/>
+            <CircleIcon fillColor="#9461ff" className="w-[160px] h-[160px]" />
           </div>
-          
+
           <h1 className="text-white text-3xl font-bold relative z-20">
             Welcome back, {profile.username || profile.email}!
           </h1>
@@ -510,7 +556,13 @@ export default function DashboardPage() {
             onClick={() => router.push("/leaderboard")}
           >
             View Leaderboard
-            <Image className="ml-3 min-w-[26px] min-h-[26px]" width={26} height={26} src={"/btn.svg"} alt=""/>
+            <Image
+              className="ml-3 min-w-[26px] min-h-[26px]"
+              width={26}
+              height={26}
+              src={"/btn.svg"}
+              alt=""
+            />
           </Button>
         </div>
 
@@ -530,12 +582,12 @@ export default function DashboardPage() {
                     />
                   ) : (
                     <Image
-                    src={"/avatars/default-avatar.png"}
-                    alt="User Avatar"
-                    width={64}
-                    height={64}
-                    className="object-cover w-full h-full"
-                  />
+                      src={"/avatars/default-avatar.png"}
+                      alt="User Avatar"
+                      width={64}
+                      height={64}
+                      className="object-cover w-full h-full"
+                    />
                   )}
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
@@ -545,7 +597,7 @@ export default function DashboardPage() {
                   {profile.username || profile.email}
                 </h3>
                 <p className="text-sm text-gray-600">
-                  {userAvatar ? 'Avatar selected' : 'No avatar selected'}
+                  {userAvatar ? "Avatar selected" : "No avatar selected"}
                 </p>
               </div>
             </div>
@@ -561,37 +613,54 @@ export default function DashboardPage() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className={`bg-white rounded-lg shadow p-6 transition-all duration-300 ${
-            totalReferralsCounter.isAnimating ? 'ring-2 ring-blue-200 shadow-lg' : ''
-          }`}>
+          <div
+            className={`bg-white rounded-lg shadow p-6 transition-all duration-300 ${
+              totalReferralsCounter.isAnimating
+                ? "ring-2 ring-blue-200 shadow-lg"
+                : ""
+            }`}
+          >
             <div className="flex items-start justify-between">
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex items-center justify-between gap-2 w-full">
                   <p className="text-[16px] font-medium text-gray-500">
                     Total Referrals
                   </p>
-                  <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/total-referrals.svg"} alt=""/>
+                  <Image
+                    className="min-w-[40px] min-h-[40px]"
+                    width={40}
+                    height={40}
+                    src={"/total-referrals.svg"}
+                    alt=""
+                  />
                 </div>
                 <div className="relative h-12 flex items-center">
                   {/* Old value fading up */}
                   {totalReferralsCounter.showOldValue && (
-                    <div className={`absolute inset-0 flex items-center transition-all duration-500 ${
-                      totalReferralsCounter.isAnimating 
-                        ? 'opacity-0 -translate-y-4 text-blue-400' 
-                        : 'opacity-100 translate-y-0'
-                    }`}>
-                      <span className="text-3xl font-bold">{totalReferralsCounter.oldValue}</span>
+                    <div
+                      className={`absolute inset-0 flex items-center transition-all duration-500 ${
+                        totalReferralsCounter.isAnimating
+                          ? "opacity-0 -translate-y-4 text-blue-400"
+                          : "opacity-100 translate-y-0"
+                      }`}
+                    >
+                      <span className="text-3xl font-bold">
+                        {totalReferralsCounter.oldValue}
+                      </span>
                     </div>
                   )}
-                  
+
                   {/* New value fading in */}
-                  <div className={`transition-all duration-500 ${
-                    totalReferralsCounter.isAnimating && !totalReferralsCounter.showOldValue
-                      ? 'opacity-100 translate-y-0 text-blue-600 scale-105' 
-                      : totalReferralsCounter.isAnimating
-                      ? 'opacity-0 translate-y-4'
-                      : 'opacity-100 translate-y-0'
-                  }`}>
+                  <div
+                    className={`transition-all duration-500 ${
+                      totalReferralsCounter.isAnimating &&
+                      !totalReferralsCounter.showOldValue
+                        ? "opacity-100 translate-y-0 text-blue-600 scale-105"
+                        : totalReferralsCounter.isAnimating
+                        ? "opacity-0 translate-y-4"
+                        : "opacity-100 translate-y-0"
+                    }`}
+                  >
                     <span className="text-3xl font-bold text-gray-900">
                       {totalReferralsCounter.displayValue}
                     </span>
@@ -601,37 +670,54 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className={`bg-white rounded-lg shadow p-6 transition-all duration-300 ${
-            verifiedReferralsCounter.isAnimating ? 'ring-2 ring-green-200 shadow-lg' : ''
-          }`}>
+          <div
+            className={`bg-white rounded-lg shadow p-6 transition-all duration-300 ${
+              verifiedReferralsCounter.isAnimating
+                ? "ring-2 ring-green-200 shadow-lg"
+                : ""
+            }`}
+          >
             <div className="flex items-center">
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex items-center justify-between gap-2 w-full">
                   <p className="text-[16px] font-medium text-gray-500">
                     Verified Referrals
                   </p>
-                  <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/verified-referrals.svg"} alt=""/>
+                  <Image
+                    className="min-w-[40px] min-h-[40px]"
+                    width={40}
+                    height={40}
+                    src={"/verified-referrals.svg"}
+                    alt=""
+                  />
                 </div>
                 <div className="relative h-12 flex items-center">
                   {/* Old value fading up */}
                   {verifiedReferralsCounter.showOldValue && (
-                    <div className={`absolute inset-0 flex items-center transition-all duration-500 ${
-                      verifiedReferralsCounter.isAnimating 
-                        ? 'opacity-0 -translate-y-4 text-green-400' 
-                        : 'opacity-100 translate-y-0'
-                    }`}>
-                      <span className="text-3xl font-bold">{verifiedReferralsCounter.oldValue}</span>
+                    <div
+                      className={`absolute inset-0 flex items-center transition-all duration-500 ${
+                        verifiedReferralsCounter.isAnimating
+                          ? "opacity-0 -translate-y-4 text-green-400"
+                          : "opacity-100 translate-y-0"
+                      }`}
+                    >
+                      <span className="text-3xl font-bold">
+                        {verifiedReferralsCounter.oldValue}
+                      </span>
                     </div>
                   )}
-                  
+
                   {/* New value fading in */}
-                  <div className={`transition-all duration-500 ${
-                    verifiedReferralsCounter.isAnimating && !verifiedReferralsCounter.showOldValue
-                      ? 'opacity-100 translate-y-0 text-green-600 scale-105' 
-                      : verifiedReferralsCounter.isAnimating
-                      ? 'opacity-0 translate-y-4'
-                      : 'opacity-100 translate-y-0'
-                  }`}>
+                  <div
+                    className={`transition-all duration-500 ${
+                      verifiedReferralsCounter.isAnimating &&
+                      !verifiedReferralsCounter.showOldValue
+                        ? "opacity-100 translate-y-0 text-green-600 scale-105"
+                        : verifiedReferralsCounter.isAnimating
+                        ? "opacity-0 translate-y-4"
+                        : "opacity-100 translate-y-0"
+                    }`}
+                  >
                     <span className="text-3xl font-bold text-gray-900">
                       {verifiedReferralsCounter.displayValue}
                     </span>
@@ -641,37 +727,54 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className={`bg-white rounded-lg shadow p-6 transition-all duration-300 ${
-            pendingReferralsCounter.isAnimating ? 'ring-2 ring-yellow-200 shadow-lg' : ''
-          }`}>
+          <div
+            className={`bg-white rounded-lg shadow p-6 transition-all duration-300 ${
+              pendingReferralsCounter.isAnimating
+                ? "ring-2 ring-yellow-200 shadow-lg"
+                : ""
+            }`}
+          >
             <div className="flex items-center">
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex items-center justify-between gap-2 w-full">
                   <p className="text-[16px] font-medium text-gray-500">
                     Pending
                   </p>
-                  <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/pending-referrals.svg"} alt=""/>
+                  <Image
+                    className="min-w-[40px] min-h-[40px]"
+                    width={40}
+                    height={40}
+                    src={"/pending-referrals.svg"}
+                    alt=""
+                  />
                 </div>
                 <div className="relative h-12 flex items-center">
                   {/* Old value fading up */}
                   {pendingReferralsCounter.showOldValue && (
-                    <div className={`absolute inset-0 flex items-center transition-all duration-500 ${
-                      pendingReferralsCounter.isAnimating 
-                        ? 'opacity-0 -translate-y-4 text-yellow-400' 
-                        : 'opacity-100 translate-y-0'
-                    }`}>
-                      <span className="text-3xl font-bold">{pendingReferralsCounter.oldValue}</span>
+                    <div
+                      className={`absolute inset-0 flex items-center transition-all duration-500 ${
+                        pendingReferralsCounter.isAnimating
+                          ? "opacity-0 -translate-y-4 text-yellow-400"
+                          : "opacity-100 translate-y-0"
+                      }`}
+                    >
+                      <span className="text-3xl font-bold">
+                        {pendingReferralsCounter.oldValue}
+                      </span>
                     </div>
                   )}
-                  
+
                   {/* New value fading in */}
-                  <div className={`transition-all duration-500 ${
-                    pendingReferralsCounter.isAnimating && !pendingReferralsCounter.showOldValue
-                      ? 'opacity-100 translate-y-0 text-yellow-600 scale-105' 
-                      : pendingReferralsCounter.isAnimating
-                      ? 'opacity-0 translate-y-4'
-                      : 'opacity-100 translate-y-0'
-                  }`}>
+                  <div
+                    className={`transition-all duration-500 ${
+                      pendingReferralsCounter.isAnimating &&
+                      !pendingReferralsCounter.showOldValue
+                        ? "opacity-100 translate-y-0 text-yellow-600 scale-105"
+                        : pendingReferralsCounter.isAnimating
+                        ? "opacity-0 translate-y-4"
+                        : "opacity-100 translate-y-0"
+                    }`}
+                  >
                     <span className="text-3xl font-bold text-gray-900">
                       {pendingReferralsCounter.displayValue}
                     </span>
@@ -681,37 +784,54 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className={`bg-white rounded-lg shadow p-6 transition-all duration-300 ${
-            conversionRateCounter.isAnimating ? 'ring-2 ring-purple-200 shadow-lg' : ''
-          }`}>
+          <div
+            className={`bg-white rounded-lg shadow p-6 transition-all duration-300 ${
+              conversionRateCounter.isAnimating
+                ? "ring-2 ring-purple-200 shadow-lg"
+                : ""
+            }`}
+          >
             <div className="flex items-center">
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex items-center justify-between gap-2 w-full">
                   <p className="text-[16px] font-medium text-gray-500">
                     Conversion Rate
                   </p>
-                  <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/conversion-rate.svg"} alt=""/>
+                  <Image
+                    className="min-w-[40px] min-h-[40px]"
+                    width={40}
+                    height={40}
+                    src={"/conversion-rate.svg"}
+                    alt=""
+                  />
                 </div>
                 <div className="relative h-12 flex items-center">
                   {/* Old value fading up */}
                   {conversionRateCounter.showOldValue && (
-                    <div className={`absolute inset-0 flex items-center transition-all duration-500 ${
-                      conversionRateCounter.isAnimating 
-                        ? 'opacity-0 -translate-y-4 text-purple-400' 
-                        : 'opacity-100 translate-y-0'
-                    }`}>
-                      <span className="text-3xl font-bold">{conversionRateCounter.oldValue}%</span>
+                    <div
+                      className={`absolute inset-0 flex items-center transition-all duration-500 ${
+                        conversionRateCounter.isAnimating
+                          ? "opacity-0 -translate-y-4 text-purple-400"
+                          : "opacity-100 translate-y-0"
+                      }`}
+                    >
+                      <span className="text-3xl font-bold">
+                        {conversionRateCounter.oldValue}%
+                      </span>
                     </div>
                   )}
-                  
+
                   {/* New value fading in */}
-                  <div className={`transition-all duration-500 ${
-                    conversionRateCounter.isAnimating && !conversionRateCounter.showOldValue
-                      ? 'opacity-100 translate-y-0 text-purple-600 scale-105' 
-                      : conversionRateCounter.isAnimating
-                      ? 'opacity-0 translate-y-4'
-                      : 'opacity-100 translate-y-0'
-                  }`}>
+                  <div
+                    className={`transition-all duration-500 ${
+                      conversionRateCounter.isAnimating &&
+                      !conversionRateCounter.showOldValue
+                        ? "opacity-100 translate-y-0 text-purple-600 scale-105"
+                        : conversionRateCounter.isAnimating
+                        ? "opacity-0 translate-y-4"
+                        : "opacity-100 translate-y-0"
+                    }`}
+                  >
                     <span className="text-3xl font-bold text-gray-900">
                       {conversionRateCounter.displayValue}%
                     </span>
@@ -760,48 +880,66 @@ export default function DashboardPage() {
                   <p className="text-gray-600 mb-4">
                     Start sharing your referral link to see your activity here!
                   </p>
-                  <Button
-                    variant="primary"
-                    onClick={shareReferral}
-                  >
+                  <Button variant="primary" onClick={shareReferral}>
                     Share Your Link
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className={`flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200 transition-all duration-300 ${
-                    verifiedReferralsCounter.isAnimating ? 'ring-2 ring-green-200 shadow-lg' : ''
-                  }`}>
+                  <div
+                    className={`flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200 transition-all duration-300 ${
+                      verifiedReferralsCounter.isAnimating
+                        ? "ring-2 ring-green-200 shadow-lg"
+                        : ""
+                    }`}
+                  >
                     <div className="flex items-center space-x-3">
-                      <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/verified-referrals.svg"} alt=""/>
+                      <Image
+                        className="min-w-[40px] min-h-[40px]"
+                        width={40}
+                        height={40}
+                        src={"/verified-referrals.svg"}
+                        alt=""
+                      />
                       <div className="relative">
-                        <div className={`font-medium text-gray-900 transition-all duration-300 ${
-                          verifiedReferralsCounter.isAnimating ? 'text-green-600' : ''
-                        }`}>
+                        <div
+                          className={`font-medium text-gray-900 transition-all duration-300 ${
+                            verifiedReferralsCounter.isAnimating
+                              ? "text-green-600"
+                              : ""
+                          }`}
+                        >
                           <div className="relative">
                             {/* Old value fading up */}
                             {verifiedReferralsCounter.showOldValue && (
-                              <div className={`absolute inset-0 transition-all duration-500 ${
-                                verifiedReferralsCounter.isAnimating 
-                                  ? 'opacity-0 -translate-y-2 text-green-400' 
-                                  : 'opacity-100 translate-y-0'
-                              }`}>
-                                {verifiedReferralsCounter.oldValue} successful referrals
+                              <div
+                                className={`absolute inset-0 transition-all duration-500 ${
+                                  verifiedReferralsCounter.isAnimating
+                                    ? "opacity-0 -translate-y-2 text-green-400"
+                                    : "opacity-100 translate-y-0"
+                                }`}
+                              >
+                                {verifiedReferralsCounter.oldValue} successful
+                                referrals
                               </div>
                             )}
-                            
+
                             {/* New value fading in */}
-                            <div className={`transition-all duration-500 ${
-                              verifiedReferralsCounter.isAnimating && !verifiedReferralsCounter.showOldValue
-                                ? 'opacity-100 translate-y-0' 
-                                : verifiedReferralsCounter.isAnimating
-                                ? 'opacity-0 translate-y-2'
-                                : 'opacity-100 translate-y-0'
-                            }`}>
-                              {verifiedReferralsCounter.displayValue} successful referrals
+                            <div
+                              className={`transition-all duration-500 ${
+                                verifiedReferralsCounter.isAnimating &&
+                                !verifiedReferralsCounter.showOldValue
+                                  ? "opacity-100 translate-y-0"
+                                  : verifiedReferralsCounter.isAnimating
+                                  ? "opacity-0 translate-y-2"
+                                  : "opacity-100 translate-y-0"
+                              }`}
+                            >
+                              {verifiedReferralsCounter.displayValue} successful
+                              referrals
                             </div>
                           </div>
-                      </div>
+                        </div>
                         <p className="text-sm text-gray-600">
                           Great job! Keep it up to improve your position.
                         </p>
@@ -810,39 +948,60 @@ export default function DashboardPage() {
                   </div>
 
                   {referralStats && referralStats.pendingReferrals > 0 && (
-                    <div className={`flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200 transition-all duration-300 ${
-                      pendingReferralsCounter.isAnimating ? 'ring-2 ring-yellow-200 shadow-lg' : ''
-                    }`}>
+                    <div
+                      className={`flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200 transition-all duration-300 ${
+                        pendingReferralsCounter.isAnimating
+                          ? "ring-2 ring-yellow-200 shadow-lg"
+                          : ""
+                      }`}
+                    >
                       <div className="flex items-center space-x-3">
-                        <Image className="min-w-[40px] min-h-[40px]" width={40} height={40} src={"/pending-referrals.svg"} alt=""/>
+                        <Image
+                          className="min-w-[40px] min-h-[40px]"
+                          width={40}
+                          height={40}
+                          src={"/pending-referrals.svg"}
+                          alt=""
+                        />
                         <div className="relative">
-                          <div className={`font-medium text-gray-900 transition-all duration-300 ${
-                            pendingReferralsCounter.isAnimating ? 'text-yellow-600' : ''
-                          }`}>
+                          <div
+                            className={`font-medium text-gray-900 transition-all duration-300 ${
+                              pendingReferralsCounter.isAnimating
+                                ? "text-yellow-600"
+                                : ""
+                            }`}
+                          >
                             <div className="relative">
                               {/* Old value fading up */}
                               {pendingReferralsCounter.showOldValue && (
-                                <div className={`absolute inset-0 transition-all duration-500 ${
-                                  pendingReferralsCounter.isAnimating 
-                                    ? 'opacity-0 -translate-y-2 text-yellow-400' 
-                                    : 'opacity-100 translate-y-0'
-                                }`}>
-                                  {pendingReferralsCounter.oldValue} pending referrals
+                                <div
+                                  className={`absolute inset-0 transition-all duration-500 ${
+                                    pendingReferralsCounter.isAnimating
+                                      ? "opacity-0 -translate-y-2 text-yellow-400"
+                                      : "opacity-100 translate-y-0"
+                                  }`}
+                                >
+                                  {pendingReferralsCounter.oldValue} pending
+                                  referrals
                                 </div>
                               )}
-                              
+
                               {/* New value fading in */}
-                              <div className={`transition-all duration-500 ${
-                                pendingReferralsCounter.isAnimating && !pendingReferralsCounter.showOldValue
-                                  ? 'opacity-100 translate-y-0' 
-                                  : pendingReferralsCounter.isAnimating
-                                  ? 'opacity-0 translate-y-2'
-                                  : 'opacity-100 translate-y-0'
-                              }`}>
-                                {pendingReferralsCounter.displayValue} pending referrals
+                              <div
+                                className={`transition-all duration-500 ${
+                                  pendingReferralsCounter.isAnimating &&
+                                  !pendingReferralsCounter.showOldValue
+                                    ? "opacity-100 translate-y-0"
+                                    : pendingReferralsCounter.isAnimating
+                                    ? "opacity-0 translate-y-2"
+                                    : "opacity-100 translate-y-0"
+                                }`}
+                              >
+                                {pendingReferralsCounter.displayValue} pending
+                                referrals
                               </div>
                             </div>
-                        </div>
+                          </div>
                           <p className="text-sm text-gray-600">
                             Waiting for email verification
                           </p>
