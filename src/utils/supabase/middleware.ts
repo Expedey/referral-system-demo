@@ -41,33 +41,40 @@ export async function updateSession(request: NextRequest) {
 
   console.log("[Middleware] user:", user);
 
-  // Redirect unauthenticated users to signin for protected routes
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/signin") &&
-    !request.nextUrl.pathname.startsWith("/signup") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/error") &&
-    !request.nextUrl.pathname.startsWith("/ref/")
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone();
-    url.pathname = "/signin";
-    return NextResponse.redirect(url);
-  }
+  // Define route categories
+  const guestRoutes = [
+    "/signin",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+  ];
 
-  // Redirect authenticated users away from guest routes
-  if (
-    user &&
-    (request.nextUrl.pathname.startsWith("/signin") ||
-      request.nextUrl.pathname.startsWith("/signup") ||
-      request.nextUrl.pathname.startsWith("/forgot-password") ||
-      request.nextUrl.pathname.startsWith("/reset-password"))
-  ) {
-    // authenticated user trying to access guest routes, redirect to dashboard
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
+  const protectedRoutes = ["/dashboard", "/leaderboard"];
+
+  // const publicRoutes = ["/error", "/ref/"];
+
+  // Helper function to check if path starts with any route in array
+  const isRouteInCategory = (pathname: string, routes: string[]): boolean => {
+    return routes.some((route) => pathname.startsWith(route));
+  };
+
+  // Handle authenticated users
+  if (user) {
+    // Redirect authenticated users away from guest routes
+    if (isRouteInCategory(request.nextUrl.pathname, guestRoutes)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+  }
+  // Handle unauthenticated users
+  else {
+    // Redirect unauthenticated users away from protected routes
+    if (isRouteInCategory(request.nextUrl.pathname, protectedRoutes)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/signin";
+      return NextResponse.redirect(url);
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.

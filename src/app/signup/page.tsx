@@ -20,10 +20,12 @@ import Select from "@/components/Select";
 import { createReferralAction } from "@/app/actions/referral";
 import { CircleIcon } from "@/components/circle";
 import { signup } from "@/utils/supabase/actions";
+import useUser from "@/hooks/useUser";
 
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isAuthenticated } = useUser();
 
   const [formData, setFormData] = React.useState({
     email: "",
@@ -91,7 +93,7 @@ function SignupForm() {
 
   // Redirect if already authenticated (but not when showing verification alert)
   React.useEffect(() => {
-    if (!showVerificationAlert) {
+    if (isAuthenticated && !showVerificationAlert) {
       router.push("/dashboard");
     }
     // if (user && !authLoading && !showVerificationAlert) {
