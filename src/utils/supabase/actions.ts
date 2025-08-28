@@ -38,7 +38,7 @@ export async function signup(formData: FormData) {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
     options: {
-      emailRedirectTo: `${"http://localhost:3000"}/dashboard`,
+      emailRedirectTo: `${formData.get("redirectTo")}/dashboard`,
     },
   };
 
